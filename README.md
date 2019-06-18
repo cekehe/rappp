@@ -8,5 +8,5 @@ Sofia - Bead count plot, first focus is to plot.
 
 August - 
 
-Cicci - data transfomering, a-hIgG
+Cicci - datatransformering, a-hIgG
 
