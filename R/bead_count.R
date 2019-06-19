@@ -19,8 +19,10 @@
 
 bead_count_base <- function(bead_count_df, bead_count_limit = 32, path_for_output = "./", date_in_file_name = T, ...) {
 
+  file_name_and_path <- paste0(path_for_output, paste0(Sys.Date() ," Bead count with base.pdf"))
+
   #par(oma= c(0.5, 0.5, 0.5, 0.5), mar=c(8.1, 8.1, 4.1, 4.1))
-  pdf(file = paste0(path_for_output, "Bead count with base.pdf"), width= 16, height= 8)
+  pdf(file = file_name_and_path, width= 16, height= 8)
 
 
   # --------------------------------------------------------------------------------------------------
