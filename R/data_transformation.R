@@ -77,7 +77,9 @@ ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 #' @param rightmost.closed,left.open logical, see \link[base]{findInterval} for details.
 #' @param check.names logical, see \link[base]{data.frame} for details
 #' @param ... Further arguments passed do \link[base]{findInterval}
-#' @return List of scored data, with same structure as input list.
+#' @return List of with two main elements
+#'     [[1]] Cutoff key with cutoff values, scores and colors
+#'     [[2]] scored data, with same structure as input list.
 #' @export
 
 ap_scoring <- function(x, MADlimits=seq(0,70,5),
