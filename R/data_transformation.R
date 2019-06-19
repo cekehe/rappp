@@ -152,6 +152,13 @@ ap_binary <- function(x, cutoffs) {
 #' @param x List of scoring values with two levels per element: level one = assay data sets ;
 #' level two =  bead subsets (e.g. wih and w/o controls).
 #' It is recommended to use to element Scoring in the output from \link[rappp]{ap_scoring}).
+#' @param cutoffs data.frame with at least two columns:
+#'
+#'     - One column named score with the desired cutoffs to use
+#'
+#'     - One column named xmad with the corresponding MAD cutoff values
+#'
+#' It is recommended is to use the Cutoff_key element in the output from \link[rappp]{ap_scoring}).
 #' @param slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
 #' @param offset Offset used to prevent script from finding the peak (as slope = 0 there).
 #' @param bw Bandwidth for density funciton, default set to 0.1.
@@ -163,18 +170,19 @@ ap_binary <- function(x, cutoffs) {
 #' @export
 
 ap_cutoff_selection <- function(x,
+                                cutoffs,
                                 slope_cutoff=-0.5,
                                 offset=0.1,
                                 bw=0.1) {
 
   dens <- lapply(data_source_score, function(x) rep(list(NULL), length(x)))
 
-  slope_cutoff_scores <- rep(list(NULL), length(data_source))
+  slope_cutoff_scores <- rep(list(NULL), length(x))
   for(assay in seq_along(scoring)){
-    slope_cutoff_scores[[assay]] <- rep(list(NULL), length(data_source[[assay]]))
+    slope_cutoff_scores[[assay]] <- rep(list(NULL), length(x[[assay]]))
 
-    for(selection in seq_along(data_source[[assay]])){
-      inputdata <- data_source[[assay]][[selection]]
+    for(selection in seq_along(x[[assay]])){
+      inputdata <- x[[assay]][[selection]]
 
       ## Apply density function on the scores to get x and y values for density-plots
       dens[[assay]][[selection]] <- apply(inputdata, 2, function(y) density(y, bw=bw))
@@ -186,13 +194,13 @@ ap_cutoff_selection <- function(x,
       names(slope_cutoff_indices) <- names(slope)
       for (i in 1:length(slope)) { #For each bead
         # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
-        if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] <= max(xmad_score$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
+        if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] <= max(cutoffs$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
           lookupStartIdx <- which.min(abs(dens[[assay]][[selection]][[i]]$x-(dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)]+offset))) #Find start index just to the right of highest peak.
           lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
           CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
             slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[assay]][[selection]][[i]]$x[j] >= score.median + minCOdistanceFromMedian
           }
-        } else if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] > max(xmad_score$score)/2){ #Else, if the highest peak is on the right hand side of the plot
+        } else if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] > max(cutoffs$score)/2){ #Else, if the highest peak is on the right hand side of the plot
           lookupStartIdx <- which.min(abs(dens[[assay]][[selection]][[i]]$x-(dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)]-offset)))#Find start index just to the left of highest peak.
           lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
           CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
@@ -216,12 +224,72 @@ ap_cutoff_selection <- function(x,
           slope_cutoff_scores[[assay]][[selection]][i] <- max(dens[[assay]][[selection]][[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
         }
       } # End loop i for each bead (dens[[assay]][[selection]])
+      names(slope_cutoff_scores[[assay]][[selection]]) <- colnames(x[[assay]][[selection]])
     } #End loop for each selection
-    names(slope_cutoff_scores[[assay]]) <- names(data_source[[assay]])
+    names(slope_cutoff_scores[[assay]]) <- names(x[[assay]])
+    names(dens[[assay]]) <- names(x[[assay]])
   } #End loop for each assay
-  names(slope_cutoff_scores) <- names(data_source)
+  names(slope_cutoff_scores) <- names(x)
 
-  output <- list(dena=dens,
+# Translate the continuous slope cutoff values to the above discrete score value
+  ag_score_cutoffs <- lapply(slope_cutoff_scores, function(assay)
+    lapply(assay, function(selection) tibble(bead=names(selection),
+                                             score=ceiling(selection*10)/10,
+                                             xmad=cutoffs$xmad[match(score, cutoffs$score)])))
+
+  output <- list(dens=dens,
+                 Slope_cutoff_discrete=ag_score_cutoffs,
                  Slope_cutoff=slope_cutoff_scores)
+  return(output)
+}
+
+
+#' Cutoff selection
+#'
+#' Wrapper function for full AUtoimmunity Profiling data transformations.
+#'
+#' @details The input values should be MFI values, and structured as a list,
+#' even if only one data set is used (see examples).
+#'
+#' @param x List of MFI values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls)
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
+#' @param ... See respective functions for details: \link[rappp]{ap_mads}, \link[rappp]{ap_scoring},
+#' \link[rappp]{ap_binary}, \link[rappp]{ap_cutoff_selection}
+#' @return List with 7 main elements
+#'
+#'     [[1]] Input MFI
+#'
+#'     [[2]] MADs
+#'
+#'     [[3]] Scores
+#'
+#'     [[4]] Binary
+#'
+#'     [[5]] Antigen specific cutoffs selected based on density slope.
+#'
+#'     [[6]] Density information
+#'
+#'     [[7]] Cutoff translation key
+#' @export
+
+ap_norm <- function(x, MADlimits=seq(0,70,5), ...){
+
+  tmp_mads <- ap_mads(x, ...)
+
+  tmp_score <- ap_scoring(tmp_score, MADlimits=MADlimits, ...)
+
+  tmp_binary <- ap_binary(tmp_score$Scoring, cutoffs=tmp_score$Cutoff_key, ...)
+
+  tmp_slope <- ap_cutoff_selection(tmp_score$Scoring, cutoffs=tmp_score$Cutoff_key, ...)
+
+  output <- list(MFI=x,
+       MADs=tmp_mads,
+       Scoring=tmp_score$Scoring,
+       Binary=tmp_binary,
+       Slope_cutoff=tmp_slope$Slope_cutoff_discrete,
+       Score_density=tmp_slope$dens,
+       Cutoff_key=tmp_score$Cutoff_key)
+
   return(output)
 }

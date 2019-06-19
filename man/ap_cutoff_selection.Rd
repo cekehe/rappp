@@ -4,12 +4,21 @@
 \alias{ap_cutoff_selection}
 \title{Cutoff selection}
 \usage{
-ap_cutoff_selection(x, slope_cutoff = -0.5, offset = 0.1, bw = 0.1)
+ap_cutoff_selection(x, cutoffs, slope_cutoff = -0.5, offset = 0.1,
+  bw = 0.1)
 }
 \arguments{
 \item{x}{List of scoring values with two levels per element: level one = assay data sets ;
 level two =  bead subsets (e.g. wih and w/o controls).
 It is recommended to use to element Scoring in the output from \link[rappp]{ap_scoring}).}
+
+\item{cutoffs}{data.frame with at least two columns:
+
+    - One column named score with the desired cutoffs to use
+
+    - One column named xmad with the corresponding MAD cutoff values
+
+It is recommended is to use the Cutoff_key element in the output from \link[rappp]{ap_scoring}).}
 
 \item{slope_cutoff}{Arbitrary slope cutoff value. Can be chosen freely.}
 
