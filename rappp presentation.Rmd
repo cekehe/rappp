@@ -13,12 +13,12 @@ output:
       countIncrementalSlides: false
 ---
 
-class: inverse, center, middle
-
+class: center, middle
 ```{r, eval = F}
 library(rappp)
 
 ```
+
 
 ---
 # Affinity proteomics
@@ -128,7 +128,7 @@ normalized <- ap_norm(MFI_data)
 --
 <img src="images/Data_transformation_output.png" style="width: 60%" />
 
-```{r, eval=F, size=}
+```{r, eval=F}
 # > system.time(ap_norm(MFI_data))
 #   user  system elapsed 
 #   0.11    0.00    0.11 
