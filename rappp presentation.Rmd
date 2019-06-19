@@ -1,7 +1,7 @@
 ---
 title: "rappp package"
 subtitle: "Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R"
-author: "August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm"
+author: "August Jernbom Falk, Cecilia Hellström, Sofia Bergström"
 institute: "KTH, SciLifeLab"
 date: "`r Sys.Date()`"
 output:
@@ -12,12 +12,17 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+```{r}
+library(rappp)
+```
 
+---
 background-image: url(https://ki.se/sites/default/files/migrate/styles/adaptive/public/scilifelab-in-stockholm.jpg)
 background-position: right
 background-size: contain
-???
-# Introduction
+
+# Affinity proteomics
+## Protein profiling and Autoimmunity profiling
 ???
 # Introduction
 
@@ -53,12 +58,10 @@ SBA image
 - New Package template was created locally on Cecilia's computer.
 - New repo was created on Cecilia's GitHub.
 - The local and GitHub repos were connected.
-
 --
 
 - Forking and cloning by August and Sofia.
 - August and Sofia made collaborators, to allow them to accept pull requests themselves.
-
 --
 
 - Incorprate separate funcitons for different parts of our data analysis workflow.
@@ -70,12 +73,37 @@ SBA image
 
 # Bead count plot
 
-```{r}
-median(c(3,5,7,9,26,27))
+```{r, eval = F}
+
+bead_count_base(df_bead_count)
+
+
+
+```
+
+--
+```{r, eval = F}
+bead_count_ggplot(df_bead_count)
+
+```
+--
+```{r, eval = F}
+#> system.time(bead_count_base(df_bead_count))
+#   user  system elapsed 
+# 16.030   0.140  16.255 
+#
+#
+#> system.time(bead_count_ggplot(df_bead_count))
+#   user  system elapsed 
+#  7.012   0.171   7.233
 ```
 
 
-bead_count_ggplot(df_bead_count)
+???
+
+```{r}
+median(c(3,5,7,9,26,27))
+```
 
 
 Hej syns detta?
