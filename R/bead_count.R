@@ -38,7 +38,7 @@ bead_count_base <- function(bead_count_df, bead_count_limit = 32, path_for_outpu
           las=2
   )
 
-  beeswarm(bead_count_df, add = TRUE, cex = 0.5, pch = 16, col = "grey62", corral = "gutter",  ...)
+  beeswarm::beeswarm(bead_count_df, add = TRUE, cex = 0.5, pch = 16, col = "grey62", corral = "gutter",  ...)
 
    # To get the boxes above the beeswarm
   boxplot(bead_count_df, main = "", cex.main = 2.5, names = F, xaxt = "n",
@@ -59,7 +59,7 @@ bead_count_base <- function(bead_count_df, bead_count_limit = 32, path_for_outpu
           las=2
   )
 
-  beeswarm(data.frame(t(bead_count_df)), add = TRUE, cex = 0.5, pch = 16, col = "grey62", corral = "gutter",  ...)
+  beeswarm::beeswarm(data.frame(t(bead_count_df)), add = TRUE, cex = 0.5, pch = 16, col = "grey62", corral = "gutter",  ...)
 
   # To get the boxes above the beeswarm
   boxplot(t(bead_count_df), main = "", cex.main = 2.5, names = F, xaxt = "n",
@@ -104,7 +104,15 @@ dev.off()
 
 
 bead_count_ggplot <- function(bead_count_df, bead_count_limit = 32, path_for_output = "./", date_in_file_name = T, ...) {
-
+  new_theme <- theme(
+    axis.title=element_text(color="grey62",face="bold", size = 14),
+    plot.title=element_text(color="black",face="bold", size = 25),
+    axis.text.x = element_text(color="white"),
+    axis.text.y = element_text(color="black", size = 14),
+    axis.ticks.length = unit(0, "cm"),
+    plot.subtitle=element_text(color="Pink"),
+    panel.grid=element_blank()
+  )
 
   file_name_and_path <- ifelse(date_in_file_name == T, paste0(path_for_output, paste0(Sys.Date() ," Bead count with ggplot.pdf")),
                                paste0(path_for_output, paste0(" Bead count with ggplot.pdf")))
@@ -117,17 +125,23 @@ bead_count_ggplot <- function(bead_count_df, bead_count_limit = 32, path_for_out
   pdf(file = file_name_and_path, width= 16, height= 8)
 
   first_plot <- ggplot(data = df_bead_count_long) +
-    geom_boxplot(mapping = aes(x=BeadID, y=Number_of_beads))+
     labs(title="Bead count")+
-    geom_hline(yintercept = bead_count_limit, show.legend = NA, col = "skyblue2")
+    geom_jitter(mapping = aes(x=BeadID, y=Number_of_beads), width = 0.2, cex = 0.5, col = "grey62")+
+    geom_boxplot(mapping = aes(x=BeadID, y=Number_of_beads))+
+    geom_hline(yintercept = bead_count_limit, show.legend = NA, col = "skyblue2")+
+    theme_bw()+
+    new_theme
 
   print(first_plot)
 
 
   second_plot <- ggplot(data = df_bead_count_long) +
-    geom_boxplot(mapping = aes(x=Samples, y=Number_of_beads))+
     labs(title="Bead count")+
-    geom_hline(yintercept = bead_count_limit, show.legend = NA, col = "skyblue2")
+    geom_jitter(mapping = aes(x=Samples, y=Number_of_beads), width = 0.2, cex = 0.5, col = "grey62")+
+    geom_boxplot(mapping = aes(x=Samples, y=Number_of_beads))+
+    geom_hline(yintercept = bead_count_limit, show.legend = NA, col = "skyblue2")+
+    theme_bw()+
+    new_theme
 
   print(second_plot)
 

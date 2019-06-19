@@ -1,16 +1,19 @@
-#' beeswarm
+#' Beeswarm plots for SBA data using ggplot
 #'
-#' Beeswarm plots for SBA data.
+#' Makes beeswarm (jitter) plots for all analytes (beads) in the input object \code{data}.
+#' Grouping is performed according to the \code{grouping_var} column in the df \code{sample_info}.
 #'
-#' @details
-#'
-#' @param x
-#' @return
-#' @examples
+#' @param data A df with data from an SBA experiment. May be transformed or not.
+#' @param filename A string with the desired name of the output \code{.pdf}.
+#' @param sample_info A df with the sample info.
+#' @param bead_info A df with the bead info.
+#' @param grouping_var A string with the name of the column in \code{sample_info} containing the desired grouping variable.
+#' @param sample_name_var A string with the name of the column in \code{sample_info} containing the desired sample identifier.
+#' @param xlab A character vector containing the desired grouping labels to be printed.
 #' @export
 
 
-beeswarm <- function(data, filename, sample_info, bead_info, grouping_var, sample_name_var, xlab) {
+beeswarm_ggplot <- function(data, filename, sample_info, bead_info, grouping_var, sample_name_var, xlab) {
 
   data_long <- data %>%
     cbind(sample_info[[sample_name_var]], sample_info[[grouping_var]]) %>%
