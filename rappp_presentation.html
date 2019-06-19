@@ -4,7 +4,7 @@
     <title>rappp package</title>
     <meta charset="utf-8" />
     <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergström" />
-    <meta name="date" content="2019-06-19" />
+    <meta name="date" content="2019-06-20" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -16,14 +16,11 @@ class: center, middle, inverse, title-slide
 ## Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R
 ### August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 ### KTH, SciLifeLab
-### 2019-06-19
+### 2019-06-20
 
 ---
 
 
-```r
-library(rappp)
-```
 
 ---
 # Affinity proteomics
@@ -95,13 +92,29 @@ bead_count_ggplot(df_bead_count)
 
 
 ???
+---
+# Bead count plot with ggplot
+.center[![With ggplot](images/bead_count_ggplot.png)]
 
+???
+.center[![With base](images/bead_count_base.png)]
 
 ---
 
 # Data transformation
 
-The output from the Luminex instrument 
+Basic data transformation workflow:
+MFI &gt; Normalized per sample &gt; Binned &gt; Binary reactivities
+--
+
+Currently done differently by different people and with copy-paste.
+
+
+```r
+ap_norm(MFI_data)
+```
+
+
 
 ---
 
@@ -109,13 +122,54 @@ The output from the Luminex instrument
 
 ---
 
-# Conclusions
+# Conclusions and future work
 
-A new package for our regular data analyis workflow is established
+- Established our first package!
 
-More standardized workflow within group
+- Collaborated using github
 
-Knowledge to continue builiding!
+- Started to use tidyverse functions
+
+  
+    
+      
+      
+  
+  
+  
+
+This will enable us to:
+- More standardized workflow within group
+
+- Continue builiding with our new knowledge!
+
+---
+
+```r
+sessionInfo()
+```
+
+```
+## R version 3.6.0 (2019-04-26)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: macOS Sierra 10.12.6
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+##  [1] compiler_3.6.0  magrittr_1.5    tools_3.6.0     htmltools_0.3.6
+##  [5] xaringan_0.10   yaml_2.2.0      Rcpp_1.0.1      stringi_1.4.3  
+##  [9] rmarkdown_1.13  knitr_1.23      stringr_1.4.0   xfun_0.7       
+## [13] digest_0.6.19   evaluate_0.14
+```
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -12,9 +12,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
-```{r}
-library(rappp)
-```
+
 
 ---
 # Affinity proteomics
@@ -88,7 +86,12 @@ bead_count_ggplot(df_bead_count)
 
 
 ???
+---
+# Bead count plot with ggplot
+.center[![With ggplot](images/bead_count_ggplot.png)]
 
+???
+.center[![With base](images/bead_count_base.png)]
 
 ---
 
@@ -112,10 +115,30 @@ ap_norm(MFI_data)
 
 ---
 
-# Conclusions
+# Conclusions and future work
 
-A new package for our regular data analyis workflow is established
+- Established our first package!
 
-More standardized workflow within group
+- Collaborated using github
 
-Knowledge to continue builiding!
+- Started to use tidyverse functions
+
+  
+    
+      
+      
+  
+  
+  
+
+This will enable us to:
+- More standardized workflow within group
+
+- Continue builiding with our new knowledge!
+
+---
+```{r}
+sessionInfo()
+
+```
+
