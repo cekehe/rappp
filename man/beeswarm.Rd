@@ -2,12 +2,13 @@
 % Please edit documentation in R/result_plots.R
 \name{beeswarm}
 \alias{beeswarm}
-\title{xMAD beeswarm}
+\title{beeswarm}
 \usage{
-beeswarm(data, sample_info, bead_info)
+beeswarm(data, filename, sample_info, bead_info, grouping_var,
+  sample_name_var, xlab)
 }
 \description{
-Beeswarm plots for xMAD data.
+Beeswarm plots for SBA data.
 }
 \details{
 
