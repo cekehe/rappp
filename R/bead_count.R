@@ -10,10 +10,11 @@
 #' This is a warning
 #' @param bead_count_df A dataframe with bead count. Each row is a well, each column is a bead.
 #' @param bead_count_limit How many beads do you need? Can be vector if you want several lines.
-#' @param data_in_file_name Yes or No.
+#' @param path_for_output Path for output
+#' @param date_in_file_name Yes or No
 #' @return Plot with bead count per sample and per bead
 #' @examples
-#' bead_count(df)
+#' bead_count_base(df)
 #' @export
 
 
@@ -93,15 +94,13 @@ dev.off()
 #' @param bead_count_df A dataframe with bead count. Each row is a well, each column is a bead.
 #' @param bead_count_limit How many beads do you need? Can be vector if you want several lines.
 #' @param data_in_file_name Yes or No.
+#' @param path_for_output Path for output
+#' @param date_in_file_name Yes or No
 #' @return Plot with bead count per sample and per bead
 #' @examples
-#' bead_count(df)
+#' bead_count_ggplot(df)
 #' @export
 
-
-library(reshape2)
-library(ggplot2)
-library(tidyr)
 
 
 bead_count_ggplot <- function(bead_count_df, bead_count_limit = 32, path_for_output = "./", date_in_file_name = T, ...) {
