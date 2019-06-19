@@ -10,3 +10,6 @@ August -
 
 Cicci - datatransformering, a-hIgG
 
+
+Sofia testar push-pull
+
