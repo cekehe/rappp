@@ -2,3 +2,4 @@
 
 export(bead_count)
 export(mads)
+export(result_plots)
