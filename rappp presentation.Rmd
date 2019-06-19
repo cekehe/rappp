@@ -16,6 +16,7 @@ output:
 library(rappp)
 ```
 
+
 ---
 # Affinity proteomics
 ## Protein profiling and Autoimmunity profiling
@@ -95,17 +96,37 @@ bead_count_ggplot(df_bead_count)
 # Data transformation
 
 Basic data transformation workflow:
-MFI > Normalized per sample > Binned > Binary reactivities
+
+<img src="images/Data_transformation_workflow1.png" style="width: 80%" />
 --
 
-Currently done differently by different people and with copy-paste.
+
+Currently done differently by different people and often with copy-paste.
+
+
+---
+# Data transformation
+
+<img src="images/Data_transformation_workflow2.png" style="width: 80%" />
+
+---
+# Data transformation
+
+<img src="images/Data_transformation_workflow3.png" style="width: 80%" />
+--
 
 ```{r, eval=FALSE}
-ap_norm(MFI_data)
+normalized <- ap_norm(MFI_data)
 ```
+--
+<img src="images/Data_transformation_output.png" style="width: 60%" />
 
-
-
+```{r, eval=F}
+# > system.time(ap_norm(MFI_data))
+#   user  system elapsed 
+#   0.11    0.00    0.11 
+```
+   
 ---
 
 # Result plots
