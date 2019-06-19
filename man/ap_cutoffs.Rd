@@ -7,7 +7,7 @@
 ap_cutoffs(MADlimits = seq(0, 70, 5))
 }
 \arguments{
-\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs)}
+\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}
 }
 \value{
 data.frame with three columns:

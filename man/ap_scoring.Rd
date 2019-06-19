@@ -11,6 +11,8 @@ ap_scoring(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
 \item{x}{List of MADs values with two levels per element: level one = assay data sets ;
 level two =  bead subsets (e.g. wih and w/o controls)}
 
+\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}
+
 \item{rightmost.closed, left.open}{logical, see \link[base]{findInterval} for details.}
 
 \item{check.names}{logical, see \link[base]{data.frame} for details}
