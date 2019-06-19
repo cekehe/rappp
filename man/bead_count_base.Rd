@@ -2,10 +2,7 @@
 % Please edit documentation in R/bead_count.R
 \name{bead_count_base}
 \alias{bead_count_base}
-\title{--------------------------------------------------------------------------------------------------
-Bead count with base
---------------------------------------------------------------------------------------------------
-Investigate if you have enough beads in each well of each beadID}
+\title{Bead count with ggplot}
 \usage{
 bead_count_base(bead_count_df, bead_count_limit = 32,
   path_for_output = "./", date_in_file_name = T, ...)
@@ -23,9 +20,6 @@ bead_count_base(bead_count_df, bead_count_limit = 32,
 Plot with bead count per sample and per bead
 }
 \description{
---------------------------------------------------------------------------------------------------
-Bead count with base
---------------------------------------------------------------------------------------------------
 Investigate if you have enough beads in each well of each beadID
 }
 \section{Warnings}{
