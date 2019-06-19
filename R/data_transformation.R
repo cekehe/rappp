@@ -277,7 +277,7 @@ ap_norm <- function(x, MADlimits=seq(0,70,5), ...){
 
   tmp_mads <- ap_mads(x, ...)
 
-  tmp_score <- ap_scoring(tmp_score, MADlimits=MADlimits, ...)
+  tmp_score <- ap_scoring(tmp_mads, MADlimits=MADlimits, ...)
 
   tmp_binary <- ap_binary(tmp_score$Scoring, cutoffs=tmp_score$Cutoff_key, ...)
 
