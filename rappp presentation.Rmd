@@ -12,6 +12,7 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+
 ```{r}
 library(rappp); library(tidyverse); library(ggforce); library(magrittr)
 
@@ -89,13 +90,28 @@ bead_count_ggplot(df_bead_count)
 
 
 ???
+---
+# Bead count plot with ggplot
+.center[![With ggplot](images/bead_count_ggplot.png)]
 
+???
+.center[![With base](images/bead_count_base.png)]
 
 ---
 
 # Data transformation
 
-The output from the Luminex instrument 
+Basic data transformation workflow:
+MFI > Normalized per sample > Binned > Binary reactivities
+--
+
+Currently done differently by different people and with copy-paste.
+
+```{r, eval=FALSE}
+ap_norm(MFI_data)
+```
+
+
 
 ---
 
@@ -120,10 +136,30 @@ beeswarm_ggplot(
 
 ---
 
-# Conclusions
+# Conclusions and future work
 
-A new package for our regular data analyis workflow is established
+- Established our first package!
 
-More standardized workflow within group
+- Collaborated using github
 
-Knowledge to continue builiding!
+- Started to use tidyverse functions
+
+  
+    
+      
+      
+  
+  
+  
+
+This will enable us to:
+- More standardized workflow within group
+
+- Continue builiding with our new knowledge!
+
+---
+```{r}
+sessionInfo()
+
+```
+

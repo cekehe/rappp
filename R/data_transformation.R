@@ -175,10 +175,10 @@ ap_cutoff_selection <- function(x,
                                 offset=0.1,
                                 bw=0.1) {
 
-  dens <- lapply(data_source_score, function(x) rep(list(NULL), length(x)))
+  dens <- lapply(x, function(y) rep(list(NULL), length(y)))
 
   slope_cutoff_scores <- rep(list(NULL), length(x))
-  for(assay in seq_along(scoring)){
+  for(assay in seq_along(x)){
     slope_cutoff_scores[[assay]] <- rep(list(NULL), length(x[[assay]]))
 
     for(selection in seq_along(x[[assay]])){
