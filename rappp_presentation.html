@@ -3,7 +3,7 @@
   <head>
     <title>rappp package</title>
     <meta charset="utf-8" />
-    <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm" />
+    <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergström" />
     <meta name="date" content="2019-06-19" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
@@ -14,36 +14,31 @@ class: center, middle, inverse, title-slide
 
 # rappp package
 ## Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R
-### August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm
+### August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 ### KTH, SciLifeLab
 ### 2019-06-19
 
 ---
 
 
+```r
+library(rappp)
+```
+
+---
+# Affinity proteomics
+## Protein profiling and Autoimmunity profiling
+.center[![SciLifeLab](images/scilifelab-in-stockholm.jpg)]
+
+
+???
 background-image: url(https://ki.se/sites/default/files/migrate/styles/adaptive/public/scilifelab-in-stockholm.jpg)
 background-position: right
 background-size: contain
+
+# Affinity proteomics
+## Protein profiling and Autoimmunity profiling
 ???
-# Introduction
-???
-# Introduction
-
-We are from SciLifeLab
-blah blah
-loggor
-
-
-knitr::include_graphics("../rappp_pictures/scilifelab.jpg")
-
-
-background-image: url(https://www.google.com/url?sa=i&amp;source=images&amp;cd=&amp;ved=2ahUKEwiLgISspfbiAhVYwcQBHYArBD4QjRx6BAgBEAU&amp;url=https%3A%2F%2Fki.se%2Fen%2Fresearch%2Fmolecular-biosciences-scilifelab&amp;psig=AOvVaw0gD29mG-DViOdCo8-lWXcA&amp;ust=1561059260613190)
-
-
-background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
-
-background-image: url(https://thumb.mp-farm.com/90584852/preview.jpg)
-https://thumb.mp-farm.com/90584852/preview.jpg
 We are from SciLifeLab
 blah blah
 loggor
@@ -56,8 +51,20 @@ loggor
 ---
 
 # Project workflow
-GitHub, collaborators
-blah blah
+
+- New Package template was created locally on Cecilia's computer.
+- New repo was created on Cecilia's GitHub.
+- The local and GitHub repos were connected.
+--
+
+- Forking and cloning by August and Sofia.
+- August and Sofia made collaborators, to allow them to accept pull requests themselves.
+--
+
+- Incorprate separate funcitons for different parts of our data analysis workflow.
+  - Sofia: Bead count visualization
+  - Cecilia: Data transformation
+  - August: Data visualization
 
 ---
 
@@ -65,23 +72,36 @@ blah blah
 
 
 ```r
-median(c(3,5,7,9,26,27))
+bead_count_base(df_bead_count)
 ```
 
-```
-## [1] 8
-```
+--
 
-
+```r
 bead_count_ggplot(df_bead_count)
+```
+--
+
+```r
+#&gt; system.time(bead_count_base(df_bead_count))
+#   user  system elapsed 
+# 16.030   0.140  16.255 
+#
+#
+#&gt; system.time(bead_count_ggplot(df_bead_count))
+#   user  system elapsed 
+#  7.012   0.171   7.233
+```
 
 
-Hej syns detta?
-incl benchmark?
+???
+
 
 ---
 
 # Data transformation
+
+The output from the Luminex instrument 
 
 ---
 
