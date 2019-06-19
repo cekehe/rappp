@@ -14,4 +14,5 @@ Imports:
     beeswarm,
     wesanderson,
     tidyverse,
-    magrittr
+    magrittr,
+    dplyr
