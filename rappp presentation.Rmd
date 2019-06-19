@@ -20,6 +20,8 @@ library(rappp)
 # Affinity proteomics
 ## Protein profiling and Autoimmunity profiling
 .center[![SciLifeLab](images/scilifelab-in-stockholm.jpg)]
+
+
 ???
 background-image: url(https://ki.se/sites/default/files/migrate/styles/adaptive/public/scilifelab-in-stockholm.jpg)
 background-position: right
@@ -76,13 +78,6 @@ bead_count_ggplot(df_bead_count)
 
 ???
 
-```{r}
-median(c(3,5,7,9,26,27))
-```
-
-
-Hej syns detta?
-incl benchmark?
 
 ---
 
