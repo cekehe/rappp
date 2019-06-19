@@ -30,7 +30,10 @@ beeswarm_ggplot <- function(data, filename, sample_info, bead_info, grouping_var
 
   pdf(paste0(filename ,".pdf"), paper = "a4", height = 12, width = 12, useDingbats = FALSE)
 
-  map(1:ceiling(ncol(data)/12), beeswarm_plotting)
+  print({
+    p <- map(1:ceiling(ncol(data)/12), beeswarm_plotting)
+    p
+  })
 
   dev.off()
 }
