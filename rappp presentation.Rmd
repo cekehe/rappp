@@ -1,6 +1,6 @@
 ---
 title: "rappp package"
-subtitle: "⚔<br/>with xaringan"
+subtitle: "Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R"
 author: "August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm"
 institute: "KTH, SciLifeLab"
 date: "`r Sys.Date()`"
@@ -12,3 +12,45 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
+
+# Introduction
+
+We are from SciLifeLab
+blah blah
+loggor
+ 
+---
+
+# Method introduction & reason for package
+
+SBA image
+
+---
+
+# Project workflow
+GitHub, collaborators
+blah blah
+
+---
+
+# Bead count plot
+
+incl benchmark?
+
+---
+
+# Data transformation
+
+---
+
+# Result plots
+
+---
+
+# Conclusions
+
+A new package for our regular data analyis workflow is established
+
+More standardized workflow within group
+
+Knowledge to continue builiding!
