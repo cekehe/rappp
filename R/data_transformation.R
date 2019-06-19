@@ -41,19 +41,24 @@ ap_mads <- function(x, constant=1, ...) {
 #'
 #' @details The input values will be binned into discrete bins (scores).
 #'
-#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs)
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @return data.frame with three columns:
+#'
 #'    [,1] MADs cutoff value
+#'
 #'    [,2] Corresponding score value
+#'
 #'    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
 #' @export
 
 ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 
-  xmad_score <- data.frame(xmad=MADlimits,
-                           score=1:length(MADlimits)/10,
-                           color=wes_palette(name = "Zissou1", n = length(MADlimits)+1, type = "continuous"))
-  rownames(xmad_score) <- paste0(MADlimits,rep("xMAD",length(MADlimits)))
+  xmad_score <- data.frame(xmad=c(NA, MADlimits),
+                           score=c(0, 1:length(MADlimits)/10),
+                           color=as.character(wes_palette(name = "Zissou1",
+                                                          n = length(MADlimits)+1, type = "continuous")))
+  rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
+  return(xmad_score)
 }
 
 
@@ -68,6 +73,7 @@ ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 #'
 #' @param x List of MADs values with two levels per element: level one = assay data sets ;
 #' level two =  bead subsets (e.g. wih and w/o controls)
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param rightmost.closed,left.open logical, see \link[base]{findInterval} for details.
 #' @param check.names logical, see \link[base]{data.frame} for details
 #' @param ... Further arguments passed do \link[base]{findInterval}
@@ -78,15 +84,17 @@ ap_scoring <- function(x, MADlimits=seq(0,70,5),
                        rightmost.closed=FALSE, left.open=FALSE,
                        check.names=FALSE, ...) {
 
-  xmad_score <- data.frame(xmad=MADlimits,
-             score=1:length(MADlimits)/10)
+  xmad_score <- ap_cutoffs(MADlimits)
 
-  lapply(x, function(assay)
+  scores <- lapply(x, function(assay)
     lapply(assay, function(selection)
       data.frame(matrix(t(apply(selection, 1, function(row)
-        findInterval(row, xmad_score$xmad,
+        findInterval(row, xmad_score$xmad[-1],
                      rightmost.closed = rightmost.closed, left.open = left.open, ...))),
         ncol=dim(selection)[2],
         dimnames=list(rownames(selection),
                       colnames(selection)) )/10, check.names = check.names)))
+
+  output <- list(Cutoff_key=xmad_score,
+                 Scoring=scores)
 }

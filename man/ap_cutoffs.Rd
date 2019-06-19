@@ -7,12 +7,15 @@
 ap_cutoffs(MADlimits = seq(0, 70, 5))
 }
 \arguments{
-\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs)}
+\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}
 }
 \value{
 data.frame with three columns:
+
    [,1] MADs cutoff value
+
    [,2] Corresponding score value
+
    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
 }
 \description{

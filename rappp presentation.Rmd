@@ -1,0 +1,14 @@
+---
+title: "rappp package"
+subtitle: "⚔<br/>with xaringan"
+author: "August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm"
+institute: "KTH, SciLifeLab"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
