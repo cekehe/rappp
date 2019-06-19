@@ -49,8 +49,22 @@ SBA image
 ---
 
 # Project workflow
-GitHub, collaborators
-blah blah
+
+- New Package template was created locally on Cecilia's computer.
+- New repo was created on Cecilia's GitHub.
+- The local and GitHub repos were connected.
+
+--
+
+- Forking and cloning by August and Sofia.
+- August and Sofia made collaborators, to allow them to accept pull requests themselves.
+
+--
+
+- Incorprate separate funcitons for different parts of our data analysis workflow.
+  - Sofia: Bead count visualization
+  - Cecilia: Data transformation
+  - August: Data visualization
 
 ---
 
@@ -70,6 +84,8 @@ incl benchmark?
 ---
 
 # Data transformation
+
+The output from the Luminex instrument 
 
 ---
 
