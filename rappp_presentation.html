@@ -43,8 +43,7 @@ loggor
 ---
 
 # Method introduction &amp; reason for package
-
-SBA image
+.center[![Suspension Bead Array](AP_SBA_overview_AJF_cropped.png)]
 
 ---
 
@@ -104,7 +103,18 @@ bead_count_ggplot(df_bead_count)
 
 # Data transformation
 
-The output from the Luminex instrument 
+Basic data transformation workflow:
+MFI &gt; Normalized per sample &gt; Binned &gt; Binary reactivities
+--
+
+Currently done differently by different people and with copy-paste.
+
+
+```r
+ap_norm(MFI_data)
+```
+
+
 
 ---
 
