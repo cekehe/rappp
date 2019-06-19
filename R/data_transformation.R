@@ -135,3 +135,93 @@ ap_binary <- function(x, cutoffs) {
 
   return(binary_list)
 }
+
+#' Cutoff selection
+#'
+#' Select cutoff based on the slope of the density of scores per antigen.
+#'
+#' @details A cutoff will be selected for each antigen based on the
+#' distribution of the scores for the antigen.
+#' The algorithm will search for a local min nearest the highest
+#' peak in a density plot using bandwidth=0.1.
+#'
+#' The input values should be scoring values, and structured as a list
+#' (preferably the output from function ap_scoring()), even if only one data set is used
+#' (see examples in \link[rappp]{ap_mads}).
+#'
+#' @param x List of scoring values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls).
+#' It is recommended to use to element Scoring in the output from \link[rappp]{ap_scoring}).
+#' @param slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
+#' @param offset Offset used to prevent script from finding the peak (as slope = 0 there).
+#' @param bw Bandwidth for density funciton, default set to 0.1.
+#' @return List with two main elements
+#'
+#'     [[1]] Density output used for cutoff selection, with same structure as input list.
+#'
+#'     [[2]] Calculated antigen specific cutoffs, with same structure as input list.
+#' @export
+
+ap_cutoff_selection <- function(x,
+                                slope_cutoff=-0.5,
+                                offset=0.1,
+                                bw=0.1) {
+
+  dens <- lapply(data_source_score, function(x) rep(list(NULL), length(x)))
+
+  slope_cutoff_scores <- rep(list(NULL), length(data_source))
+  for(assay in seq_along(scoring)){
+    slope_cutoff_scores[[assay]] <- rep(list(NULL), length(data_source[[assay]]))
+
+    for(selection in seq_along(data_source[[assay]])){
+      inputdata <- data_source[[assay]][[selection]]
+
+      ## Apply density function on the scores to get x and y values for density-plots
+      dens[[assay]][[selection]] <- apply(inputdata, 2, function(y) density(y, bw=bw))
+
+      # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
+      slope <- lapply(dens[[assay]][[selection]], function(y) diff(y$y)/diff(y$x))
+
+      slope_cutoff_indices <- rep(NA, length.out = length(slope))
+      names(slope_cutoff_indices) <- names(slope)
+      for (i in 1:length(slope)) { #For each bead
+        # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
+        if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] <= max(xmad_score$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
+          lookupStartIdx <- which.min(abs(dens[[assay]][[selection]][[i]]$x-(dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)]+offset))) #Find start index just to the right of highest peak.
+          lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
+          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
+            slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[assay]][[selection]][[i]]$x[j] >= score.median + minCOdistanceFromMedian
+          }
+        } else if (dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)] > max(xmad_score$score)/2){ #Else, if the highest peak is on the right hand side of the plot
+          lookupStartIdx <- which.min(abs(dens[[assay]][[selection]][[i]]$x-(dens[[assay]][[selection]][[i]]$x[which.max(dens[[assay]][[selection]][[i]]$y)]-offset)))#Find start index just to the left of highest peak.
+          lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
+          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
+            slope[[i]][j] < -slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[assay]][[selection]][[i]]$x[j] <= score.median - minCOdistanceFromMedian
+          }
+        } else {
+          stop("Error in slope-based cutoff assignment")
+        }
+        for (j in lookupVector) { #Now, for each slope step
+          if (CO.fun(i,j,slope_cutoff)) { #If the slope at this step fulfils the cutoff function
+            slope_cutoff_indices[i] <- j #Then store that slope step for that bead
+            break() #And exit the slope step loop to continue with next bead
+          }
+        }
+      } # End loop i for each bead (slope)
+
+      for (i in seq_along(dens[[assay]][[selection]])) {
+        if (!is.na(slope_cutoff_indices[i])) {
+          slope_cutoff_scores[[assay]][[selection]][i] <- dens[[assay]][[selection]][[i]]$x[slope_cutoff_indices[i]] #Find the score at the index where the slope is above cutoff. These are the cutoffs that are red lines in the density plot!
+        } else {
+          slope_cutoff_scores[[assay]][[selection]][i] <- max(dens[[assay]][[selection]][[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
+        }
+      } # End loop i for each bead (dens[[assay]][[selection]])
+    } #End loop for each selection
+    names(slope_cutoff_scores[[assay]]) <- names(data_source[[assay]])
+  } #End loop for each assay
+  names(slope_cutoff_scores) <- names(data_source)
+
+  output <- list(dena=dens,
+                 Slope_cutoff=slope_cutoff_scores)
+  return(output)
+}
