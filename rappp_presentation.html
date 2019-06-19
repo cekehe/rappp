@@ -3,7 +3,7 @@
   <head>
     <title>rappp package</title>
     <meta charset="utf-8" />
-    <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm" />
+    <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergström" />
     <meta name="date" content="2019-06-19" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
@@ -14,17 +14,24 @@ class: center, middle, inverse, title-slide
 
 # rappp package
 ## Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R
-### August Jernbom Falk, Cecilia Hellström, Sofia Bergstöm
+### August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 ### KTH, SciLifeLab
 ### 2019-06-19
 
 ---
 
 
+```r
+library(rappp)
+```
+
+---
 background-image: url(https://ki.se/sites/default/files/migrate/styles/adaptive/public/scilifelab-in-stockholm.jpg)
-background-position: center
+background-position: right
 background-size: contain
 
+# Affinity proteomics
+## Protein profiling and Autoimmunity profiling
 ???
 # Introduction
 
@@ -65,15 +72,38 @@ blah blah
 
 
 ```r
+bead_count_base(df_bead_count)
+```
+
+--
+
+```r
+bead_count_ggplot(df_bead_count)
+```
+--
+
+```r
+#&gt; system.time(bead_count_base(df_bead_count))
+#   user  system elapsed 
+# 16.030   0.140  16.255 
+#
+#
+#&gt; system.time(bead_count_ggplot(df_bead_count))
+#   user  system elapsed 
+#  7.012   0.171   7.233
+```
+
+
+???
+
+
+```r
 median(c(3,5,7,9,26,27))
 ```
 
 ```
 ## [1] 8
 ```
-
-
-bead_count_ggplot(df_bead_count)
 
 
 Hej syns detta?
