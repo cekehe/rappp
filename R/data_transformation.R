@@ -37,28 +37,23 @@ ap_mads <- function(x, constant=1, ...) {
 
 #' Cutoff key
 #'
-#' Used to create a cutoff key for scoring of Autoimmunity Profiling data.
+#' Create a cutoff key for scoring of Autoimmunity Profiling data.
 #'
 #' @details The input values will be binned into discrete bins (scores).
 #'
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs)
-#' @return Tibble with ........
+#' @return data.frame with three columns:
+#'    [,1] MADs cutoff value
+#'    [,2] Corresponding score value
+#'    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
 #' @export
 
-ap_cutoffs <- function(MADlimits=seq(0,70,5), ){
+ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 
   xmad_score <- data.frame(xmad=MADlimits,
-                           score=1:length(MADlimits)/10)
-  rownames(xmad_score) <-
-}
-
-{
-  library(wesanderson) # Color for scoring
-  Info_XmadVec <<- paste0(min(xmad_vec),":",max(xmad_vec))
-  cutoffs <- paste0(xmad_vec,rep("xMAD",length(xmad_vec))) ; Info_Cutoffs <- Info_XmadVec
-  xmad_score <<- data.frame(xmad=xmad_vec,
-                            score=1:length(xmad_vec)/10)
-  ZissouColors <<- wes_palette(name = "Zissou1", n = length(xmad_vec)+1, type = "continuous") # Color scale for scoring
+                           score=1:length(MADlimits)/10,
+                           color=wes_palette(name = "Zissou1", n = length(MADlimits)+1, type = "continuous"))
+  rownames(xmad_score) <- paste0(MADlimits,rep("xMAD",length(MADlimits)))
 }
 
 
