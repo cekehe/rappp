@@ -50,10 +50,12 @@ ap_mads <- function(x, constant=1, ...) {
 
 ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 
-  xmad_score <- data.frame(xmad=MADlimits,
-                           score=1:length(MADlimits)/10,
-                           color=wes_palette(name = "Zissou1", n = length(MADlimits)+1, type = "continuous"))
-  rownames(xmad_score) <- paste0(MADlimits,rep("xMAD",length(MADlimits)))
+  xmad_score <- data.frame(xmad=c(NA, MADlimits),
+                           score=c(0, 1:length(MADlimits)/10),
+                           color=as.character(wes_palette(name = "Zissou1",
+                                                          n = length(MADlimits)+1, type = "continuous")))
+  rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
+  return(xmad_score)
 }
 
 
