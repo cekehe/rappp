@@ -1,14 +1,18 @@
 #' MAD normalization
 #'
-#' Sample based normalization to number of Median Absolute Deviations from the median (MADs)
+#' Sample based normalization to number of Median Absolute Deviations (MADs)
+#' from the median for Autoimmunity profiling data.
 #'
 #' @details The input values will be normalized per sample to the number of MADs from the median
 #' using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using mad(constant=1)
 #'
-#' The input values should be MFI values, and structured as a list, even if only one data set is used, see examples.
+#' The input values should be MFI values, and structured as a list,
+#' even if only one data set is used, see examples.
 #'
-#' @param x List of MFI values with two levels per element: level one = assay data sets ; level two =  bead subsets (e.g. wih and w/o controls)
+#' @param x List of MFI values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls)
 #' @param constant Constant for mad() function, default is 1 (compared to 1.4826 in base function).
+#' @param ... Further arguments passed do \link[stats]{median} and \link[stats]{mad}
 #' @return List of MADs, with same structure as input list.
 #' @examples Input structure examples:
 #' # One assay data set with one subset
@@ -23,10 +27,71 @@
 #' WithoutControls=SBA_plasma@X[,SBA_plasma@Beads$Type != "Control"]))
 #' @export
 
-mads <- function(x, constant=1, ...) {
-  lapply(x,
-         function(assay) lapply(assay,
-                                function(selection) {
-                                  (selection-apply(selection, 1, function(x) median(x, ...)))/
-                                    apply(selection, 1, function(x) mad(x, constant=constant, ...)) } ))
+ap_mads <- function(x, constant=1, ...) {
+  lapply(x, function(assay)
+    lapply(assay,function(selection) {
+      (selection-apply(selection, 1, function(x) median(x, ...)))/
+        apply(selection, 1, function(x) mad(x, constant=constant, ...)) } ))
+}
+
+
+#' Cutoff key
+#'
+#' Used to create a cutoff key for scoring of Autoimmunity Profiling data.
+#'
+#' @details The input values will be binned into discrete bins (scores).
+#'
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs)
+#' @return Tibble with ........
+#' @export
+
+ap_cutoffs <- function(MADlimits=seq(0,70,5), ){
+
+  xmad_score <- data.frame(xmad=MADlimits,
+                           score=1:length(MADlimits)/10)
+  rownames(xmad_score) <-
+}
+
+{
+  library(wesanderson) # Color for scoring
+  Info_XmadVec <<- paste0(min(xmad_vec),":",max(xmad_vec))
+  cutoffs <- paste0(xmad_vec,rep("xMAD",length(xmad_vec))) ; Info_Cutoffs <- Info_XmadVec
+  xmad_score <<- data.frame(xmad=xmad_vec,
+                            score=1:length(xmad_vec)/10)
+  ZissouColors <<- wes_palette(name = "Zissou1", n = length(xmad_vec)+1, type = "continuous") # Color scale for scoring
+}
+
+
+#' Scoring
+#'
+#' Binning of MADs values in Autoimmunity Profiling.
+#'
+#' @details The input values will be binned into discrete bins (scores).
+#'
+#' The input values should be MADs values, and structured as a list
+#' (preferably the output from functino ap_mads()), even if only one data set is used, see examples.
+#'
+#' @param x List of MADs values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls)
+#' @param rightmost.closed,left.open logical, see \link[base]{findInterval} for details.
+#' @param check.names logical, see \link[base]{data.frame} for details
+#' @param ... Further arguments passed do \link[base]{findInterval}
+#' @return List of scored data, with same structure as input list.
+#' @export
+
+ap_scoring <- function(x, MADlimits=seq(0,70,5),
+                       rightmost.closed=FALSE, left.open=FALSE,
+                       check.names=FALSE, ...) {
+
+  xmad_score <- data.frame(xmad=MADlimits,
+             score=1:length(MADlimits)/10)
+
+  lapply(x, function(assay)
+    lapply(assay, function(selection)
+      data.frame(matrix(t(apply(selection, 1, function(row)
+        findInterval(row, xmad_score$xmad,
+                     rightmost.closed = rightmost.closed, left.open = left.open, ...))),
+        ncol=dim(selection)[2],
+        dimnames=list(rownames(selection),
+                      colnames(selection)) )/10, check.names = check.names)))
 }
