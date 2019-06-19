@@ -13,7 +13,7 @@ output:
       countIncrementalSlides: false
 ---
 
-```{r}
+```{r, eval = F}
 library(rappp); library(tidyverse); library(ggforce); library(magrittr)
 
 ```
@@ -94,8 +94,7 @@ bead_count_ggplot(df_bead_count)
 # Bead count plot with ggplot
 .center[![With ggplot](images/bead_count_ggplot.png)]
 
-???
-.center[![With base](images/bead_count_base.png)]
+
 
 ---
 
@@ -142,20 +141,18 @@ beeswarm_ggplot(
 
 - Collaborated using github
 
-- Started to use tidyverse functions
+- Started to use tidyverse functions<br/>
 
-  
-    
-      
-      
-  
-  
+<br/>
+<br/>
+
+
   
 
 This will enable us to:
 - More standardized workflow within group
 
-- Continue builiding with our new knowledge!
+- Continue building with our new knowledge!
 
 ---
 ```{r}
