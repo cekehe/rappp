@@ -113,7 +113,17 @@ incl benchmark?
 
 # Data transformation
 
-The output from the Luminex instrument 
+Basic data transformation workflow:
+MFI > Normalized per sample > Binned > Binary reactivities
+--
+
+Currently done differently by different people and with copy-paste.
+
+```{r, eval=FALSE}
+ap_norm(MFI_data)
+```
+
+
 
 ---
 
