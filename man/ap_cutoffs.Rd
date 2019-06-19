@@ -11,8 +11,11 @@ ap_cutoffs(MADlimits = seq(0, 70, 5))
 }
 \value{
 data.frame with three columns:
+
    [,1] MADs cutoff value
+
    [,2] Corresponding score value
+
    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
 }
 \description{

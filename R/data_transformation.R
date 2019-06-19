@@ -43,8 +43,11 @@ ap_mads <- function(x, constant=1, ...) {
 #'
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs)
 #' @return data.frame with three columns:
+#'
 #'    [,1] MADs cutoff value
+#'
 #'    [,2] Corresponding score value
+#'
 #'    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
 #' @export
 
