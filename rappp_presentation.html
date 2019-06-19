@@ -4,7 +4,7 @@
     <title>rappp package</title>
     <meta charset="utf-8" />
     <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergström" />
-    <meta name="date" content="2019-06-19" />
+    <meta name="date" content="2019-06-20" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -16,13 +16,55 @@ class: center, middle, inverse, title-slide
 ## Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R
 ### August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 ### KTH, SciLifeLab
-### 2019-06-19
+### 2019-06-20
 
 ---
 
 
 ```r
-library(rappp)
+library(rappp); library(tidyverse); library(ggforce); library(magrittr)
+```
+
+```
+## Registered S3 methods overwritten by 'ggplot2':
+##   method         from 
+##   [.quosures     rlang
+##   c.quosures     rlang
+##   print.quosures rlang
+```
+
+```
+## -- Attaching packages -------------------------------------------------------------------------- tidyverse 1.2.1 --
+```
+
+```
+## v ggplot2 3.1.1       v purrr   0.3.2  
+## v tibble  2.1.1       v dplyr   0.8.0.1
+## v tidyr   0.8.3       v stringr 1.4.0  
+## v readr   1.3.1       v forcats 0.4.0
+```
+
+```
+## -- Conflicts ----------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```
+## 
+## Attaching package: 'magrittr'
+```
+
+```
+## The following object is masked from 'package:purrr':
+## 
+##     set_names
+```
+
+```
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
 ```
 
 ---
@@ -46,7 +88,7 @@ loggor
 ---
 
 # Method introduction &amp; reason for package
-.center[![Suspension Bead Array](AP_SBA_overview_AJF_cropped.png)]
+.center[![Suspension Bead Array](images/AP_SBA_overview_AJF_cropped.png)]
 
 ---
 
@@ -105,7 +147,24 @@ The output from the Luminex instrument
 
 ---
 
-# Result plots
+# Data visualization
+
+
+```r
+beeswarm_ggplot(
+  data = SBA_data,
+  filename = "filename",
+  sample_info = sampleinfo,
+  bead_info = beadinfo,
+  grouping_var = "diagnosis",
+  sample_name_var = "sample_name",
+  xlab = c("BIP/MAN", "DEL", "DEP", "SCA", "SCZ", "NON-PSY")
+)
+```
+---
+# Data visualization
+
+.center[![Example output](images/beeswarm_ggplot_SHIP_censored.png)]
 
 ---
 

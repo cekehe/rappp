@@ -13,7 +13,8 @@ output:
       countIncrementalSlides: false
 ---
 ```{r}
-library(rappp)
+library(rappp); library(tidyverse); library(ggforce); library(magrittr)
+
 ```
 
 ---
@@ -37,7 +38,7 @@ loggor
 ---
 
 # Method introduction & reason for package
-.center[![Suspension Bead Array](AP_SBA_overview_AJF_cropped.png)]
+.center[![Suspension Bead Array](images/AP_SBA_overview_AJF_cropped.png)]
 
 ---
 
@@ -98,7 +99,24 @@ The output from the Luminex instrument
 
 ---
 
-# Result plots
+# Data visualization
+
+```{r, eval = F}
+beeswarm_ggplot(
+  data = SBA_data,
+  filename = "filename",
+  sample_info = sampleinfo,
+  bead_info = beadinfo,
+  grouping_var = "diagnosis",
+  sample_name_var = "sample_name",
+  xlab = c("BIP/MAN", "DEL", "DEP", "SCA", "SCZ", "NON-PSY")
+)
+
+```
+---
+# Data visualization
+
+.center[![Example output](images/beeswarm_ggplot_SHIP_censored.png)]
 
 ---
 
