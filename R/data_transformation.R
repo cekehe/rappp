@@ -7,7 +7,7 @@
 #' using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using mad(constant=1)
 #'
 #' The input values should be MFI values, and structured as a list,
-#' even if only one data set is used, see examples.
+#' even if only one data set is used (see examples).
 #'
 #' @param x List of MFI values with two levels per element: level one = assay data sets ;
 #' level two =  bead subsets (e.g. wih and w/o controls)
@@ -69,16 +69,18 @@ ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 #' @details The input values will be binned into discrete bins (scores).
 #'
 #' The input values should be MADs values, and structured as a list
-#' (preferably the output from functino ap_mads()), even if only one data set is used, see examples.
+#' (preferably the output from function ap_mads()), even if only one data set is used
+#' (see examples in \link[rappp]{ap_mads}(.
 #'
 #' @param x List of MADs values with two levels per element: level one = assay data sets ;
-#' level two =  bead subsets (e.g. wih and w/o controls)
+#' level two =  bead subsets (e.g. wih and w/o controls).
+#' It is recommended is to use the the output from \link[rappp]{ap_mads}).
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param rightmost.closed,left.open logical, see \link[base]{findInterval} for details.
 #' @param check.names logical, see \link[base]{data.frame} for details
 #' @param ... Further arguments passed do \link[base]{findInterval}
-#' @return List of with two main elements
-#'     [[1]] Cutoff key with cutoff values, scores and colors
+#' @return List with two main elements
+#'     [[1]] Cutoff key as data.frame with cutoff values, scores and colors
 #'     [[2]] scored data, with same structure as input list.
 #' @export
 
@@ -99,4 +101,37 @@ ap_scoring <- function(x, MADlimits=seq(0,70,5),
 
   output <- list(Cutoff_key=xmad_score,
                  Scoring=scores)
+}
+
+#' Binary
+#'
+#' Create binary matrices based on scored Autoimmunity profiling data.
+#'
+#' @details The input values will be binned into binary data, consisting of 0 and 1.
+#'
+#' The input values should be scoring values, and structured as a list
+#' (preferably the output from function ap_scoring()), even if only one data set is used
+#' (see examples in \link[rappp]{ap_mads}).
+#'
+#' @param x List of scoring values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls).
+#' It is recommended to use to element Scoring in the output from \link[rappp]{ap_scoring}).
+#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
+#' and rownames you want to have as identifier for each cutoff.
+#' It is recommended is to use the Cutoff_key element in the output from \link[rappp]{ap_scoring}).
+#'
+#' @return List with binary data.frames
+#' @export
+
+ap_binary <- function(x, cutoffs) {
+
+  binary_list <- lapply(x, function(assay)
+    lapply(assay, function(selection)
+      lapply(cutoffs$score, function(cutoff)
+        data.frame(ifelse(selection >= cutoff, 1, 0), check.names = FALSE))))
+
+  binary_list <- lapply(binary_list, function(assay)
+    lapply(assay, function(selection) { names(selection) <- rownames(cutoffs) ; selection }))
+
+  return(binary_list)
 }

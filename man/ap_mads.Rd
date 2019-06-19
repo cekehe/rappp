@@ -26,7 +26,7 @@ The input values will be normalized per sample to the number of MADs from the me
 using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using mad(constant=1)
 
 The input values should be MFI values, and structured as a list,
-even if only one data set is used, see examples.
+even if only one data set is used (see examples).
 }
 \examples{
 Input structure examples:

@@ -9,7 +9,8 @@ ap_scoring(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
 }
 \arguments{
 \item{x}{List of MADs values with two levels per element: level one = assay data sets ;
-level two =  bead subsets (e.g. wih and w/o controls)}
+level two =  bead subsets (e.g. wih and w/o controls).
+It is recommended is to use the the output from \link[rappp]{ap_mads}).}
 
 \item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}
 
@@ -20,7 +21,9 @@ level two =  bead subsets (e.g. wih and w/o controls)}
 \item{...}{Further arguments passed do \link[base]{findInterval}}
 }
 \value{
-List of scored data, with same structure as input list.
+List with two main elements
+    [[1]] Cutoff key as data.frame with cutoff values, scores and colors
+    [[2]] scored data, with same structure as input list.
 }
 \description{
 Binning of MADs values in Autoimmunity Profiling.
@@ -29,5 +32,6 @@ Binning of MADs values in Autoimmunity Profiling.
 The input values will be binned into discrete bins (scores).
 
 The input values should be MADs values, and structured as a list
-(preferably the output from functino ap_mads()), even if only one data set is used, see examples.
+(preferably the output from function ap_mads()), even if only one data set is used
+(see examples in \link[rappp]{ap_mads}(.
 }
