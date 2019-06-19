@@ -4,7 +4,7 @@
     <title>rappp package</title>
     <meta charset="utf-8" />
     <meta name="author" content="August Jernbom Falk, Cecilia Hellström, Sofia Bergström" />
-    <meta name="date" content="2019-06-19" />
+    <meta name="date" content="2019-06-20" />
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
@@ -16,13 +16,56 @@ class: center, middle, inverse, title-slide
 ## Convenient functions for<br />Autoimmunity Profiling and Protein Profiling<br />data analysis using R
 ### August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 ### KTH, SciLifeLab
-### 2019-06-19
+### 2019-06-20
 
 ---
 
 
+
 ```r
-library(rappp)
+library(rappp); library(tidyverse); library(ggforce); library(magrittr)
+```
+
+```
+## Registered S3 methods overwritten by 'ggplot2':
+##   method         from 
+##   [.quosures     rlang
+##   c.quosures     rlang
+##   print.quosures rlang
+```
+
+```
+## -- Attaching packages -------------------------------------------------------------------------- tidyverse 1.2.1 --
+```
+
+```
+## v ggplot2 3.1.1       v purrr   0.3.2  
+## v tibble  2.1.1       v dplyr   0.8.0.1
+## v tidyr   0.8.3       v stringr 1.4.0  
+## v readr   1.3.1       v forcats 0.4.0
+```
+
+```
+## -- Conflicts ----------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```
+## 
+## Attaching package: 'magrittr'
+```
+
+```
+## The following object is masked from 'package:purrr':
+## 
+##     set_names
+```
+
+```
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
 ```
 
 ---
@@ -46,7 +89,7 @@ loggor
 ---
 
 # Method introduction &amp; reason for package
-.center[![Suspension Bead Array](AP_SBA_overview_AJF_cropped.png)]
+.center[![Suspension Bead Array](images/AP_SBA_overview_AJF_cropped.png)]
 
 ---
 
@@ -95,27 +138,121 @@ bead_count_ggplot(df_bead_count)
 
 
 ???
+---
+# Bead count plot with ggplot
+.center[![With ggplot](images/bead_count_ggplot.png)]
 
+???
+.center[![With base](images/bead_count_base.png)]
 
 ---
 
 # Data transformation
 
-The output from the Luminex instrument 
+Basic data transformation workflow:
+MFI &gt; Normalized per sample &gt; Binned &gt; Binary reactivities
+--
+
+Currently done differently by different people and with copy-paste.
+
+
+```r
+ap_norm(MFI_data)
+```
+
+
 
 ---
 
-# Result plots
+# Data visualization
+
+
+```r
+beeswarm_ggplot(
+  data = SBA_data,
+  filename = "filename",
+  sample_info = sampleinfo,
+  bead_info = beadinfo,
+  grouping_var = "diagnosis",
+  sample_name_var = "sample_name",
+  xlab = c("BIP/MAN", "DEL", "DEP", "SCA", "SCZ", "NON-PSY")
+)
+```
+---
+# Data visualization
+
+.center[![Example output](images/beeswarm_ggplot_SHIP_censored.png)]
 
 ---
 
-# Conclusions
+# Conclusions and future work
 
-A new package for our regular data analyis workflow is established
+- Established our first package!
 
-More standardized workflow within group
+- Collaborated using github
 
-Knowledge to continue builiding!
+- Started to use tidyverse functions
+
+  
+    
+      
+      
+  
+  
+  
+
+This will enable us to:
+- More standardized workflow within group
+
+- Continue builiding with our new knowledge!
+
+---
+
+```r
+sessionInfo()
+```
+
+```
+## R version 3.6.0 (2019-04-26)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 17134)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] magrittr_1.5    ggforce_0.2.2   forcats_0.4.0   stringr_1.4.0  
+##  [5] dplyr_0.8.0.1   purrr_0.3.2     readr_1.3.1     tidyr_0.8.3    
+##  [9] tibble_2.1.1    ggplot2_3.1.1   tidyverse_1.2.1 rappp_0.1.0    
+## 
+## loaded via a namespace (and not attached):
+##  [1] beeswarm_0.2.3    tidyselect_0.2.5  xfun_0.7         
+##  [4] haven_2.1.0       lattice_0.20-38   colorspace_1.4-1 
+##  [7] generics_0.0.2    htmltools_0.3.6   yaml_2.2.0       
+## [10] rlang_0.3.4       pillar_1.4.0      glue_1.3.1       
+## [13] withr_2.1.2       tweenr_1.0.1      modelr_0.1.4     
+## [16] readxl_1.3.1      plyr_1.8.4        munsell_0.5.0    
+## [19] gtable_0.3.0      cellranger_1.1.0  rvest_0.3.4      
+## [22] evaluate_0.13     knitr_1.23        broom_0.5.2      
+## [25] Rcpp_1.0.1        scales_1.0.0      backports_1.1.4  
+## [28] jsonlite_1.6      farver_1.1.0      hms_0.4.2        
+## [31] digest_0.6.18     stringi_1.4.3     xaringan_0.10    
+## [34] polyclip_1.10-0   grid_3.6.0        cli_1.1.0        
+## [37] tools_3.6.0       lazyeval_0.2.2    wesanderson_0.3.6
+## [40] crayon_1.3.4      pkgconfig_2.0.2   MASS_7.3-51.4    
+## [43] xml2_1.2.0        lubridate_1.7.4   assertthat_0.2.1 
+## [46] rmarkdown_1.13    httr_1.4.0        rstudioapi_0.10  
+## [49] R6_2.4.0          nlme_3.1-139      compiler_3.6.0
+```
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

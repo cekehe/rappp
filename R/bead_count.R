@@ -105,8 +105,8 @@ dev.off()
 
 bead_count_ggplot <- function(bead_count_df, bead_count_limit = 32, path_for_output = "./", date_in_file_name = T, ...) {
   new_theme <- theme(
-    axis.title=element_text(color="grey62",face="bold", size = 14),
-    plot.title=element_text(color="black",face="bold", size = 25),
+    axis.title=element_text(color="grey62",face="bold", size = 20),
+    plot.title=element_text(color="black",face="bold", size = 30),
     axis.text.x = element_text(color="white"),
     axis.text.y = element_text(color="black", size = 14),
     axis.ticks.length = unit(0, "cm"),
