@@ -2,19 +2,19 @@
 
 This is the read me for the package rappp
 
-Functions to be added first:
+Functions to be added first (during course):
 
-Sofia - Bead count plot, first focus is to plot.
+Sofia - Bead count plot, first focus is to plot. 
 
-August - 
+August - Data visulaization
 
-Cicci - datatransformering, a-hIgG
-
-
-
-Sofia testar push-pull
+Cicci - datatransformering
 
 
+Ideas for the future:
 
+- a-hIgG plot
 
-Hälsning från GitHub (rad 16).
+- pairs2 (Cecilia, all axes on left and bottom sides)
+
+- colorful correlation values to pairs2 (Cecilia)
