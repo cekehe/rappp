@@ -9,14 +9,14 @@ cv(x, format = "percent", digits = 2, ...)
 \arguments{
 \item{x}{Vector or matrix with values.}
 
-\item{format}{If the output should be as "percent" (default), or "decimal".}
+\item{format}{If the output should be as "percent" (default) or "decimal".}
 
 \item{digits}{Integer indicating the number of decimal places (see \link[stats]{round})}
 
 \item{...}{Further arguments passed do \link[stats]{mean} and \link[stats]{sd}}
 }
 \value{
-List of MADs, with same structure as input list.
+The CV of the input values.
 }
 \description{
 This function computes the Coefficient of Variation (CV) of the values in x.
