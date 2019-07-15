@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_transformation.R
 \name{ap_norm}
 \alias{ap_norm}
-\title{Cutoff selection}
+\title{Full AP data transformation}
 \usage{
 ap_norm(x, MADlimits = seq(0, 70, 5), ...)
 }
@@ -33,7 +33,7 @@ List with 7 main elements
     [[7]] Cutoff translation key
 }
 \description{
-Wrapper function for full AUtoimmunity Profiling data transformations.
+Wrapper function for full Autoimmunity Profiling data transformations.
 }
 \details{
 The input values should be MFI values, and structured as a list,

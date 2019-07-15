@@ -244,9 +244,9 @@ ap_cutoff_selection <- function(x,
 }
 
 
-#' Cutoff selection
+#' Full AP data transformation
 #'
-#' Wrapper function for full AUtoimmunity Profiling data transformations.
+#' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
 #' @details The input values should be MFI values, and structured as a list,
 #' even if only one data set is used (see examples).
