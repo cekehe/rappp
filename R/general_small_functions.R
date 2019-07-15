@@ -22,6 +22,22 @@ cv <- function(x, format="percent", digits=2, ...) {
   return(round(output, digits=digits))
 }
 
+#' Print a 96-well plate layout
+#'
+#' Create a 96-well plate layout from vector format.
+#'
+#' @param x values to print in cells/wells
+#' @param n indicies for where the values should be printed, default is all wells.
+#' @export
+
+layout96 <- function(x, n=1:96) {
+  wells96 <- matrix(NA, nrow=8, ncol=12,
+                    dimnames=list(LETTERS[1:8], 1:12))
+  wells96[n] <- x
+  View(wells96)
+  return(wells96)
+}
+
 #' Scatterplot Matrices
 #'
 #' A matrix of scatterplots is produced.
