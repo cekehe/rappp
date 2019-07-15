@@ -38,6 +38,22 @@ layout96 <- function(x, n=1:96) {
   return(wells96)
 }
 
+#' Print a 384-well plate layout
+#'
+#' Create a 384-well plate layout from vector format.
+#'
+#' @param x values to print in cells/wells
+#' @param n indicies for where the values should be printed, default is all wells.
+#' @export
+
+layout384 <- function(x, n=1:384) {
+  wells384 <- matrix(NA, nrow=16, ncol=24,
+                    dimnames=list(LETTERS[1:16], 1:24))
+  wells384[n] <- x
+  View(wells384)
+  return(wells384)
+}
+
 #' Scatterplot Matrices
 #'
 #' A matrix of scatterplots is produced.
