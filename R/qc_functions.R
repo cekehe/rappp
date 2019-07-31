@@ -10,17 +10,19 @@
 #' @param empty_bead Column index for empty bead.
 #' @param empty_co_multiple Number of sd above empty for cutoff.
 #' @param shouldplot Logical, should a plot be made?
-#' @param ... Further arguments passed do \link[stats]{mean} and \link[stats]{sd}
+#' @param filename String with filename and desired path, end with .pdf
+#' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
+#' @param ... Further arguments passed to \link[stats]{mean}, \link[stats]{sd}, and \link[grDevices]{pdf}.
 #' @return
 #' @export
 
-ap_ct <- function(x, empty_bead, empty_co_multiple=3, shouldplot=T, ...) {
+ap_ct <- function(x, empty_bead, empty_co_multiple=3,
+                  shouldplot=T, filename="coupling_efficiency.pdf", width=30, height=6, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
 
     if(shouldplot){
-      pdf(paste0(analysis,"Coupling-efficiency_",format(Sys.time(),"%Y-%m-%d_%H%M%S"),".pdf"),
-          width=30, height=6, useDingbats=F)
+      pdf(filename, width=width, height=height, ...)
       par(mar=c(12,4,2,8), cex.axis=0.8)
       layout(matrix(c(1,1,1,2), nrow=1))
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
@@ -79,27 +81,32 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, shouldplot=T, ...) {
 #'     FILTERINFO = Vector with info on whichfilter steps has been done.
 #' @param IgX_bead Column index for empty bead.
 #' @param IgG_cutoff MFI cutoff value for filtering.
+#' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
+#'     for drawing lines and detecting potential outliers.
 #' @param shouldplot Logical, should a plot be made?
-#' @param ... Further arguments passed do \link[stats]{mean} and \link[stats]{sd}
+#' @param filename String with filename and desired path, end with .pdf
+#' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
+#' @param ... Further arguments passed to \link[grDevices]{pdf}.
 #' @return
 #' @export
 
-ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, shouldplot=T, ...) {
-  cosfac <- c(3, -3)
+ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
+                   shouldplot=T, filename, width=10, height=6, ...) {
+
   which_lowIgG <- rep(list(NULL), length(assay_list))
   which_hIgGremove <- rep(list(NULL), length(assay_list))
-  for(l in 1:length(assay_list)){
-    plotdata <- unlist(assay_list[[l]][,grep("hIgG", colnames(assay_list[[l]]), ignore.case=T)])
-    sampledata <- samples_list[[l]]
-    SamplesNames <- rownames(sampledata) # INPUT NEEDED: Change to column with blank/pool/replicate information
+
+    plotdata <- unlist(x$MFI[,IgX_bead])
+    sampledata <- x$SAMPLES
+    SamplesNames <- x$SAMPLES$Sample
     AssayNum <- samples_list[[l]]$AssayNum # INPUT NEEDED: Change to column with assay run information information, or create a vector here
+
     cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
     tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
-    cosIgG <- c(cosIgG, 5000) #max(tmp)+3*mad(tmp, constant = 1))
+    cosIgG <- c(cosIgG, IgG_cutoff)
 
     if(shouldplot){
-      pdf(paste0(analysis,names(count_list)[l],"_ahIgG_",format(Sys.time(),"%Y-%m-%d_%H%M%S"),".pdf"),
-          width=10, height=6, useDingbats=F)
+      pdf(filename, width=width, height=height, ...)
       layout(matrix(c(1,1,1,6,7,
                       1,1,1,2,3,
                       1,1,1,4,5), nrow=3, byrow=T))
