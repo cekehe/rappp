@@ -12,17 +12,18 @@
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
-#' @param ... Further arguments passed to \link[stats]{mean}, \link[stats]{sd}, and \link[grDevices]{pdf}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
+#' @param ... Further arguments passed to \link[stats]{mean} and \link[stats]{sd}.
 #' @return
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
-                  shouldplot=T, filename="coupling_efficiency.pdf", width=30, height=6, ...) {
+                  shouldplot=T, filename="coupling_efficiency.pdf", width=30, height=6, useDingbats=F, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
 
     if(shouldplot){
-      pdf(filename, width=width, height=height, ...)
+      pdf(filename, width=width, height=height, useDingbats=useDingbats)
       par(mar=c(12,4,2,8), cex.axis=0.8)
       layout(matrix(c(1,1,1,2), nrow=1))
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
@@ -69,6 +70,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
     return(x)
   }
 
+
 #' Loading control (FAR FROM DONE)
 #'
 #' Filter samples with low MFI for the anti-human IgX bead.
@@ -86,12 +88,12 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
-#' @param ... Further arguments passed to \link[grDevices]{pdf}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
 #' @return
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
-                   shouldplot=T, filename, width=10, height=6, ...) {
+                   shouldplot=T, filename, width=10, height=6, useDingbats=F) {
 
   which_lowIgG <- rep(list(NULL), length(assay_list))
   which_hIgGremove <- rep(list(NULL), length(assay_list))
@@ -106,7 +108,7 @@ ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
     cosIgG <- c(cosIgG, IgG_cutoff)
 
     if(shouldplot){
-      pdf(filename, width=width, height=height, ...)
+      pdf(filename, width=width, height=height, useDingbats=useDingbats)
       layout(matrix(c(1,1,1,6,7,
                       1,1,1,2,3,
                       1,1,1,4,5), nrow=3, byrow=T))

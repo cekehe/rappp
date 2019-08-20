@@ -4,7 +4,9 @@
 \alias{ap_ct}
 \title{Coupling efficency test}
 \usage{
-ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T, ...)
+ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
+  filename = "coupling_efficiency.pdf", width = 30, height = 6,
+  useDingbats = F, ...)
 }
 \arguments{
 \item{x}{List with at least three elements:
@@ -18,7 +20,13 @@ FILTERINFO = Vector with info on whichfilter steps has been done.}
 
 \item{shouldplot}{Logical, should a plot be made?}
 
-\item{...}{Further arguments passed do \link[stats]{mean} and \link[stats]{sd}}
+\item{filename}{String with filename and desired path, end with .pdf}
+
+\item{width, height}{Width and height for pdf, see \link[grDevices]{pdf}.}
+
+\item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.}
+
+\item{...}{Further arguments passed to \link[stats]{mean}, \link[stats]{sd}, and \link[grDevices]{pdf}.}
 }
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
