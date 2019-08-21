@@ -26,7 +26,7 @@ FILTERINFO = Vector with info on whichfilter steps has been done.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.}
 
-\item{...}{Further arguments passed to \link[stats]{mean}, \link[stats]{sd}, and \link[grDevices]{pdf}.}
+\item{...}{Further arguments passed to \link[stats]{mean} and \link[stats]{sd}.}
 }
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.

@@ -78,34 +78,47 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'
 #' @param x List with at least three elements:
 #'     MFI = assay mfi,
-#'     SAMPLES = Sample info
+#'     SAMPLES = Sample info. See Details for required columns.
 #'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
 #'     FILTERINFO = Vector with info on whichfilter steps has been done.
 #' @param IgX_bead Column index for empty bead.
-#' @param IgG_cutoff MFI cutoff value for filtering.
+#' @param IgType Which Imunoglobulin is measured, default is G.
+#' @param IgX_cutoff MFI cutoff value for filtering.
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
 #'     for drawing lines and detecting potential outliers.
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
+#' @details
+#' The SAMPLES element needs at least the columns:
+#'
+#'     "Sample" with sample names, preferably LIMS-IDs, where
+#'     replicates (named with one of pool|rep|mix|commercial)
+#'     and blanks (named with one of empty|blank|buffer) are also stated,
+#'
+#'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
+#'
+#'     "Well384" with Well IDs, e.g A01, B01 etc.,
+#'
+#'     "tube_label" with alternative sample names, eg. from collaborator,
+#'
 #' @return
 #' @export
 
-ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
+ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                    shouldplot=T, filename, width=10, height=6, useDingbats=F) {
-
-  which_lowIgG <- rep(list(NULL), length(assay_list))
-  which_hIgGremove <- rep(list(NULL), length(assay_list))
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
-    SamplesNames <- x$SAMPLES$Sample
-    AssayNum <- samples_list[[l]]$AssayNum # INPUT NEEDED: Change to column with assay run information information, or create a vector here
+    SamplesNames <- sampledata$Sample
+    AssayNum <- sampledata$AssayNum
 
     cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
     tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
-    cosIgG <- c(cosIgG, IgG_cutoff)
+    cosIgG <- c(cosIgG, IgX_cutoff)
+
+    which_lowIgG <- which(plotdata<cosIgG[3])
 
     if(shouldplot){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
@@ -114,15 +127,15 @@ ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
                       1,1,1,4,5), nrow=3, byrow=T))
       par(mar=c(5,5,4,4))
 
-      plot(1:length(plotdata), plotdata, cex=0.5, pch=c(16:18)[AssayNum],
-           xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main="Total hIgG",
+      plot(1:length(plotdata), plotdata, cex=0.5, pch=c(16:18,6,8)[AssayNum],
+           xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Total hIg", IgType, ""),
            col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
                       ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
       if(length(unique(AssayNum)) > 1){
         legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
                legend=c("Sample","Replicate","Buffer", paste("Assay", unique(AssayNum))),
                cex=0.8,
-               pch=c(rep(NA, 3), c(16:18)[unique(AssayNum)]),
+               pch=c(rep(NA, 3), c(16:18,6,8)[unique(AssayNum)]),
                fill=c(4, 5, 2, rep(NA, length(unique(AssayNum)))), border=NA,
                col=c(rep(NA, 3), rep("grey", length(unique(AssayNum)))),
                xpd=NA)
@@ -136,12 +149,9 @@ ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
       abline(h=cosIgG, lty=2)
       textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), "Filter cutoff"),
              offset=0.6, xpd=NA)
-    }
 
-    # Display samples with high but still outliers
-    if(shouldplot){
+      # Display samples with high but still outliers
       if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
-        # INPUT NEEDED: Change to match which columns you want to display, number of columns is optional
         plottext <- data.frame(Well384=sampledata$Well384,
                                InternalID=sampledata$Sample,
                                Subject=sampledata$tube_label,
@@ -153,11 +163,11 @@ ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
           textplot(plottext[21:dim(plottext)[1],],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste("anti-hIgG MFI between",cosIgG[3],"&", cosIgG[2]), font=2, cex=0.5, xpd=NA, at=-0.5)
+          mtext(paste("anti-hIg", IgType, " MFI between",cosIgG[3],"&", cosIgG[2]), font=2, cex=0.5, xpd=NA, at=-0.5)
         } else {
           textplot(plottext,
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste("anti-hIgG MFI between",cosIgG[3],"&", cosIgG[2]), font=2, cex=0.5)
+          mtext(paste("anti-hIg", IgType, " MFI between",cosIgG[3],"&", cosIgG[2]), font=2, cex=0.5)
           frame()
         }
 
@@ -165,48 +175,42 @@ ap_igx <- function(x, IgX_bead, IgG_cutoff=5000, cosfac=c(3, -3),
         frame()
         frame()
       }
-    }
 
-    # Display and remove samples with low total IgG signal
-    if(length(which(plotdata<cosIgG[3])) > 0) {
-      which_lowIgG[[l]] <- which(plotdata<cosIgG[3])
-      # INPUT NEEDED: Change to match which columns you want to display, number of columns is optional
-      plottext <- data.frame(Well384=sampledata$Well384,
-                             InternalID=sampledata$Sample,
-                             Subject=sampledata$tube_label,
-                             MFI=plotdata)[which(plotdata<cosIgG[3]),]
-      plottext <- plottext[order(plottext$MFI, decreasing=T),]
+      # Display and remove samples with low total IgG signal
+      if(length(which_lowIgG) > 0) {
+        plottext <- data.frame(Well384=sampledata$Well384,
+                               InternalID=sampledata$Sample,
+                               Subject=sampledata$tube_label,
+                               MFI=plotdata)[which_lowIgG,]
+        plottext <- plottext[order(plottext$MFI, decreasing=T),]
 
-      if(shouldplot){
         if(dim(plottext)[1] > 20){
           textplot(plottext[1:20,],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
           textplot(plottext[21:dim(plottext)[1],],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste("anti-hIgG MFI below",cosIgG[3]), font=2, cex=0.5, xpd=NA, at=-0.5)
+          mtext(paste("anti-hIg", IgType, " MFI below",cosIgG[3]), font=2, cex=0.5, xpd=NA, at=-0.5)
         } else {
           textplot(plottext,
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste("anti-hIgG MFI below",cosIgG[3]), font=2, cex=0.5)
+          mtext(paste("anti-hIg", IgType, " MFI below",cosIgG[3]), font=2, cex=0.5)
           frame()
         }
-      }
 
-    } else {
-      if(shouldplot){
+      } else {
         frame()
         frame()
       }
+      dev.off()
     }
-    if(shouldplot){ dev.off() }
 
     # Sample list filtered
-    tmp_remove <- rownames(sampledata)[which_lowIgG[[l]]] ; tmp_remove <- tmp_remove[-grep("empty", tmp_remove, ignore.case=T)]
-    samples_list[[l]]$Filtered <- ifelse(rownames(samples_list[[l]]) %in% tmp_remove,
-                                         paste0(samples_list[[l]]$Filtered, ", hIgG"),
-                                         samples_list[[l]]$Filtered)
-    samples_list[[l]]$Filtered <- gsub("^, ", "", samples_list[[l]]$Filtered)
-  }
+    tmp_remove <- rownames(sampledata)[which_lowIgG]
+    tmp_remove <- tmp_remove[-grep("empty", tmp_remove, ignore.case=T)]
+    x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
+                                         paste0(x$SAMPLES$Filtered, ", hIg", IgType, ""),
+                                         x$SAMPLES$Filtered)
+    x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
 
   x$FILTERINFO <- c(x$FILTERINFO, "CouplingEfficiency")
 
