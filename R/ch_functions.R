@@ -541,9 +541,9 @@ ap_overview <- function(x,
     for(i in 1:length(plotdata)){
     boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.5,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("his6abp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+            outcol=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
                           ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("his6abp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+            col=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
     }
 
@@ -556,10 +556,10 @@ ap_overview <- function(x,
     for(i in 1:length(plotdata)){
     boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.3,
             main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("empty", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl("Rep", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("empty", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl("Rep", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
+            outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl("empty|buffer|blank", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
     }
   dev.off()
 }
