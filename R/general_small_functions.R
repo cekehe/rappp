@@ -2,13 +2,14 @@
 #'
 #' This function computes the Coefficient of Variation (CV) of the values in x.
 #'
-#' @details The argument na.rm can be included. Default is FALSE in both \link[stats]{mean} and \link[stats]{sd}.
-#' If set to TRUE, then missing values are removed before computation proceeds.
+#' @details The argument na.rm can be included. Default is FALSE in both
+#'     \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
+#'     If set to TRUE, then missing values are removed before computation proceeds.
 #'
 #' @param x Vector or matrix with values.
 #' @param format If the output should be as "percent" (default) or "decimal".
-#' @param digits Integer indicating the number of decimal places (see \link[stats]{round})
-#' @param ... Further arguments passed do \link[stats]{mean} and \link[stats]{sd}
+#' @param digits Integer indicating the number of decimal places (see \code{\link[base:round]{round()}})
+#' @param ... Further arguments passed do \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}
 #' @return The CV of the input values.
 #' @export
 
@@ -57,31 +58,36 @@ layout384 <- function(x, n=1:384) {
 #' Scatterplot Matrices
 #'
 #' A matrix of scatterplots is produced.
-#' Alternative version of \code{\link[graphics]{pairs}} (default S3 method) where all axes are on the bottom and left sides.
-#' Argument information copied from \code{\link[graphics]{pairs}}.
+#' Alternative version of \code{\link[graphics:pairs]{pairs()}} (default S3 method) where all axes are on the bottom and left sides.
+#' Argument information copied from \code{\link[graphics:pairs]{pairs()}}.
 #'
-#' @details Please see \code{\link[graphics]{pairs}}
+#' @details Please see \code{\link[graphics:pairs]{pairs()}}
 #'
 #' @param x the coordinates of points given as numeric columns of a matrix or data frame.
-#'    Logical and factor columns are converted to numeric in the same way that \code{\link[base]{data.matrix}} does.
+#'    Logical and factor columns are converted to numeric in the same way that
+#'    \code{\link[base:data.matrix]{data.matrix()}} does.
 #' @param labels the names of the variables.
 #' @param panel \code{function(x, y, ...)} which is used to plot the contents of each panel of the display.
 #' @param ... arguments to be passed to or from methods.
-#'     Also, graphical parameters (\link[graphics]{par}) can be given as can arguments to \code{plot} such as \code{main}.
-#'      \code{par("oma")} will be set appropriately unless specified.
+#'     Also, graphical parameters (\code{\link[graphics:par]{par()}}) can be given as can arguments to
+#'     \code{plot} such as \code{main}.
+#'     \code{par("oma")} will be set appropriately unless specified.
 #' @param horInd,verInd The (numerical) indices of the variables to be plotted on the horizontal and vertical axes respectively.
 #' @param lower.panel,upper.panel separate panel functions (or \code{NULL}) to be used below and above the diagonal respectively.
 #' @param diag.panel optional \code{function(x, ...)} to be applied on the diagonals.
 #' @param text.panel optional \code{function(x, y, labels, cex, font, ...)} to be applied on the diagonals.
 #' @param label.pos y position of labels in the text panel.
-#' @param line.main if \code{main} is specified, \code{line.main} gives the \code{line argument} to \code{\link[graphics]{mtext}()}
+#' @param line.main if \code{main} is specified, \code{line.main} gives the \code{line argument} to
+#'     \code{\link[graphics:mtext]{mtext()}}
 #'     which draws the title. You may want to specify \code{oma} when changing \code{line.main}.
 #' @param cex.labels,font.labels graphics parameters for the text panel.
 #' @param row1attop logical. Should the layout be matrix-like with row 1 at the top, or graph-like with row 1 at the bottom?
 #'     The latter (non default) leads to a basically symmetric scatterplot matrix.
 #' @param gap distance between subplots, in margin lines.
-#' @param log a character string indicating if logarithmic axes are to be used, see \code{\link[graphics]{plot.default}}
-#'     or a numeric vector of indices specifying the indices of those variables where logarithmic axes should be used for both x and y.
+#' @param log a character string indicating if logarithmic axes are to be used, see
+#'     \code{\link[graphics:plot.default]{plot.default()}}
+#'     or a numeric vector of indices specifying the indices of those
+#'     variables where logarithmic axes should be used for both x and y.
 #'     \code{log = "xy"} specifies logarithmic axes for all variables.
 #' @export
 

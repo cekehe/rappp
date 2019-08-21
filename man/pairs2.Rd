@@ -12,15 +12,17 @@ pairs2(x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc,
 }
 \arguments{
 \item{x}{the coordinates of points given as numeric columns of a matrix or data frame.
-Logical and factor columns are converted to numeric in the same way that \code{\link[base]{data.matrix}} does.}
+Logical and factor columns are converted to numeric in the same way that
+\code{\link[base:data.matrix]{data.matrix()}} does.}
 
 \item{labels}{the names of the variables.}
 
 \item{panel}{\code{function(x, y, ...)} which is used to plot the contents of each panel of the display.}
 
 \item{...}{arguments to be passed to or from methods.
-Also, graphical parameters (\link[graphics]{par}) can be given as can arguments to \code{plot} such as \code{main}.
- \code{par("oma")} will be set appropriately unless specified.}
+Also, graphical parameters (\code{\link[graphics:par]{par()}}) can be given as can arguments to
+\code{plot} such as \code{main}.
+\code{par("oma")} will be set appropriately unless specified.}
 
 \item{horInd, verInd}{The (numerical) indices of the variables to be plotted on the horizontal and vertical axes respectively.}
 
@@ -32,7 +34,8 @@ Also, graphical parameters (\link[graphics]{par}) can be given as can arguments 
 
 \item{label.pos}{y position of labels in the text panel.}
 
-\item{line.main}{if \code{main} is specified, \code{line.main} gives the \code{line argument} to \code{\link[graphics]{mtext}()}
+\item{line.main}{if \code{main} is specified, \code{line.main} gives the \code{line argument} to
+\code{\link[graphics:mtext]{mtext()}}
 which draws the title. You may want to specify \code{oma} when changing \code{line.main}.}
 
 \item{cex.labels, font.labels}{graphics parameters for the text panel.}
@@ -42,15 +45,17 @@ The latter (non default) leads to a basically symmetric scatterplot matrix.}
 
 \item{gap}{distance between subplots, in margin lines.}
 
-\item{log}{a character string indicating if logarithmic axes are to be used, see \code{\link[graphics]{plot.default}}
-or a numeric vector of indices specifying the indices of those variables where logarithmic axes should be used for both x and y.
+\item{log}{a character string indicating if logarithmic axes are to be used, see
+\code{\link[graphics:plot.default]{plot.default()}}
+or a numeric vector of indices specifying the indices of those
+variables where logarithmic axes should be used for both x and y.
 \code{log = "xy"} specifies logarithmic axes for all variables.}
 }
 \description{
 A matrix of scatterplots is produced.
-Alternative version of \code{\link[graphics]{pairs}} (default S3 method) where all axes are on the bottom and left sides.
-Argument information copied from \code{\link[graphics]{pairs}}.
+Alternative version of \code{\link[graphics:pairs]{pairs()}} (default S3 method) where all axes are on the bottom and left sides.
+Argument information copied from \code{\link[graphics:pairs]{pairs()}}.
 }
 \details{
-Please see \code{\link[graphics]{pairs}}
+Please see \code{\link[graphics:pairs]{pairs()}}
 }

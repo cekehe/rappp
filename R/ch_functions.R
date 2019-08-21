@@ -8,11 +8,10 @@
 #' @param empty_co_multiple Number of sd above empty for cutoff.
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
-#' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
-#' @param ... Further arguments passed to \link[stats]{mean} and \link[stats]{sd}.
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param ... Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
 #' @details The x list needs to include at least the elements
-#'
 #'     CT = coupling test mfi,
 #'
 #'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
@@ -92,8 +91,8 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'     for drawing lines and detecting potential outliers.
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
-#' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
 #' @details The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
@@ -249,8 +248,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param N_filter Accepted number of samples with low count per bead ID.
 #' @param shouldplot Logical, should a plot be made?
 #' @param filename String with filename and desired path, end with .pdf
-#' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
 #' @details The x list needs to include at least the elements:
 #'
 #'     COUNT = bead count,
