@@ -529,7 +529,7 @@ ap_overview <- function(x,
 
   pdf(filename,
       width=width, height=height, useDingbats=useDingbats)
-  par(mfcol=c(3, 2), mar=c(10,5,4,2))
+  par(mfcol=c(3, 1), mar=c(10,5,4,2))
 
     ## Antigens
     plotdata <- list('Bead ID'=x$MFI,
@@ -537,12 +537,12 @@ ap_overview <- function(x,
                      max=x$MFI[,order(apply(x$MFI, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.5,
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, cex.axis=0.5,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+            outcol=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl("hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl("hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
     }
 
     ## Samples
@@ -552,12 +552,12 @@ ap_overview <- function(x,
                      max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.3,
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, cex.axis=0.3,
             main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("empty|buffer|blank", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
+            outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
     }
   dev.off()
 }
