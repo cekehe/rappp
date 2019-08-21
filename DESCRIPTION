@@ -17,4 +17,5 @@ Imports:
     magrittr,
     dplyr,
     ggforce,
-    calibrate
+    calibrate,
+    network
