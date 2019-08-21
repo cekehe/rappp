@@ -512,8 +512,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
 #' Signal overview
 #'
-#' Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
-#'
+#' Boxplots of signals per antigen and sample in different orders.
 #'
 #' @param x List with at least one elements, see Deatils for naming and content.
 #' @param filename String with filename and desired path, end with .pdf
@@ -522,7 +521,6 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' @param ... Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi,
-#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_overview <- function(x,
