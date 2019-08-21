@@ -2,14 +2,14 @@
 % Please edit documentation in R/qc_functions.R
 \name{ap_igx}
 \alias{ap_igx}
-\title{Loading control (FAR FROM DONE)}
+\title{Loading control}
 \usage{
 ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
   -3), shouldplot = T, filename, width = 10, height = 6,
   useDingbats = F)
 }
 \arguments{
-\item{x}{List with at least four elements, see Deatils for naming and content.}
+\item{x}{List with at least three elements, see Deatils for naming and content.}
 
 \item{IgX_bead}{Column index for empty bead.}
 
@@ -41,9 +41,7 @@ The x list needs to include at least the elements:
 
     SAMPLES = Sample info. See below for required columns.
 
-    BEADS = Beads info (including Type-column with PrEST for PrESTs),
-
-    FILTERINFO = Vector with info on whichfilter steps has been done.
+    FILTERINFO = Vector with info on which filter steps has been done.
 
 The SAMPLES element needs at least the columns:
 

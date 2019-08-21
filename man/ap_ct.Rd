@@ -38,5 +38,5 @@ The x list needs to include at least the elements
 
     BEADS = Beads info (including Type-column with PrEST for PrESTs),
 
-    FILTERINFO = Vector with info on whichfilter steps has been done.
+    FILTERINFO = Vector with info on which filter steps has been done.
 }
