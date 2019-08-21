@@ -9,10 +9,7 @@ ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
   useDingbats = F, ...)
 }
 \arguments{
-\item{x}{List with at least three elements:
-CT = coupling test mfi,
-BEADS = Beads info (including Type-column with PrEST for PrESTs),
-FILTERINFO = Vector with info on whichfilter steps has been done.}
+\item{x}{List with at least three elements, see Deatils for naming and content.}
 
 \item{empty_bead}{Column index for empty bead.}
 
@@ -30,4 +27,13 @@ FILTERINFO = Vector with info on whichfilter steps has been done.}
 }
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
+}
+\details{
+The x list needs to include at least the elements
+
+    CT = coupling test mfi,
+
+    BEADS = Beads info (including Type-column with PrEST for PrESTs),
+
+    FILTERINFO = Vector with info on whichfilter steps has been done.
 }

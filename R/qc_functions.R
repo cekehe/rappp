@@ -3,10 +3,7 @@
 #' Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
 #'
 #'
-#' @param x List with at least three elements:
-#'     CT = coupling test mfi,
-#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
-#'     FILTERINFO = Vector with info on whichfilter steps has been done.
+#' @param x List with at least three elements, see Deatils for naming and content.
 #' @param empty_bead Column index for empty bead.
 #' @param empty_co_multiple Number of sd above empty for cutoff.
 #' @param shouldplot Logical, should a plot be made?
@@ -14,6 +11,13 @@
 #' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
 #' @param ... Further arguments passed to \link[stats]{mean} and \link[stats]{sd}.
+#' @details The x list needs to include at least the elements
+#'
+#'     CT = coupling test mfi,
+#'
+#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
+#'
+#'     FILTERINFO = Vector with info on whichfilter steps has been done.
 #' @return
 #' @export
 
@@ -76,11 +80,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' Filter samples with low MFI for the anti-human IgX bead.
 #'
 #'
-#' @param x List with at least three elements:
-#'     MFI = assay mfi,
-#'     SAMPLES = Sample info. See Details for required columns.
-#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
-#'     FILTERINFO = Vector with info on whichfilter steps has been done.
+#' @param x List with at least four elements, see Deatils for naming and content.
 #' @param IgX_bead Column index for empty bead.
 #' @param IgType Which Imunoglobulin is measured, default is G.
 #' @param IgX_cutoff MFI cutoff value for filtering.
@@ -90,7 +90,16 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \link[grDevices]{pdf}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.
-#' @details
+#' @details The x list needs to include at least the elements:
+#'
+#'     MFI = assay mfi,
+#'
+#'     SAMPLES = Sample info. See below for required columns.
+#'
+#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
+#'
+#'     FILTERINFO = Vector with info on whichfilter steps has been done.
+#'
 #' The SAMPLES element needs at least the columns:
 #'
 #'     "Sample" with sample names, preferably LIMS-IDs, where

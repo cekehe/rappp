@@ -9,11 +9,7 @@ ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
   useDingbats = F)
 }
 \arguments{
-\item{x}{List with at least three elements:
-MFI = assay mfi,
-SAMPLES = Sample info. See Details for required columns.
-BEADS = Beads info (including Type-column with PrEST for PrESTs),
-FILTERINFO = Vector with info on whichfilter steps has been done.}
+\item{x}{List with at least four elements, see Deatils for naming and content.}
 
 \item{IgX_bead}{Column index for empty bead.}
 
@@ -36,6 +32,16 @@ for drawing lines and detecting potential outliers.}
 Filter samples with low MFI for the anti-human IgX bead.
 }
 \details{
+The x list needs to include at least the elements:
+
+    MFI = assay mfi,
+
+    SAMPLES = Sample info. See below for required columns.
+
+    BEADS = Beads info (including Type-column with PrEST for PrESTs),
+
+    FILTERINFO = Vector with info on whichfilter steps has been done.
+
 The SAMPLES element needs at least the columns:
 
     "Sample" with sample names, preferably LIMS-IDs, where
