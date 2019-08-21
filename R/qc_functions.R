@@ -18,7 +18,7 @@
 #'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
 #'
 #'     FILTERINFO = Vector with info on whichfilter steps has been done.
-#' @return
+#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
@@ -108,11 +108,11 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'
 #'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
 #'
-#'     "Well384" with Well IDs, e.g A01, B01 etc.,
+#'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 #'
 #'     "tube_label" with alternative sample names, eg. from collaborator,
 #'
-#' @return
+#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
@@ -161,7 +161,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
       # Display samples with high but still outliers
       if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
-        plottext <- data.frame(Well384=sampledata$Well384,
+        plottext <- data.frame(AssayWell=sampledata$AssayWell,
                                InternalID=sampledata$Sample,
                                Subject=sampledata$tube_label,
                                MFI=plotdata)[which(plotdata<cosIgG[2] & plotdata>cosIgG[3]),]
@@ -187,7 +187,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
       # Display and remove samples with low total IgG signal
       if(length(which_lowIgG) > 0) {
-        plottext <- data.frame(Well384=sampledata$Well384,
+        plottext <- data.frame(AssayWell=sampledata$AssayWell,
                                InternalID=sampledata$Sample,
                                Subject=sampledata$tube_label,
                                MFI=plotdata)[which_lowIgG,]

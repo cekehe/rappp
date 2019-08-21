@@ -25,6 +25,9 @@ ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
 
 \item{...}{Further arguments passed to \link[stats]{mean} and \link[stats]{sd}.}
 }
+\value{
+Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+}
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
 }

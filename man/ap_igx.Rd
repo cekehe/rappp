@@ -28,6 +28,9 @@ for drawing lines and detecting potential outliers.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \link[grDevices]{pdf}.}
 }
+\value{
+Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+}
 \description{
 Filter samples with low MFI for the anti-human IgX bead.
 }
@@ -50,7 +53,7 @@ The SAMPLES element needs at least the columns:
 
     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
 
-    "Well384" with Well IDs, e.g A01, B01 etc.,
+    "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 
     "tube_label" with alternative sample names, eg. from collaborator,
 }
