@@ -71,7 +71,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
                                 grepl("PrEST", x$BEADS$Type, ignore.case=T),
                               paste0(x$BEADS$Flagged,", Coupling"),
-                              x$BEADS$Flagged)
+                              paste(x$BEADS$Flagged))
     x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
 
     x$FILTERINFO <- c(x$FILTERINFO, "CouplingEfficiency")
@@ -225,7 +225,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       if(length(tmp_remove) > 0){
         x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
                                      paste0(x$SAMPLES$Filtered, ", hIg", IgType),
-                                     x$SAMPLES$Filtered)
+                                     paste(x$SAMPLES$Filtered))
         x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
       }
     }
@@ -317,7 +317,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
       abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
       legend(par("usr")[2], par("usr")[4],
              legend=c(bead_filter,
-                      "Failed (", samp_co, ")",
+                      paste0("Failed (", samp_co, ")"),
                       paste0("Median (", median(plotdata, na.rm=T), ")"),
                       rep("Wash cycle grouping", length(unique(sampledata$WashCol)))),
              lty=c(rep(2,3), rep(0,length(unique(sampledata$WashCol)))),
@@ -369,8 +369,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
                  bead_flag,
                  median(unlist(plotdata), na.rm=T)), lty=2, col=c("red", "orange", "cornflowerblue"))
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Failed if N>", N_filter, " (", bead_filter,")",
-                      "Flagged (", bead_flag,")",
+             legend=c(paste0("Failed if N>", N_filter, " (", bead_filter,")"),
+                      paste0("Flagged (", bead_flag,")"),
                       paste0("Median (", median(unlist(plotdata), na.rm=T), ")"),
                       paste0("Coupling plate ", unique(beaddata$Plate))),
              lty=c(rep(2,3), rep(0, length(unique(beaddata$Plate)))),
@@ -379,7 +379,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
              border=c(rep(0,3), rep(1, length(unique(beaddata$Plate)))),
              xpd=NA, cex=0.7)
       mtext("Analyte bead count", side=3, cex=1, font=2, line=1)
-      mtext("Samples with median bead count < ", samp_co, " removed (see above plot)", side=3, cex=0.6, line=0)
+      mtext(paste0("Samples with median bead count < ", samp_co, " removed (see above plot)"),
+            side=3, cex=0.6, line=0)
     }
 
     if(length(which_lowAB) > 0){
@@ -429,7 +430,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
       abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
       legend(par("usr")[2], par("usr")[4],
              legend=c(bead_filter,
-                      "Failed (", samp_co, ")",
+                      paste0("Failed (", samp_co, ")"),
                       paste0("Median (", median(plotdata, na.rm=T), ")"),
                       rep("Wash cycle grouping", length(unique(sampledata$WashCol)))),
              lty=c(rep(2,3), rep(0,length(unique(sampledata$WashCol)))),
@@ -453,8 +454,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
            srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
       abline(h=c(16, 32, median(unlist(plotdata), na.rm=T)), lty=2, col=c("red", "orange", "cornflowerblue"))
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Failed if N>", N_filter, " (", bead_filter,")",
-                      "Flagged (", bead_flag,")",
+             legend=c(paste0("Failed if N>", N_filter, " (", bead_filter,")"),
+                      paste0("Flagged (", bead_flag,")"),
                       paste0("Median (", median(unlist(plotdata), na.rm=T), ")"),
                       paste0("Coupling plate ", unique(beaddata$Plate))),
              lty=c(rep(2,3), rep(0, length(unique(beaddata$Plate)))),
@@ -477,7 +478,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     if(length(which_lowSB) > 0){
      x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% names(which_lowSB),
                                   paste0(x$SAMPLES$Filtered,", Count"),
-                                  x$SAMPLES$Filtered)
+                                  paste(x$SAMPLES$Filtered))
      x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
     }
 
@@ -489,7 +490,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     if(length(which(lowAB$Action == "Filtered")) > 0){
       x$BEADS$Filtered <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Filtered")],
                                  paste0(x$BEADS$Filtered,", Count"),
-                                 x$BEADS$Filtered)
+                                 paste(x$BEADS$Filtered))
       x$BEADS$Filtered <- gsub("^, ", "", x$BEADS$Filtered)
     }
 
@@ -501,7 +502,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     if(length(which(lowAB$Action == "Flagged")) > 0){
     x$BEADS$Flagged <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Flagged")],
                               paste0(x$BEADS$Flagged,", Count"),
-                              x$BEADS$Flagged)
+                              paste(x$BEADS$Flagged))
     x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
 }
 
