@@ -6,8 +6,8 @@
 \usage{
 ap_count(x, labels = "Gene_HPRR", protein = "GeneShort",
   agID = "PrEST", samp_co = 32, bead_flag = 32, bead_filter = 16,
-  N_filter = 0, shouldplot = T, filename, width = 12, height = 10,
-  useDingbats = F)
+  N_filter = 0, shouldplot = T, filename = "bead_count.pdf",
+  width = 12, height = 10, useDingbats = F)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
@@ -35,7 +35,7 @@ ap_count(x, labels = "Gene_HPRR", protein = "GeneShort",
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \value{
-Updated input x with relevant filtering and/or flagging info and a pdf with plots (if shouldplot=T).
+Updated input x with relevant filtering and/or flagging info and a pdf with plots (if \code{shouldplot=T}).
 }
 \description{
 Filter and/or flag samples and beads with low bead count.

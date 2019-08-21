@@ -5,8 +5,8 @@
 \title{Loading control}
 \usage{
 ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
-  -3), shouldplot = T, filename, width = 10, height = 6,
-  useDingbats = F)
+  -3), shouldplot = T, filename = "anti-humanIgX.pdf", width = 10,
+  height = 6, useDingbats = F)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
@@ -29,7 +29,7 @@ for drawing lines and detecting potential outliers.}
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \value{
-Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 }
 \description{
 Filter samples with low MFI for the anti-human IgX bead.

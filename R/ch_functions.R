@@ -17,7 +17,7 @@
 #'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
 #'
 #'     FILTERINFO = Vector with info on which filter steps has been done.
-#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
@@ -113,11 +113,11 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'
 #'     "tube_label" with alternative sample names, eg. from collaborator,
 #'
-#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
-                   shouldplot=T, filename, width=10, height=6, useDingbats=F) {
+                   shouldplot=T, filename="anti-humanIgX.pdf", width=10, height=6, useDingbats=F) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
@@ -282,12 +282,12 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
 #'     Colors boxes accordingly. There are 6 colors available.
 #'
-#' @return Updated input x with relevant filtering and/or flagging info and a pdf with plots (if shouldplot=T).
+#' @return Updated input x with relevant filtering and/or flagging info and a pdf with plots (if \code{shouldplot=T}).
 #' @export
 
 ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
-                   shouldplot=T, filename, width=12, height=10, useDingbats=F) {
+                   shouldplot=T, filename="bead_count.pdf", width=12, height=10, useDingbats=F) {
 
     plotdata <- t(x$COUNT)
     sampledata <- x$SAMPLES
@@ -522,7 +522,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' @param ... Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi,
-#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_overview <- function(x,

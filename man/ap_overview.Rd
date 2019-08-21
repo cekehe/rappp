@@ -19,7 +19,7 @@ ap_overview(x, filename = "Signal_overview.pdf", width = 20,
 \item{...}{Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.}
 }
 \value{
-Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 }
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
