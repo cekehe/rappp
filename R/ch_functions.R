@@ -510,5 +510,60 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
   return(x)
 }
 
+#' Signal overview
+#'
+#' Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
+#'
+#'
+#' @param x List with at least one elements, see Deatils for naming and content.
+#' @param filename String with filename and desired path, end with .pdf
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param ... Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
+#' @details The x list needs to include at least the element
+#'     MFI = assay mfi,
+#' @return Updated input x with relevant filtering info and a pdf with plot (if shouldplot=T).
+#' @export
+
+ap_overview <- function(x,
+                  filename="Signal_overview.pdf",
+                  width=20, height=15, useDingbats=F, ...){
+
+  pdf(filename,
+      width=width, height=height, useDingbats=useDingbats)
+  par(mfcol=c(3, 2), mar=c(10,5,4,2))
+
+    ## Antigens
+    plotdata <- list('Bead ID'=x$MFI,
+                     median=x$MFI[,order(apply(x$MFI, 2, median, na.rm=T))],
+                     max=x$MFI[,order(apply(x$MFI, 2, max, na.rm=T))])
+
+    for(i in 1:length(plotdata)){
+    boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.5,
+            main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
+            outcol=ifelse(grepl("his6abp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl("his6abp|empty|bare", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl("hIg|ebna", colnames(plotdata), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+    }
+
+    ## Samples
+    tmp <- data.frame(t(x$MFI), check.names=F)
+    plotdata <- list('analysis order'=tmp,
+                     median=tmp[,order(apply(tmp, 2, median, na.rm=T))],
+                     max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
+
+    for(i in 1:length(plotdata)){
+    boxplot(plotdata, pch=16, cex=0.5, log="y", las=2, cex.axis=0.3,
+            main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
+            outcol=ifelse(grepl("empty", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl("Rep", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl("empty", colnames(plotdata), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl("Rep", colnames(plotdata), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
+    }
+  dev.off()
+}
+#
+# -----------------------------------------------------------------------
 
 
