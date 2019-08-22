@@ -13,8 +13,9 @@ output:
       countIncrementalSlides: false
 ---
 
+class: center, middle
 ```{r, eval = F}
-library(rappp); library(tidyverse); library(ggforce); library(magrittr)
+library(rappp)
 
 ```
 
@@ -103,7 +104,7 @@ bead_count_ggplot(df_bead_count)
 
 Basic data transformation workflow:
 
-<img src="images/Data_transformation_workflow1.png" style="width: 80%" />
+<img src="images/Data_transformation_workflow1.png" style="width: 75%" />
 --
 
 
@@ -113,12 +114,12 @@ Currently done differently by different people and often with copy-paste.
 ---
 # Data transformation
 
-<img src="images/Data_transformation_workflow2.png" style="width: 80%" />
+<img src="images/Data_transformation_workflow2.png" style="width: 75%" />
 
 ---
 # Data transformation
 
-<img src="images/Data_transformation_workflow3.png" style="width: 80%" />
+<img src="images/Data_transformation_workflow3.png" style="width: 75%" />
 --
 
 ```{r, eval=FALSE}
@@ -174,6 +175,13 @@ This will enable us to:
 - More standardized workflow within group
 
 - Continue building with our new knowledge!
+--
+
+
+```{r, eval=F}
+devtools::check()
+```
+![](images\Package_check.png)
 
 ---
 ```{r}
