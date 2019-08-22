@@ -581,9 +581,8 @@ ap_overview <- function(x,
 #'
 #'     "Sample" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
-#'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'
-#'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
+#'     "AssayNum" with assay number (vector with 1s if only one assay),
 #'
 #' @export
 
@@ -593,11 +592,11 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
   samples <- split(x$SAMPLES, x$SAMPLES$AssayNum)
 
   ## CALCULATIONS
-  CVs <- matrix(NA, ncol=length(data))
+  CVs <- matrix(NA, ncol=length(data), nrow=dim(x$MFI)[2])
   cor_samp_s <- rep(list(NULL), length(data))
   cor_samp_p <- rep(list(NULL), length(data))
 
-  cv_r_m <- matrix(NA, ncol=length(data))
+  cv_r_m <- matrix(NA, ncol=length(data), nrow=dim(x$MFI)[2])
   cor_samp_s_r_m <- rep(list(NULL), length(data))
   cor_samp_p_r_m <- rep(list(NULL), length(data))
 
@@ -616,30 +615,30 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
     cor_samp_p[[l]] <- cor_samp_p[[l]][upper.tri(cor_samp_p[[l]])]
 
     # Iterate over random sets of samples
-    cv_r <- matrix(NA, ncol=iter)
-    cor_samp_s_r <- rep(NA, iter)
-    cor_samp_p_r <- rep(NA, iter)
+    cv_r <- matrix(NA, ncol=iter, nrow=dim(x$MFI)[2])
+    cor_samp_s_r <- matrix(NA, ncol=iter, nrow=(dim(x$MFI)[2]^2-dim(x$MFI)[2])/2)
+    cor_samp_p_r <- matrix(NA, ncol=iter, nrow=(dim(x$MFI)[2]^2-dim(x$MFI)[2])/2)
     tmp_data <- data[[l]][-grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
     for(j in 1:iter){
       rand_samp <- tmp_data[sample(1:dim(tmp_data)[1], nrreplicates[l], replace=F),]
       cv_r[,j] <- apply(rand_samp, 2, cv, digits=5, na.rm=T)
 
       cor_samp_s_tmp <- cor(t(rand_samp), method="spearman", use="pairwise.complete.obs")
-      cor_samp_s_r[j] <- cor_samp_s_tmp[upper.tri(cor_samp_s_tmp)]
+      cor_samp_s_r[,j] <- cor_samp_s_tmp[upper.tri(cor_samp_s_tmp)]
 
       cor_samp_p_tmp <- cor(t(log(rand_samp)), method="pearson", use="pairwise.complete.obs")^2
-      cor_samp_p_r[j] <- cor_samp_p_tmp[upper.tri(cor_samp_p_tmp)]
+      cor_samp_p_r[,j] <- cor_samp_p_tmp[upper.tri(cor_samp_p_tmp)]
     }
     cv_r_m[,l] <- apply(cv_r, 1, median, na.rm=T)
     cor_samp_s_r_m[[l]] <- apply(cor_samp_s_r, 1, median, na.rm=T)
     cor_samp_p_r_m[[l]] <- apply(cor_samp_p_r, 1, median, na.rm=T)
   }
-  colnames(CVs) <- paste0("Assay ", unique(samples$AssayNum))
-  colnames(cv_r_m) <- paste0(colnames(CVs), "_Random")
-  names(cor_samp_s) <- colnames(CVs)
-  names(cor_samp_p) <- colnames(CVs)
-  names(cor_samp_s_r_m) <- paste0(names(cor_samp_s), "_Random")
-  names(cor_samp_p_r_m) <- paste0(names(cor_samp_p), "_Random")
+  # colnames(CVs) <- paste0("Assay ", unique(samples$AssayNum))
+  # colnames(cv_r_m) <- paste0(colnames(CVs), "_Random")
+  # names(cor_samp_s) <- colnames(CVs)
+  # names(cor_samp_p) <- colnames(CVs)
+  # names(cor_samp_s_r_m) <- paste0(names(cor_samp_s), "_Random")
+  # names(cor_samp_p_r_m) <- paste0(names(cor_samp_p), "_Random")
 
   cohort_cv <- lapply(data, function(y) apply(y[,],2, function(x) cv(x, na.rm=T, digits=5)))
   cohort_mean <- lapply(data, function(y) apply(y[,],2, function(x) mean(x, na.rm=T)))
