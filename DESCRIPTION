@@ -19,4 +19,5 @@ Imports:
     ggforce,
     calibrate,
     network,
-    reshape2
+    reshape2,
+    Rtsne

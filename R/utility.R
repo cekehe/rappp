@@ -3,4 +3,5 @@
 #' @importFrom calibrate textxy
 #' @importFrom network as.color
 #' @importFrom reshape2 melt
+#' @importFrom Rtsne Rtsne
 NULL
