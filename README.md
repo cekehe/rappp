@@ -18,3 +18,7 @@ Ideas for the future:
 - pairs2 (Cecilia, all axes on left and bottom sides)
 
 - colorful correlation values to pairs2 (Cecilia)
+
+Some important commands for the terminal
+git pull upstream master --f-only
+git pull upstream master
