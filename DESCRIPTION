@@ -1,6 +1,6 @@
 Package: rappp
 Type: Package
-Title: What the Package Does (Title Case)
+Title: QC, data transformation and visualization for PAPP
 Version: 0.1.0
 Author: August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 Maintainer: The package maintainer <cecilia.hellstrom@scilifelab.se>
@@ -16,4 +16,10 @@ Imports:
     tidyverse,
     magrittr,
     dplyr,
-    ggforce
+    ggforce,
+    calibrate,
+    network,
+    reshape2,
+    Rtsne,
+    scales,
+    gridExtra

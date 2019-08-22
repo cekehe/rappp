@@ -11,9 +11,9 @@ cv(x, format = "percent", digits = 2, ...)
 
 \item{format}{If the output should be as "percent" (default) or "decimal".}
 
-\item{digits}{Integer indicating the number of decimal places (see \link[stats]{round})}
+\item{digits}{Integer indicating the number of decimal places (see \code{\link[base:round]{round()}})}
 
-\item{...}{Further arguments passed do \link[stats]{mean} and \link[stats]{sd}}
+\item{...}{Further arguments passed do \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}}
 }
 \value{
 The CV of the input values.
@@ -22,6 +22,7 @@ The CV of the input values.
 This function computes the Coefficient of Variation (CV) of the values in x.
 }
 \details{
-The argument na.rm can be included. Default is FALSE in both \link[stats]{mean} and \link[stats]{sd}.
-If set to TRUE, then missing values are removed before computation proceeds.
+The argument na.rm can be included. Default is FALSE in both
+    \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
+    If set to TRUE, then missing values are removed before computation proceeds.
 }
