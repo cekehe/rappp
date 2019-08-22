@@ -2,4 +2,5 @@
 #' @importFrom wesanderson wes_palette
 #' @importFrom calibrate textxy
 #' @importFrom network as.color
+#' @importFrom reshape2 melt
 NULL
