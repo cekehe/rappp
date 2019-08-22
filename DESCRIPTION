@@ -1,7 +1,7 @@
 Package: rappp
 Type: Package
 Title: QC, data transformation and visualization for PAPP
-Version: 0.1.0
+Version: 0.1.0.9001
 Author: August Jernbom Falk, Cecilia Hellström, Sofia Bergström
 Maintainer: The package maintainer <cecilia.hellstrom@scilifelab.se>
 Description: More about what it does (maybe more than one line)
