@@ -2,14 +2,10 @@
 
 This is the read me for the package rappp
 
-Functions to be added first (during course):
 
-Sofia - Bead count plot, first focus is to plot. 
+ALWAYS UPDATE DEV NUMBER +1 BEFORE DOING A PULL REQUEST!
 
-August - Data visulaization
-
-Cicci - datatransformering
-
+See information about version numbering below. 
 
 Ideas for the future:
 
