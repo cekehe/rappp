@@ -4,4 +4,5 @@
 #' @importFrom network as.color
 #' @importFrom reshape2 melt
 #' @importFrom Rtsne Rtsne
+#' @importFrom scales hue_pal
 NULL

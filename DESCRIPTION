@@ -20,4 +20,5 @@ Imports:
     calibrate,
     network,
     reshape2,
-    Rtsne
+    Rtsne,
+    scales
