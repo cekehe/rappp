@@ -5,4 +5,5 @@
 #' @importFrom reshape2 melt
 #' @importFrom Rtsne Rtsne
 #' @importFrom scales hue_pal
+#' @importFrom gridExtra grid.arrange
 NULL

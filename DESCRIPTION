@@ -21,4 +21,5 @@ Imports:
     network,
     reshape2,
     Rtsne,
-    scales
+    scales,
+    gridExtra
