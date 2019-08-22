@@ -588,15 +588,18 @@ ap_overview <- function(x,
 
 ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, useDingbats=F){
   ## INPUT
-  data <- split(x$MFI, x$SAMPLES$AssayNum)
-  samples <- split(x$SAMPLES, x$SAMPLES$AssayNum)
+  data <- append(split(x$MFI, x$SAMPLES$AssayNum), list(x$MFI))
+  names(data) <- c(paste0("Assay_", names(data)[-length(data)]), "All_combined")
+
+  samples <- append(split(x$SAMPLES, x$SAMPLES$AssayNum), list(x$SAMPLES))
+  names(samples) <- c(paste0("Assay_", names(samples)[-length(samples)]), "All_combined")
 
   ## CALCULATIONS
   CVs <- matrix(NA, ncol=length(data), nrow=dim(x$MFI)[2])
   cor_samp_s <- rep(list(NULL), length(data))
   cor_samp_p <- rep(list(NULL), length(data))
 
-  cv_r_m <- matrix(NA, ncol=length(data), nrow=dim(x$MFI)[2])
+  CVs_r_m <- matrix(NA, ncol=length(data), nrow=dim(x$MFI)[2])
   cor_samp_s_r_m <- rep(list(NULL), length(data))
   cor_samp_p_r_m <- rep(list(NULL), length(data))
 
@@ -615,13 +618,13 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
     cor_samp_p[[l]] <- cor_samp_p[[l]][upper.tri(cor_samp_p[[l]])]
 
     # Iterate over random sets of samples
-    cv_r <- matrix(NA, ncol=iter, nrow=dim(x$MFI)[2])
-    cor_samp_s_r <- matrix(NA, ncol=iter, nrow=(dim(x$MFI)[2]^2-dim(x$MFI)[2])/2)
-    cor_samp_p_r <- matrix(NA, ncol=iter, nrow=(dim(x$MFI)[2]^2-dim(x$MFI)[2])/2)
+    CVs_r <- matrix(NA, ncol=iter, nrow=dim(x$MFI)[2])
     tmp_data <- data[[l]][-grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
+    cor_samp_s_r <- matrix(NA, ncol=iter, nrow=(dim(tmp_data)[1]^2-dim(tmp_data)[1])/2)
+    cor_samp_p_r <- matrix(NA, ncol=iter, nrow=(dim(tmp_data)[1]^2-dim(tmp_data)[1])/2)
     for(j in 1:iter){
       rand_samp <- tmp_data[sample(1:dim(tmp_data)[1], nrreplicates[l], replace=F),]
-      cv_r[,j] <- apply(rand_samp, 2, cv, digits=5, na.rm=T)
+      CVs_r[,j] <- apply(rand_samp, 2, cv, digits=5, na.rm=T)
 
       cor_samp_s_tmp <- cor(t(rand_samp), method="spearman", use="pairwise.complete.obs")
       cor_samp_s_r[,j] <- cor_samp_s_tmp[upper.tri(cor_samp_s_tmp)]
@@ -629,21 +632,21 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
       cor_samp_p_tmp <- cor(t(log(rand_samp)), method="pearson", use="pairwise.complete.obs")^2
       cor_samp_p_r[,j] <- cor_samp_p_tmp[upper.tri(cor_samp_p_tmp)]
     }
-    cv_r_m[,l] <- apply(cv_r, 1, median, na.rm=T)
+    CVs_r_m[,l] <- apply(CVs_r, 1, median, na.rm=T)
     cor_samp_s_r_m[[l]] <- apply(cor_samp_s_r, 1, median, na.rm=T)
     cor_samp_p_r_m[[l]] <- apply(cor_samp_p_r, 1, median, na.rm=T)
   }
-  # colnames(CVs) <- paste0("Assay ", unique(samples$AssayNum))
-  # colnames(cv_r_m) <- paste0(colnames(CVs), "_Random")
-  # names(cor_samp_s) <- colnames(CVs)
-  # names(cor_samp_p) <- colnames(CVs)
-  # names(cor_samp_s_r_m) <- paste0(names(cor_samp_s), "_Random")
-  # names(cor_samp_p_r_m) <- paste0(names(cor_samp_p), "_Random")
+  colnames(CVs) <- names(data)
+  colnames(CVs_r_m) <- paste0(names(data), "_Random")
+  names(cor_samp_s) <- names(data)
+  names(cor_samp_p) <- names(data)
+  names(cor_samp_s_r_m) <- paste0(names(data), "_Random")
+  names(cor_samp_p_r_m) <- paste0(names(data), "_Random")
 
-  cohort_cv <- lapply(data, function(y) apply(y[,],2, function(x) cv(x, na.rm=T, digits=5)))
-  cohort_mean <- lapply(data, function(y) apply(y[,],2, function(x) mean(x, na.rm=T)))
-  cohort_median <- lapply(data, function(y) apply(y[,],2, function(x) median(x, na.rm=T)))
-  cohort_max <- lapply(data, function(y) apply(y[,],2, function(x) max(x, na.rm=T)))
+  assay_cv <- lapply(data, function(y) apply(y, 2, function(x) cv(x, na.rm=T, digits=5)))
+  assay_max <- lapply(data, function(y) apply(y, 2, function(x) max(x, na.rm=T)))
+    assay_mean <- lapply(data, function(y) apply(y, 2, function(x) mean(x, na.rm=T)))
+  assay_median <- lapply(data, function(y) apply(y, 2, function(x) median(x, na.rm=T)))
 
   ## Set plotorder
   plotorder <- rep(NA, 2*length(data))
@@ -651,20 +654,30 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
   plotorder[seq(2, length(plotorder), 2)] <- (length(data)+1):(2*length(data))
 
   ## PLOTS
-  data <- data.frame(CVs, cv_r_m) ; data_melt <- melt(data)
+  data_cv <- data.frame(CVs, CVs_r_m) ; data_melt <- melt(data_cv, id.vars=NULL)
   data_melt$variable <- factor(data_melt$variable, levels=levels(data_melt$variable)[plotorder])
   pdf(filename,
       width=12, height=12, useDingbats=F)
   par(mar=c(9,4,3,1))
-  boxplot(data_melt$value~data_melt$variable, data=data_melt, outcol=0, las=1, col=grey.colors(2),
-          ylab="CVs [%]", main="CVs between replicates \n one point = one antigen", names=NA)
-  beeswarm(data_melt$value~data_melt$variable, data=data_melt, pch=16, cex=0.3, corral="gutter", add=T)
-  legend("topleft", legend=c("True replicates", "False replicates"), fill=grey.colors(2))
-  abline(h=10, col="red", lty=2)
-  text(1:dim(data)[2],par("usr")[3]-11, labels = levels(data_melt$variable),
-       srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.9)
-  mtext(paste0(rep(nrreplicates, each=2), " samples"), at=1:dim(data)[2], side=1, line=0.5, cex=0.8)
 
+  # CV boxplots
+  boxplot(data_melt$value~data_melt$variable, data=data_melt, outcol=0, las=1, col=grey.colors(2),
+          ylab="CVs [%]", xlab=NA, main="CVs between replicates \n one point = one antigen", names=NA)
+  beeswarm(data_melt$value~data_melt$variable, data=data_melt, pch=16, cex=0.3, corral="gutter", add=T)
+  legend("topleft",
+         legend=c("True replicates",
+                  paste0("False replicates (", iter," iterations)"),
+                  "CV=10%"),
+         fill=c(grey.colors(2), NA),
+         border=c(rep("black", 2), 0),
+         lty=c(rep(NA, 2), 2),
+         col=c(rep(NA, 2), "red"))
+  abline(h=10, col="red", lty=2)
+  text(1:dim(data_cv)[2],par("usr")[3]-11, labels = levels(data_melt$variable),
+       srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.9)
+  mtext(paste0(rep(nrreplicates, each=2), " samples"), at=1:dim(data_cv)[2], side=1, line=0.5, cex=0.8)
+
+  # Correlations
   par(mfrow=c(5,2), mar=c(4,4,3,1))
   for(l in 1:length(cor_samp_s)){
     dens_s <- density(cor_samp_s[[l]])
@@ -676,7 +689,7 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
          ylab = "Density", main=paste0(names(cor_samp_s)[l],": ", nrreplicates[l], " samples"))
     lines(dens_s, col = "black")
     lines(dens_s_r, col = "cornflowerblue")
-    legend("topleft", legend=c("True replicates", "False replicates"), lty=1, col=c("black","cornflowerblue"), cex=0.7)
+    legend("topleft", legend=c("True replicates", paste0("False replicates (", iter," iterations)")), lty=1, col=c("black","cornflowerblue"), cex=0.7)
 
     plot(range(0, 1), range(dens_p$y, dens_p_r$y), type = "n", xlab = bquote("Pearson's R"^"2"),
          ylab = "Density", main=paste0(names(cor_samp_s)[l],": ", nrreplicates[l], " samples"))
@@ -684,42 +697,47 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
     lines(dens_p_r, col = "cornflowerblue")
   }
 
+  # Assay CV vs replicate CV
   par(mfrow=c(2,3))
-  for(l in 1:length(cohort_cv)){
-    plot(CVs[,l], cohort_cv[[l]], pch=16, cex=0.7, xlim=c(0,50),
-         xlab="CVs of replicates, per antigen [%]", ylab="CVs of cohort, per antigen [%]", main=colnames(CVs)[l])
+  for(l in 1:length(assay_cv)){
+    plot(CVs[,l], assay_cv[[l]], pch=16, cex=0.7, xlim=c(0,50),
+         xlab="CVs of replicates, per antigen [%]", ylab="CVs of assay, per antigen [%]", main=colnames(CVs)[l])
+    textxy(CVs[,l][which(CVs[,l] > 10)],
+         assay_cv[[l]][which(CVs[,l] > 10)], cex=0.4, offset=0.55,
+         labs=names(assay_cv[[l]])[which(CVs[,l] > 10)])
     abline(v=10, lty=2, col="grey")
     abline(h=10, lty=2, col="grey")
   }
-  for(f in 1:(6-length(cohort_cv))){
+  for(f in 1:(6-length(assay_cv))){
     frame()
   }
 
-  for(l in 1:length(cohort_median)){
-    plot(cohort_median[[l]], cohort_cv[[l]], pch=16, cex=0.7,
-         xlab="Median signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_median)[l])
-    abline(v=10, lty=2, col="grey")
+  # Assay CV vs assay max
+  for(l in 1:length(assay_max)){
+    plot(assay_max[[l]], assay_cv[[l]], pch=16, cex=0.7,
+         xlab="Max signal intensity per antigen [MFI]", ylab="CVs of assay, per antigen [%]", main=names(assay_max)[l])
     abline(h=10, lty=2, col="grey")
   }
-  for(f in 1:(6-length(cohort_cv))){
+  for(f in 1:(6-length(assay_cv))){
     frame()
   }
 
-  for(l in 1:length(cohort_mean)){
-    plot(cohort_mean[[l]], cohort_cv[[l]], pch=16, cex=0.7,
-         xlab="Mean signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_mean)[l])
-    abline(v=10, lty=2, col="grey")
+  # Assay CV vs assay median
+  for(l in 1:length(assay_median)){
+    plot(assay_median[[l]], assay_cv[[l]], pch=16, cex=0.7,
+         xlab="Median signal intensity per antigen [MFI]", ylab="CVs of assay, per antigen [%]", main=names(assay_median)[l])
     abline(h=10, lty=2, col="grey")
   }
-  for(f in 1:(6-length(cohort_cv))){
+  for(f in 1:(6-length(assay_cv))){
     frame()
   }
 
-  for(l in 1:length(cohort_max)){
-    plot(cohort_max[[l]], cohort_cv[[l]], pch=16, cex=0.7,
-         xlab="Max signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_max)[l])
-    abline(v=10, lty=2, col="grey")
+  # Assay CV vs assay mean
+  for(l in 1:length(assay_mean)){
+    plot(assay_mean[[l]], assay_cv[[l]], pch=16, cex=0.7,
+         xlab="Mean signal intensity per antigen [MFI]", ylab="CVs of assay, per antigen [%]", main=names(assay_mean)[l])
     abline(h=10, lty=2, col="grey")
   }
+
   dev.off()
 }
