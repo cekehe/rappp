@@ -19,6 +19,8 @@ Ideas for the future:
 
 - colorful correlation values to pairs2 (Cecilia)
 
-Some important commands for the terminal
-git pull upstream master --f-only
+Some important commands for the terminal:
+
+git pull upstream master --ff-only
+
 git pull upstream master
