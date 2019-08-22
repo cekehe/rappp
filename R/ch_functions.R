@@ -741,3 +741,86 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 
   dev.off()
 }
+
+
+#' tSNE plots with different perplexities
+#'
+#' tSNE plots with different perplexities and designs.
+#'
+#' @param x a list of data
+#' @param perplexity a vector of values to test as perplexities, eg. c(2,5,10,50).
+#'     sqrt(Nsamples) will always be included.
+#' @param iterations number of iterations per tSNE
+#' @param groups grouping for colors and lines
+#' @param names text to display as point labels
+#' @param legend TRUE or FALSE
+#' @param legendname Title of legend
+#' @param main Title of page
+#' @param filename String with filename and desired path, end with .pdf
+#' @param height height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @details The x list needs to include at least the element
+#'     MFI = assay mfi,
+#'
+#' @export
+
+tsne_perp <- function(x, perplexity=c(2,5,10,50), iterations=1000, groups, names,
+                      legend, legendname, main,
+                      filename="t-SNE_perplexities.pdf", height=16, useDingbats=F) {
+  g <- NULL
+  n=1
+  for(l in 1:length(x)){
+    perplexity <- sort(perplexity, sqrt(dim(x[[l]])[1]))
+    for(p in 1:length(perplexity)){
+      tsne_tmp = Rtsne(x[[l]], check_duplicates=F, perplexity=perplexity[p], max_iter=iterations)
+
+      x=tsne_tmp$Y[,1]
+      y=tsne_tmp$Y[,2]
+
+      data.df<-data.frame(x=x, y=y, groups=groups, names=names)
+
+      g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups))+
+        geom_point(size=1, alpha=0.5, show.legend = legend)+ geom_line(alpha=0.5, show.legend = legend)+
+        theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
+                                           name=legendname)+
+        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+      n=n+1
+
+      g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups, label=names))+
+        geom_text(size=2, alpha=0.5, show.legend = F)+ geom_line(alpha=0.5, show.legend = legend)+
+        geom_point(alpha=0, show.legend = legend)+
+        theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
+                                           name=legendname)+
+        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.5)))+
+        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+      g[[n]] <- ggplot_gtable(ggplot_build(g[[n]]))
+      g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
+      n=n+1
+
+      g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups))+
+        geom_point(size=1, alpha=0.5, show.legend = legend)+
+        theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
+                                           name=legendname)+
+        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+      n=n+1
+
+      g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups, label=names))+
+        geom_text(size=2, alpha=0.5, show.legend = F)+
+        geom_point(alpha=0, show.legend = legend)+
+        theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
+                                           name=legendname)+
+        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.5)))+
+        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+      g[[n]] <- ggplot_gtable(ggplot_build(g[[n]]))
+      g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
+      n=n+1
+    }
+  }
+
+  lay <- matrix(1:(4*length(perplexity)), nrow=4)
+
+  ggsave(file=filename,
+         grid.arrange(grobs=g, layout_matrix = lay),
+         width=4.5*length(perplexity), height=height, useDingbats=useDingbats)
+}
+
