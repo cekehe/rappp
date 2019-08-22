@@ -4,14 +4,14 @@
 \alias{tsne_perp}
 \title{tSNE plots with different perplexities}
 \usage{
-tsne_perp(x, perplexity = c(2, 5, 10, 50), iterations = 1000, groups,
-  names, legend, legendname, main, filename = "t-SNE_perplexities.pdf",
-  height = 16, useDingbats = F)
+tsne_perp(z, perp = c(2, 5, 10, 50), iterations = 1000, groups, names,
+  legend = T, legendname = NULL, main = NULL,
+  filename = "t-SNE_perplezities.pdf", height = 16, useDingbats = F)
 }
 \arguments{
-\item{x}{a list of data}
+\item{z}{a list of data}
 
-\item{perplexity}{a vector of values to test as perplexities, eg. c(2,5,10,50).
+\item{perp}{a vector of values to test as perplexities, eg. c(2,5,10,50).
 sqrt(Nsamples) will always be included.}
 
 \item{iterations}{number of iterations per tSNE}

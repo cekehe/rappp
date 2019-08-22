@@ -747,8 +747,8 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #'
 #' tSNE plots with different perplexities and designs.
 #'
-#' @param x a list of data
-#' @param perplexity a vector of values to test as perplexities, eg. c(2,5,10,50).
+#' @param z a list of data
+#' @param perp a vector of values to test as perplexities, eg. c(2,5,10,50).
 #'     sqrt(Nsamples) will always be included.
 #' @param iterations number of iterations per tSNE
 #' @param groups grouping for colors and lines
@@ -764,63 +764,68 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #'
 #' @export
 
-tsne_perp <- function(x, perplexity=c(2,5,10,50), iterations=1000, groups, names,
-                      legend, legendname, main,
-                      filename="t-SNE_perplexities.pdf", height=16, useDingbats=F) {
-  g <- NULL
+tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
+                      legend=T, legendname=NULL, main=NULL,
+                      filename="t-SNE_perplezities.pdf", height=16, useDingbats=F) {
+
+  g <- rep(list(NULL), length(z)*(length(perp)+1))
   n=1
-  for(l in 1:length(x)){
-    perplexity <- sort(perplexity, sqrt(dim(x[[l]])[1]))
-    for(p in 1:length(perplexity)){
-      tsne_tmp = Rtsne(x[[l]], check_duplicates=F, perplexity=perplexity[p], max_iter=iterations)
+  for(l in 1:length(z)){
+    perp <- sort(c(perp, round(sqrt(dim(z[[l]])[1]))))
+    for(p in 1:length(perp)){
+      tsne_tmp = Rtsne(z[[l]], check_duplicates=F, perplezity=perp[p], maz_iter=iterations)
 
       x=tsne_tmp$Y[,1]
       y=tsne_tmp$Y[,2]
 
       data.df<-data.frame(x=x, y=y, groups=groups, names=names)
 
+      # With lines & points
       g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups))+
-        geom_point(size=1, alpha=0.5, show.legend = legend)+ geom_line(alpha=0.5, show.legend = legend)+
+        geom_point(size=1, alpha=0.7, show.legend = legend)+ geom_line(alpha=0.5, show.legend = legend)+
         theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
                                            name=legendname)+
-        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+        labs(title=main, subtitle=paste0("Perplexity ", perp[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
       n=n+1
 
+      # With lines & labels
       g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups, label=names))+
-        geom_text(size=2, alpha=0.5, show.legend = F)+ geom_line(alpha=0.5, show.legend = legend)+
+        geom_text(size=2, alpha=0.7, show.legend = F)+ geom_line(alpha=0.5, show.legend = legend)+
         geom_point(alpha=0, show.legend = legend)+
         theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
                                            name=legendname)+
-        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.5)))+
-        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.7)))+
+        labs(title=main, subtitle=paste0("Perplexity ", perp[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
       g[[n]] <- ggplot_gtable(ggplot_build(g[[n]]))
       g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
       n=n+1
 
+      # Only points
       g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups))+
-        geom_point(size=1, alpha=0.5, show.legend = legend)+
+        geom_point(size=1, alpha=0.7, show.legend = legend)+
         theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
                                            name=legendname)+
-        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+        labs(title=main, subtitle=paste0("Perplexity ", perp[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
       n=n+1
 
+      # Only labels
       g[[n]]<-ggplot(data.df, aes(x=x, y=y, group=groups, color=groups, label=names))+
-        geom_text(size=2, alpha=0.5, show.legend = F)+
+        geom_text(size=2, alpha=0.7, show.legend = F)+
         geom_point(alpha=0, show.legend = legend)+
         theme_light()+ scale_colour_manual(values=hue_pal()(length(levels(groups))),
                                            name=legendname)+
-        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.5)))+
-        labs(title=main, subtitle=paste0("Perplexity ", perplexity[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
+        guides(colour = guide_legend(override.aes = list(shape=19, size = 1, alpha=0.7)))+
+        labs(title=main, subtitle=paste0("Perplexity ", perp[p], ", ", iterations, " iterations"), x="t-SNE1", y="t-SNE2")
       g[[n]] <- ggplot_gtable(ggplot_build(g[[n]]))
       g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
       n=n+1
     }
   }
 
-  lay <- matrix(1:(4*length(perplexity)), nrow=4)
+  lay <- matrix(1:(4*length(perp)), nrow=4)
 
   ggsave(file=filename,
          grid.arrange(grobs=g, layout_matrix = lay),
-         width=4.5*length(perplexity), height=height, useDingbats=useDingbats)
+         width=4.5*length(perp), height=height, useDingbats=useDingbats)
 }
 
