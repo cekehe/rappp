@@ -31,7 +31,6 @@ The SAMPLES element needs at least the columns:
 
     "Sample" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
-    and blanks (named with one of empty|blank|buffer) are also stated,
 
-    "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
+    "AssayNum" with assay number (vector with 1s if only one assay),
 }
