@@ -16,7 +16,7 @@ ap_overview(x, filename = "Signal_overview.pdf", width = 20,
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 
-\item{...}{Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.}
+\item{...}{Further arguments passed to \code{\link[graphics:boxplot]{boxplot()}}.}
 }
 \description{
 Boxplots of signals per antigen and sample in different orders.

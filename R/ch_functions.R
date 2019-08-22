@@ -518,7 +518,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
-#' @param ... Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.
+#' @param ... Further arguments passed to \code{\link[graphics:boxplot]{boxplot()}}.
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi,
 #' @export
@@ -537,12 +537,12 @@ ap_overview <- function(x,
                      max=x$MFI[,order(apply(x$MFI, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, cex.axis=0.5,
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, ...,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
             outcol=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl("hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
+                          ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
             col=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl("hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+                       ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
     }
 
     ## Samples
@@ -552,7 +552,7 @@ ap_overview <- function(x,
                      max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, cex.axis=0.3,
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2,  ...,
             main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
             outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                           ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
@@ -561,7 +561,166 @@ ap_overview <- function(x,
     }
   dev.off()
 }
-#
-# -----------------------------------------------------------------------
 
 
+#' Check replicate samples
+#'
+#' various plots in one PDF to assess the replicates and overall reproducibility.
+#'
+#' @param x List with at least two elements, see Deatils for naming and content.
+#' @param iter How many times  random samples should be iterated.
+#' @param filename String with filename and desired path, end with .pdf
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @details The x list needs to include at least the element
+#'     MFI = assay mfi,
+#'
+#'     SAMPLES = Sample info. See below for required columns.
+#'
+#' The SAMPLES element needs at least the columns:
+#'
+#'     "Sample" with sample names, preferably LIMS-IDs, where
+#'     replicates (named with one of pool|rep|mix|commercial)
+#'     and blanks (named with one of empty|blank|buffer) are also stated,
+#'
+#'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
+#'
+#' @export
+
+ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, useDingbats=F){
+  ## INPUT
+  data <- split(x$MFI, x$SAMPLES$AssayNum)
+  samples <- split(x$SAMPLES, x$SAMPLES$AssayNum)
+
+  ## CALCULATIONS
+  CVs <- matrix(NA, ncol=length(data))
+  cor_samp_s <- rep(list(NULL), length(data))
+  cor_samp_p <- rep(list(NULL), length(data))
+
+  cv_r_m <- matrix(NA, ncol=length(data))
+  cor_samp_s_r_m <- rep(list(NULL), length(data))
+  cor_samp_p_r_m <- rep(list(NULL), length(data))
+
+  nrreplicates <- rep(NA, length(data))
+
+  for(l in 1:length(data)){
+    # Calculate for replicates
+    replicates <- data[[l]][grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
+    nrreplicates[l] <- dim(replicates)[1]
+    CVs[,l] <- apply(replicates, 2, cv, digits=5, na.rm=T)
+
+    cor_samp_s[[l]] <- cor(t(replicates), method="spearman", use="pairwise.complete.obs")
+    cor_samp_s[[l]] <- cor_samp_s[[l]][upper.tri(cor_samp_s[[l]])]
+
+    cor_samp_p[[l]] <- cor(t(log(replicates)), method="pearson", use="pairwise.complete.obs")^2
+    cor_samp_p[[l]] <- cor_samp_p[[l]][upper.tri(cor_samp_p[[l]])]
+
+    # Iterate over random sets of samples
+    cv_r <- matrix(NA, ncol=iter)
+    cor_samp_s_r <- rep(NA, iter)
+    cor_samp_p_r <- rep(NA, iter)
+    tmp_data <- data[[l]][-grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
+    for(j in 1:iter){
+      rand_samp <- tmp_data[sample(1:dim(tmp_data)[1], nrreplicates[l], replace=F),]
+      cv_r[,j] <- apply(rand_samp, 2, cv, digits=5, na.rm=T)
+
+      cor_samp_s_tmp <- cor(t(rand_samp), method="spearman", use="pairwise.complete.obs")
+      cor_samp_s_r[j] <- cor_samp_s_tmp[upper.tri(cor_samp_s_tmp)]
+
+      cor_samp_p_tmp <- cor(t(log(rand_samp)), method="pearson", use="pairwise.complete.obs")^2
+      cor_samp_p_r[j] <- cor_samp_p_tmp[upper.tri(cor_samp_p_tmp)]
+    }
+    cv_r_m[,l] <- apply(cv_r, 1, median, na.rm=T)
+    cor_samp_s_r_m[[l]] <- apply(cor_samp_s_r, 1, median, na.rm=T)
+    cor_samp_p_r_m[[l]] <- apply(cor_samp_p_r, 1, median, na.rm=T)
+  }
+  colnames(CVs) <- paste0("Assay ", unique(samples$AssayNum))
+  colnames(cv_r_m) <- paste0(colnames(CVs), "_Random")
+  names(cor_samp_s) <- colnames(CVs)
+  names(cor_samp_p) <- colnames(CVs)
+  names(cor_samp_s_r_m) <- paste0(names(cor_samp_s), "_Random")
+  names(cor_samp_p_r_m) <- paste0(names(cor_samp_p), "_Random")
+
+  cohort_cv <- lapply(data, function(y) apply(y[,],2, function(x) cv(x, na.rm=T, digits=5)))
+  cohort_mean <- lapply(data, function(y) apply(y[,],2, function(x) mean(x, na.rm=T)))
+  cohort_median <- lapply(data, function(y) apply(y[,],2, function(x) median(x, na.rm=T)))
+  cohort_max <- lapply(data, function(y) apply(y[,],2, function(x) max(x, na.rm=T)))
+
+  ## Set plotorder
+  plotorder <- rep(NA, 2*length(data))
+  plotorder[seq(1, length(plotorder), 2)] <- 1:length(data)
+  plotorder[seq(2, length(plotorder), 2)] <- (length(data)+1):(2*length(data))
+
+  ## PLOTS
+  data <- data.frame(CVs, cv_r_m) ; data_melt <- melt(data)
+  data_melt$variable <- factor(data_melt$variable, levels=levels(data_melt$variable)[plotorder])
+  pdf(filename,
+      width=12, height=12, useDingbats=F)
+  par(mar=c(9,4,3,1))
+  boxplot(data_melt$value~data_melt$variable, data=data_melt, outcol=0, las=1, col=grey.colors(2),
+          ylab="CVs [%]", main="CVs between replicates \n one point = one antigen", names=NA)
+  beeswarm(data_melt$value~data_melt$variable, data=data_melt, pch=16, cex=0.3, corral="gutter", add=T)
+  legend("topleft", legend=c("True replicates", "False replicates"), fill=grey.colors(2))
+  abline(h=10, col="red", lty=2)
+  text(1:dim(data)[2],par("usr")[3]-11, labels = levels(data_melt$variable),
+       srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.9)
+  mtext(paste0(rep(nrreplicates, each=2), " samples"), at=1:dim(data)[2], side=1, line=0.5, cex=0.8)
+
+  par(mfrow=c(5,2), mar=c(4,4,3,1))
+  for(l in 1:length(cor_samp_s)){
+    dens_s <- density(cor_samp_s[[l]])
+    dens_p <- density(cor_samp_p[[l]])
+    dens_s_r <- density(cor_samp_s_r_m[[l]])
+    dens_p_r <- density(cor_samp_p_r_m[[l]])
+
+    plot(range(0, 1), range(dens_s$y, dens_s_r$y), type = "n", xlab = "Spearman's rho",
+         ylab = "Density", main=paste0(names(cor_samp_s)[l],": ", nrreplicates[l], " samples"))
+    lines(dens_s, col = "black")
+    lines(dens_s_r, col = "cornflowerblue")
+    legend("topleft", legend=c("True replicates", "False replicates"), lty=1, col=c("black","cornflowerblue"), cex=0.7)
+
+    plot(range(0, 1), range(dens_p$y, dens_p_r$y), type = "n", xlab = bquote("Pearson's R"^"2"),
+         ylab = "Density", main=paste0(names(cor_samp_s)[l],": ", nrreplicates[l], " samples"))
+    lines(dens_p, col = "black")
+    lines(dens_p_r, col = "cornflowerblue")
+  }
+
+  par(mfrow=c(2,3))
+  for(l in 1:length(cohort_cv)){
+    plot(CVs[,l], cohort_cv[[l]], pch=16, cex=0.7, xlim=c(0,50),
+         xlab="CVs of replicates, per antigen [%]", ylab="CVs of cohort, per antigen [%]", main=colnames(CVs)[l])
+    abline(v=10, lty=2, col="grey")
+    abline(h=10, lty=2, col="grey")
+  }
+  for(f in 1:(6-length(cohort_cv))){
+    frame()
+  }
+
+  for(l in 1:length(cohort_median)){
+    plot(cohort_median[[l]], cohort_cv[[l]], pch=16, cex=0.7,
+         xlab="Median signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_median)[l])
+    abline(v=10, lty=2, col="grey")
+    abline(h=10, lty=2, col="grey")
+  }
+  for(f in 1:(6-length(cohort_cv))){
+    frame()
+  }
+
+  for(l in 1:length(cohort_mean)){
+    plot(cohort_mean[[l]], cohort_cv[[l]], pch=16, cex=0.7,
+         xlab="Mean signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_mean)[l])
+    abline(v=10, lty=2, col="grey")
+    abline(h=10, lty=2, col="grey")
+  }
+  for(f in 1:(6-length(cohort_cv))){
+    frame()
+  }
+
+  for(l in 1:length(cohort_max)){
+    plot(cohort_max[[l]], cohort_cv[[l]], pch=16, cex=0.7,
+         xlab="Max signal intensity per antigen [MFI]", ylab="CVs of cohort, per antigen [%]", main=names(cohort_max)[l])
+    abline(v=10, lty=2, col="grey")
+    abline(h=10, lty=2, col="grey")
+  }
+  dev.off()
+}
