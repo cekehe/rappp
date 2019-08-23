@@ -246,52 +246,56 @@ ap_cutoff_selection2 <- function(x,
 }
 
 
-#' #' Full AP data transformation
-#' #'
-#' #' Wrapper function for full Autoimmunity Profiling data transformations.
-#' #'
-#' #' @details The input values should be MFI values, and structured as a list,
-#' #' even if only one data set is used (see examples).
-#' #'
-#' #' @param x List of MFI values with two levels per element: level one = assay data sets ;
-#' #' level two =  bead subsets (e.g. wih and w/o controls)
-#' #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' #' @param ... See respective functions for details: \link[rappp]{ap_mads}, \link[rappp]{ap_scoring},
-#' #' \link[rappp]{ap_binary}, \link[rappp]{ap_cutoff_selection}
-#' #' @return List with 7 main elements
-#' #'
-#' #'     [[1]] Input MFI
-#' #'
-#' #'     [[2]] MADs
-#' #'
-#' #'     [[3]] Scores
-#' #'
-#' #'     [[4]] Binary
-#' #'
-#' #'     [[5]] Antigen specific cutoffs selected based on density slope.
-#' #'
-#' #'     [[6]] Density information
-#' #'
-#' #'     [[7]] Cutoff translation key
-#' #' @export
+#' Full AP data transformation
 #'
-#' ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
+#' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
-#'   tmp_mads <- ap_mads(x, ...)
+#' @param x List with at least two elements, see Deatils for naming and content.
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
+#' @param ... See respective functions for details:
+#'     \code{\link[rappp:ap_mads2]{ap_mads2()}}, \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
+#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#' @details The x list needs to include at least the elements:
 #'
-#'   tmp_score <- ap_scoring(tmp_mads, MADlimits=MADlimits, ...)
+#'     MFI = assay mfi,
 #'
-#'   tmp_binary <- ap_binary(tmp_score$Scoring, cutoffs=tmp_score$Cutoff_key, ...)
+#'     BEADS = Beads info (Filtered column with information about filtering),
 #'
-#'   tmp_slope <- ap_cutoff_selection(tmp_score$Scoring, cutoffs=tmp_score$Cutoff_key, ...)
+#' @return Updated input x with the new list elements
 #'
-#'   output <- list(MFI=x,
-#'                  MADs=tmp_mads,
-#'                  Scoring=tmp_score$Scoring,
-#'                  Binary=tmp_binary,
-#'                  Slope_cutoff=tmp_slope$Slope_cutoff_discrete,
-#'                  Score_density=tmp_slope$dens,
-#'                  Cutoff_key=tmp_score$Cutoff_key)
+#'     MADs = assay MADs,
 #'
-#'   return(output)
-#' }
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors,
+#'
+#'     SCORE = scored data,
+#'
+#'     BINARY = list with one data.frame per cutoff,
+#'
+#'     DENS = Density output used for cutoff selection,
+#'
+#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'
+#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+#'
+#' @export
+
+ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
+
+  x <- ap_mads2(x, ...)
+
+  x <- ap_scoring2(x, MADlimits=MADlimits, ...)
+
+  x <- ap_binary2(x, cutoffs=x$COKEY, ...)
+
+  x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
+
+  # output <- list(MFI=x,
+  #                MADs=tmp_mads,
+  #                Scoring=tmp_score$Scoring,
+  #                Binary=tmp_binary,
+  #                Slope_cutoff=tmp_slope$Slope_cutoff_discrete,
+  #                Score_density=tmp_slope$dens,
+  #                Cutoff_key=tmp_score$Cutoff_key)
+
+  return(x)
+}
