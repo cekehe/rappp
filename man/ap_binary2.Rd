@@ -7,8 +7,7 @@
 ap_binary2(x, cutoffs)
 }
 \arguments{
-\item{x}{List of scoring values with two levels per element: level one = assay data sets ;
-level two =  bead subsets (e.g. wih and w/o controls).
+\item{x}{List with at least one element, see Deatils for naming and content.
 It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
 
 \item{cutoffs}{data.frame with at least one column named score with the desired cutoffs to use,

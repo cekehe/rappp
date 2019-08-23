@@ -8,7 +8,7 @@ ap_scoring2(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
   left.open = FALSE, check.names = FALSE, ...)
 }
 \arguments{
-\item{x}{List with at least one elements, see Deatils for naming and content.
+\item{x}{List with at least one element, see Deatils for naming and content.
 It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.}
 
 \item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}

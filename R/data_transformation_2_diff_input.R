@@ -65,7 +65,7 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'
 #' Binning of MADs values in Autoimmunity Profiling.
 #'
-#' @param x List with at least one elements, see Deatils for naming and content.
+#' @param x List with at least one element, see Deatils for naming and content.
 #' It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param rightmost.closed,left.open logical, see \code{\link[base:findInterval]{findInterval()}} for details.
@@ -110,8 +110,7 @@ ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
 #'
 #' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#' @param x List of scoring values with two levels per element: level one = assay data sets ;
-#' level two =  bead subsets (e.g. wih and w/o controls).
+#' @param x List with at least one element, see Deatils for naming and content.
 #' It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
 #' and rownames you want to have as identifier for each cutoff.
