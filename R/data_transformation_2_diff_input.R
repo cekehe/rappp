@@ -13,7 +13,7 @@
 #'
 #'     MFI = assay mfi,
 #'
-#'     BEADS = Beads info (Filtered column with information about filtering),
+#'     BEADS = Beads info, including column "Filtered" with annotations for beads to not include if any,
 #'
 #' @return Updated input x with the new list element
 #'
@@ -22,7 +22,11 @@
 
 ap_mads2 <- function(x, constant=1, ...) {
 
+  if("Filtered" %in% colnames(x$BEADS)){
   tmp_data <- x$MFI[, which(x$BEADS$Filtered == "")]
+  } else {
+    tmp_data <- x$MFI
+  }
 
   mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, ...)))/
         apply(tmp_data, 1, function(i) mad(i, constant=constant, ...))

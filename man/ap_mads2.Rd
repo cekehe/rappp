@@ -30,5 +30,5 @@ The x list needs to include at least the elements:
 
     MFI = assay mfi,
 
-    BEADS = Beads info (Filtered column with information about filtering),
+    BEADS = Beads info, including column "Filtered" with annotations for beads to not include if any,
 }
