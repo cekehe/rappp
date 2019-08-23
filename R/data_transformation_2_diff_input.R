@@ -33,34 +33,34 @@ ap_mads2 <- function(x, constant=1, ...) {
   return(x)
 }
 
+
+#' Cutoff key
 #'
-#' #' Cutoff key
-#' #'
-#' #' Create a cutoff key for scoring of Autoimmunity Profiling data.
-#' #'
-#' #' @details The input values will be binned into discrete bins (scores).
-#' #'
-#' #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' #' @return data.frame with three columns:
-#' #'
-#' #'    [,1] MADs cutoff value
-#' #'
-#' #'    [,2] Corresponding score value
-#' #'
-#' #'    [,3] Corresponding color using the Zissou1 palette in \link[wesanderson]{wes_palette}
-#' #' @export
+#' Create a cutoff key for scoring of Autoimmunity Profiling data.
 #'
-#' ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
+#' @details The input values will be binned into discrete bins (scores).
 #'
-#'   xmad_score <- data.frame(xmad=c(NA, MADlimits),
-#'                            score=c(0, 1:length(MADlimits)/10),
-#'                            color=as.character(wes_palette(name = "Zissou1",
-#'                                                           n = length(MADlimits)+1, type = "continuous")))
-#'   rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
-#'   return(xmad_score)
-#' }
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
+#' @return data.frame with three columns:
 #'
+#'    [,1] MADs cutoff value
 #'
+#'    [,2] Corresponding score value
+#'
+#'    [,3] Corresponding color using the Zissou1 palette in \code{\link[wesanderson]{wes_palette}}
+#' @export
+
+ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
+
+  xmad_score <- data.frame(xmad=c(NA, MADlimits),
+                           score=c(0, 1:length(MADlimits)/10),
+                           color=as.character(wes_palette(name = "Zissou1",
+                                                          n = length(MADlimits)+1, type = "continuous")))
+  rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
+  return(xmad_score)
+}
+
+
 #' #' Scoring
 #' #'
 #' #' Binning of MADs values in Autoimmunity Profiling.
