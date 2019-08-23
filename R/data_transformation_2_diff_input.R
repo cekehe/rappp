@@ -72,6 +72,7 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #' @param check.names logical, see \code{\link[base:data.frame]{data.frame()}} for details
 #' @param ... Further arguments passed do \code{\link[base:findInterval]{findInterval()}}
 #' @details The input values will be binned into discrete bins (scores).
+#'
 #' The x list needs to include at least the element:
 #'
 #'     MADs = assay MADs,

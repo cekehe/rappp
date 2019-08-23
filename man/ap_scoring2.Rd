@@ -31,6 +31,7 @@ Binning of MADs values in Autoimmunity Profiling.
 }
 \details{
 The input values will be binned into discrete bins (scores).
+
 The x list needs to include at least the element:
 
     MADs = assay MADs,
