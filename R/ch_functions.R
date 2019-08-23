@@ -51,7 +51,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
       tmp_text <- matrix(colnames(x$CT)[which(apply(x$CT, 2, mean) < empty_co)], ncol=1)
       if(length(grep("HPRR", tmp_text, ignore.case=T)) > 0){
         tmp_text <- matrix(tmp_text[grep("HPRR", tmp_text, ignore.case=T)], ncol=1)
-        textplot(tmp_text, mar=c(2,2,1,2),
+        ap_textplot(tmp_text, mar=c(2,2,1,2),
                  show.rownames=F, show.colnames=F, hadj=0, valign="top", cex=0.8)
         mtext("Protein fragments with low coupling efficiency signal", font=2, cex=0.9, xpd=NA)
       } else {
@@ -169,13 +169,13 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
         plottext <- plottext[order(plottext$MFI, decreasing=T),]
 
         if(dim(plottext)[1] > 20){
-          textplot(plottext[1:20,],
+          ap_textplot(plottext[1:20,],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          textplot(plottext[21:dim(plottext)[1],],
+          ap_textplot(plottext[21:dim(plottext)[1],],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
           mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5, xpd=NA, at=-0.5)
         } else {
-          textplot(plottext,
+          ap_textplot(plottext,
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
           mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5)
           frame()
@@ -195,13 +195,13 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
         plottext <- plottext[order(plottext$MFI, decreasing=T),]
 
         if(dim(plottext)[1] > 20){
-          textplot(plottext[1:20,],
+          ap_textplot(plottext[1:20,],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          textplot(plottext[21:dim(plottext)[1],],
+          ap_textplot(plottext[21:dim(plottext)[1],],
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
           mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5, xpd=NA, at=-0.5)
         } else {
-          textplot(plottext,
+          ap_textplot(plottext,
                    halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
           mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5)
           frame()
@@ -330,7 +330,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
       if(length(which_lowSB) > 0){
         lowSB <- sampledata[which_lowSB, ]
-        tp <- textplot(data.frame( # function in package: gplots
+        tp <- ap_textplot(data.frame( # function in package: gplots
           AssayWell=lowSB$AssayWell,
           InternalID=lowSB$sample_name,
           Subject=lowSB$tube_label,
@@ -341,7 +341,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
 
       } else {
-        textplot(matrix("No samples filtered based on bead count."), show.rownames=F, show.colnames=F)
+        ap_textplot(matrix("No samples filtered based on bead count."), show.rownames=F, show.colnames=F)
       }
     }
 
@@ -396,12 +396,12 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
       lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
       if(shouldplot){
-        tp <- textplot(lowAB, cex=0.3, cmar=1.5, show.rownames=F, valign="top", xpd=NA) # function in package: gplots
+        tp <- ap_textplot(lowAB, cex=0.3, cmar=1.5, show.rownames=F, valign="top", xpd=NA) # function in package: gplots
         title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
       }
     } else {
       if(shouldplot){
-        textplot(matrix("No analytes filtered or flagged based on bead count."), show.rownames=F, show.colnames=F)
+        ap_textplot(matrix("No analytes filtered or flagged based on bead count."), show.rownames=F, show.colnames=F)
       }
     }
 
