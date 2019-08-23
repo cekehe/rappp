@@ -61,47 +61,50 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 }
 
 
-#' #' Scoring
-#' #'
-#' #' Binning of MADs values in Autoimmunity Profiling.
-#' #'
-#' #' @details The input values will be binned into discrete bins (scores).
-#' #'
-#' #' The input values should be MADs values, and structured as a list
-#' #' (preferably the output from function ap_mads()), even if only one data set is used
-#' #' (see examples in \link[rappp]{ap_mads}(.
-#' #'
-#' #' @param x List of MADs values with two levels per element: level one = assay data sets ;
-#' #' level two =  bead subsets (e.g. wih and w/o controls).
-#' #' It is recommended is to use the the output from \link[rappp]{ap_mads}).
-#' #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' #' @param rightmost.closed,left.open logical, see \link[base]{findInterval} for details.
-#' #' @param check.names logical, see \link[base]{data.frame} for details
-#' #' @param ... Further arguments passed do \link[base]{findInterval}
-#' #' @return List with two main elements
-#' #'     [[1]] Cutoff key as data.frame with cutoff values, scores and colors
-#' #'     [[2]] scored data, with same structure as input list.
-#' #' @export
+#' Scoring
 #'
-#' ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
-#'                        rightmost.closed=FALSE, left.open=FALSE,
-#'                        check.names=FALSE, ...) {
+#' Binning of MADs values in Autoimmunity Profiling.
 #'
-#'   xmad_score <- ap_cutoffs(MADlimits)
+#' @param x List with at least one elements, see Deatils for naming and content.
+#' It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
+#' @param rightmost.closed,left.open logical, see \code{\link[base:findInterval]{findInterval()}} for details.
+#' @param check.names logical, see \code{\link[base:data.frame]{data.frame()}} for details
+#' @param ... Further arguments passed do \code{\link[base:findInterval]{findInterval()}}
+#' @details The input values will be binned into discrete bins (scores).
+#' The x list needs to include at least the element:
 #'
-#'   scores <- lapply(x, function(assay)
-#'     lapply(assay, function(selection)
-#'       data.frame(matrix(t(apply(selection, 1, function(row)
-#'         findInterval(row, xmad_score$xmad[-1],
-#'                      rightmost.closed = rightmost.closed, left.open = left.open, ...))),
-#'         ncol=dim(selection)[2],
-#'         dimnames=list(rownames(selection),
-#'                       colnames(selection)) )/10, check.names = check.names)))
+#'     MADs = assay MADs,
 #'
-#'   output <- list(Cutoff_key=xmad_score,
-#'                  Scoring=scores)
-#' }
+#' @return Updated input x with the new list elements
 #'
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors
+#'
+#'     SCORE = scored data
+#' @export
+
+ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
+                       rightmost.closed=FALSE, left.open=FALSE,
+                       check.names=FALSE, ...) {
+
+  xmad_score <- ap_cutoffs2(MADlimits)
+
+  tmp_data <- x$MADS
+
+  scores <- data.frame(matrix(t(apply(tmp_data, 1,
+                                      function(i) findInterval(i, xmad_score$xmad[-1],
+                                                               rightmost.closed = rightmost.closed,
+                                                               left.open = left.open, ...))),
+                              ncol=dim(tmp_data)[2],
+                              dimnames=list(rownames(tmp_data),
+                                            colnames(tmp_data)) )/10, check.names = check.names)
+
+  x <- append(x, list(COKEY=xmad_score,
+                           SCORE=scores))
+
+  return(x)
+}
+
 #' #' Binary
 #' #'
 #' #' Create binary matrices based on scored Autoimmunity profiling data.
