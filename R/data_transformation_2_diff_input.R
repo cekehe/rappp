@@ -15,7 +15,9 @@
 #'
 #'     BEADS = Beads info (Filtered column with information about filtering),
 #'
-#' @return Updated input x with the new list element MADS.
+#' @return Updated input x with the new list element
+#'
+#'     MADs = assay MADs.
 #' @export
 
 ap_mads2 <- function(x, constant=1, ...) {
@@ -176,16 +178,8 @@ ap_cutoff_selection2 <- function(x,
                                 offset=0.1,
                                 bw=0.1) {
 
-  # tmp_data <- x$SCORE
-
-  # dens <- lapply(tmp_data, function(y) rep(list(NULL), length(y)))
-
-  # slope_cutoff_scores <- rep(list(NULL), length(tmp_data))
-  # for(assay in seq_along(tmp_data)){
-  #   slope_cutoff_scores[[assay]] <- rep(list(NULL), length(tmp_data[[assay]]))
-
-    # for(selection in seq_along(tmp_data[[assay]])){
       inputdata <- x$SCORE
+      inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
 
       ## Apply density function on the scores to get x and y values for density-plots
       dens <- apply(inputdata, 2, function(y) density(y, bw=bw))
@@ -229,20 +223,25 @@ ap_cutoff_selection2 <- function(x,
         }
       } # End loop i for each bead (dens)
       names(slope_cutoff_scores) <- colnames(inputdata)
-    # } #End loop for each selection
-    # names(slope_cutoff_scores) <- names(tmp_data)
-    # names(dens) <- names(tmp_data)
-  # } #End loop for each assay
-  # names(slope_cutoff_scores) <- names(tmp_data)
 
   # Translate the continuous slope cutoff values to the above discrete score value
       ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),
                                  score=ceiling(slope_cutoff_scores*10)/10,
                                  xmad=cutoffs$xmad[match(score, cutoffs$score)])
 
-  x <- append(x, list(DENS=dens,
-                 AGCO=ag_score_cutoffs,
-                 AGCO_CONT=slope_cutoff_scores))
+      # Add NA elements for non-included beads to match original data
+      dens <- dens[match(colnames(x$SCORE), names(dens))]
+      names(dens) <- colnames(x$SCORE)
+
+      ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
+      ag_score_cutoffs$bead <- colnames(x$SCORE)
+
+      slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
+      names(slope_cutoff_scores) <- colnames(x$SCORE)
+
+      x <- append(x, list(DENS=dens,
+                          AGCO=ag_score_cutoffs,
+                          AGCO_CONT=slope_cutoff_scores))
   return(x)
 }
 
