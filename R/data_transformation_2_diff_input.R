@@ -106,39 +106,42 @@ ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
   return(x)
 }
 
-#' #' Binary
-#' #'
-#' #' Create binary matrices based on scored Autoimmunity profiling data.
-#' #'
-#' #' @details The input values will be binned into binary data, consisting of 0 and 1.
-#' #'
-#' #' The input values should be scoring values, and structured as a list
-#' #' (preferably the output from function ap_scoring()), even if only one data set is used
-#' #' (see examples in \link[rappp]{ap_mads}).
-#' #'
-#' #' @param x List of scoring values with two levels per element: level one = assay data sets ;
-#' #' level two =  bead subsets (e.g. wih and w/o controls).
-#' #' It is recommended to use to element Scoring in the output from \link[rappp]{ap_scoring}).
-#' #' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
-#' #' and rownames you want to have as identifier for each cutoff.
-#' #' It is recommended is to use the Cutoff_key element in the output from \link[rappp]{ap_scoring}).
-#' #'
-#' #' @return List with binary data.frames
-#' #' @export
+#' Binary
 #'
-#' ap_binary2 <- function(x, cutoffs) {
+#' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#'   binary_list <- lapply(x, function(assay)
-#'     lapply(assay, function(selection)
-#'       lapply(cutoffs$score, function(cutoff)
-#'         data.frame(ifelse(selection >= cutoff, 1, 0), check.names = FALSE))))
+#' @param x List of scoring values with two levels per element: level one = assay data sets ;
+#' level two =  bead subsets (e.g. wih and w/o controls).
+#' It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
+#' and rownames you want to have as identifier for each cutoff.
+#' It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @details The input values will be binned into binary data, consisting of 0 and 1.
 #'
-#'   binary_list <- lapply(binary_list, function(assay)
-#'     lapply(assay, function(selection) { names(selection) <- rownames(cutoffs) ; selection }))
+#' The x list needs to include at least the element:
 #'
-#'   return(binary_list)
-#' }
+#'     SCORE = scored data,
 #'
+#' @return Updated input x with the new list element
+#'
+#'     BINARY = list with one data.frame per cutoff
+#'
+#' @export
+
+ap_binary2 <- function(x, cutoffs) {
+
+  tmp_data <- x$SCORE
+
+  binary_list <- lapply(cutoffs$score, function(cutoff)
+        data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = FALSE))
+
+  names(binary_list) <- rownames(cutoffs)
+
+  x <- append(x, list(BINARY=binary_list))
+
+  return(x)
+}
+
 #' #' Cutoff selection
 #' #'
 #' #' Select cutoff based on the slope of the density of scores per antigen.
