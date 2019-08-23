@@ -14,7 +14,9 @@ ap_mads2(x, constant = 1, ...)
 \item{...}{Further arguments passed to \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}}
 }
 \value{
-Updated input x with the new list element MADS.
+Updated input x with the new list element
+
+    MADs = assay MADs.
 }
 \description{
 Sample based normalization to number of Median Absolute Deviations (MADs)
