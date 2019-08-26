@@ -252,3 +252,98 @@ pairs2 <- function (x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc
   }
   invisible(NULL)
 }
+
+
+#' Panel function for pairs-functions
+#'
+#' Writes spearman and pearson correlation values,
+#' and the respective p-values, on chosen panel.
+#' Values are color coded (see Deatils for key).\cr\cr
+#' For linear input! See \code{\link[rappp:panel.corSPpLog]{panel.corSPpLog()}} for log-transformed input.
+#'
+#' @param x,y values to be correlated, automatically fed to function
+#'     \code{\link[graphics:pairs]{pairs()}} or \code{\link[rappp:pairs2]{pairs2()}}
+#' @param digits how many significant digits are to be used,
+#'     passed \code{\link[base:format]{format()}} with altered default.
+#' @param cex.cor text size, automatically calculated if left empty.
+#' @details If used with \code{\link[rappp:pairs2]{pairs2()}},
+#'     use for upper panel:\cr
+#'     \code{pairs2(MATRIX, upper.panel=panel.corSPp)}
+#'
+#'     Color code:\cr
+#'     \code{plot(rep(1, 11),10*seq(0,1,0.1)+1 ,col=rainbow(20)[10:20], pch=16, cex=3,
+#'     xaxt="n", yaxt="n", ylab="Absolute correlation value", xlab=NA)\cr
+#'     axis(2, at=1:11, seq(0,1,0.1), las=1)}
+#' @export
+
+panel.corSPp <- function(x, y, digits = 2, cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  rs <- cor.test(x, y, method="spearman", use="pairwise.complete.obs")
+  rp <- cor.test(x, y, method="pearson", use="pairwise.complete.obs")
+
+  txt_s1 <- format(c(rs$estimate, 0.123456789), digits = digits)[1]
+  txt_s2 <- format(c(rs$p.value, 0.123456789), digits = digits, scientific=T)[1]
+  txt_s <- bquote(bold(rho~" = "~.(txt_s1)~", p = "~.(txt_s2)))
+
+  txt_p1 <- format(c(rp$estimate, 0.123456789), digits = digits)[1]
+  txt_p2 <- format(c(rp$p.value, 0.123456789), digits = digits, scientific=T)[1]
+  txt_p <- bquote(bold("r"~" = "~.(txt_p1)~", p = "~.(txt_p2)))
+  if(missing(cex.cor)) { cex.cor <- log(1.5)/(dim(x)[2]/3) }
+  colrs <- rainbow(20)[10:20]
+  rs[which(is.na(rs))] <- 0
+  rp[which(is.na(rp))] <- 0
+  coltxt_s <- colrs[floor(10*abs(as.numeric(txt_s1))+1)]
+  coltxt_p <- colrs[floor(10*abs(as.numeric(txt_p1))+1)]
+  text(0.5, 0.6, txt_s, cex = cex.cor, col=coltxt_s, font=2)
+  text(0.5, 0.4, txt_p, cex = cex.cor, col=coltxt_p, font=2)
+}
+
+#' Panel function for pairs-functions
+#'
+#' Writes spearman and pearson correlation values,
+#' and the respective p-values, on chosen panel.
+#' Values are color coded (see Deatils for key).\cr\cr
+#' For log-transformed (log="xy" in pairs-function) input!
+#' See \code{\link[rappp:panel.corSPp]{panel.corSPp()}} for linear input.
+#'
+#' @param x,y values to be correlated, automatically fed to function
+#'     \code{\link[graphics:pairs]{pairs()}} or \code{\link[rappp:pairs2]{pairs2()}}
+#' @param digits how many significant digits are to be used,
+#'     passed \code{\link[base:format]{format()}} with altered default.
+#' @param cex.cor text size, automatically calculated if left empty.
+#' @details If used with \code{\link[rappp:pairs2]{pairs2()}},
+#'     use for upper panel:\cr
+#'     \code{pairs2(MATRIX, upper.panel=panel.corSPpLog, log="xy")}
+#'
+#'     Color code:\cr
+#'     \code{plot(rep(1, 11),10*seq(0,1,0.1)+1 ,col=rainbow(20)[10:20], pch=16, cex=3,
+#'     xaxt="n", yaxt="n", ylab="Absolute correlation value", xlab=NA)\cr
+#'     axis(2, at=1:11, seq(0,1,0.1), las=1)}
+#' @export
+
+panel.corSPpLog <- function(x, y, digits = 2, cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  rs <- cor.test(x, y, method="spearman", use="pairwise.complete.obs")
+  rp <- cor.test(log(x), log(y), method="pearson", use="pairwise.complete.obs")
+
+  txt_s1 <- format(c(rs$estimate, 0.123456789), digits = digits)[1]
+  txt_s2 <- format(c(rs$p.value, 0.123456789), digits = digits, scientific=T)[1]
+  txt_s <- bquote(bold(rho~" = "~.(txt_s1)~", p = "~.(txt_s2)))
+
+  txt_p1 <- format(c(rp$estimate, 0.123456789), digits = digits)[1]
+  txt_p2 <- format(c(rp$p.value, 0.123456789), digits = digits, scientific=T)[1]
+  txt_p <- bquote(bold("r"~" = "~.(txt_p1)~", p = "~.(txt_p2)))
+  if(missing(cex.cor)) { cex.cor <- log(1.5)/(dim(x)[2]/3) }
+  colrs <- rainbow(20)[10:20]
+  rs[which(is.na(rs))] <- 0
+  rp[which(is.na(rp))] <- 0
+  coltxt_s <- colrs[floor(10*abs(as.numeric(txt_s1))+1)]
+  coltxt_p <- colrs[floor(10*abs(as.numeric(txt_p1))+1)]
+  text(exp(1)+0.3, (exp(1)+0.5), txt_s, cex = cex.cor, col=coltxt_s, font=2)
+  text(exp(1)+0.3, (exp(1)-0.5), txt_p, cex = cex.cor, col=coltxt_p, font=2)
+}
+
