@@ -19,6 +19,9 @@ git pull upstream master --ff-only
 
 git pull upstream master
 
+Some useful roxygen2 commands:
+-----------------------------------------
+\\cr - line break without empty line in between in neither code nor output.
 
 This is how you should name versions: 
 -------------------------------------
