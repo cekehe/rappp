@@ -64,7 +64,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 
     # Annotate filtering in BEADS
     if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
-      x$BEADS <- data.frame(Flagged="", x$BEADS)
+      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
     }
 
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
@@ -216,7 +216,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
     # Annotate filtering in SAMPLES
     if(length(which(colnames(x$SAMPLES) == "Filtered")) == 0){
-      x$SAMPLES <- data.frame(Filtered="", x$SAMPLES)
+      x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
     }
     if(length(which_lowIgG) > 0) {
       tmp_remove <- rownames(sampledata)[which_lowIgG]
@@ -472,7 +472,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     # Annotate filtering in SAMPLES and BEADS
     # SAMPLES
     if(length(which(colnames(x$SAMPLES) == "Filtered")) == 0){
-      x$SAMPLES <- data.frame(Filtered="", x$SAMPLES)
+      x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
     }
     if(length(which_lowSB) > 0){
      x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% names(which_lowSB),
@@ -483,7 +483,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
     # BEADS filtered
     if(length(which(colnames(x$BEADS) == "Filtered")) == 0){
-      x$BEADS <- data.frame(Filtered="", x$BEADS)
+      x$BEADS <- data.frame(Filtered="", x$BEADS, stringsAsFactors=F)
     }
 
     if(length(which(lowAB$Action == "Filtered")) > 0){
@@ -495,7 +495,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
     # BEADS flagged
     if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
-      x$BEADS <- data.frame(Flagged="", x$BEADS)
+      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
     }
 
     if(length(which(lowAB$Action == "Flagged")) > 0){
