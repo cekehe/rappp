@@ -317,9 +317,11 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
   names(data_freq_ag) <- names(data_sum_ag)
 
 
-  data_sum_ag <- lapply(data_sum_ag, function(cutoff) do.call(cbind, lapply(cutoff, function(antigen) antigen$x)))
+  data_sum_ag <- lapply(data_sum_ag,
+                        function(cutoff) data.frame(do.call(cbind, lapply(cutoff,
+                                                                          function(antigen) antigen$x)), check.names=F))
   data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) do.call(cbind, cutoff))
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names=F))
 
   # Calculate per sample
   data_sum_samp <- lapply(data_bin,
