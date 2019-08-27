@@ -2,9 +2,9 @@
 #'
 #' This function displays text output in a graphics window.
 #' It is the equivalent of 'print' except that the output is displayed as a plot.
-#' Based \code{\link[gplots:pairs]{pairs()}} with altered deafults
+#' Based \code{\link[graphics:pairs]{pairs()}} with altered deafults
 #'
-#' @details Please see \code{\link[gplots:pairs]{pairs()}}
+#' @details Please see \code{\link[graphics:pairs]{pairs()}}
 #' @export
 
 ap_textplot <- function(object, halign="center", valign="center", cex, ... )
