@@ -297,7 +297,6 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 
   data_bin <- append(x$BINARY, list(Ag_selected=x$BINARY_CO))
 
-  print("set samplegroups")
   if(is.null(samplegroups)){
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
@@ -306,10 +305,8 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
     }
   }
   data_size <- table(samplegroups)
-  print(data_size)
   n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
 
-  print("Per antigen")
   # Calculate per antigen
   data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
   names(data_sum_ag) <- names(data_bin)
@@ -321,10 +318,9 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 
 
   data_sum_ag <- lapply(data_sum_ag, function(cutoff) do.call(cbind, lapply(cutoff, function(antigen) antigen$x)))
-  rownames(data_sum_ag) <- levels(samplegroups)
+  data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
   data_freq_ag <- lapply(data_freq_ag, function(cutoff) do.call(cbind, cutoff))
 
-  print("Per sample")
   # Calculate per sample
   data_sum_samp <- lapply(data_bin,
                           function(i) apply(i, 1,
