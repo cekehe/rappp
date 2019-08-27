@@ -829,3 +829,65 @@ tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
          width=4.5*length(perp), height=height, useDingbats=useDingbats)
 }
 
+#' Overview of signals in relation to neg control beads
+#'
+#' Plot overview of singals in relation to the neg control beads.
+#' Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#'
+#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param filename String with filename and desired path, end with .pdf
+#' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @details The x list needs to include at least the element
+#'
+#'     MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+#'
+#'     SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+#'
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
+#'
+#' @export
+
+ap_negbeads <- function(x,
+                        filename="neg-control-beads.pdf", width=15, height=10, useDingbats=F){
+
+  pdf(filename, width=width, height=height, useDingbats=useDingbats)
+
+  layout(matrix(c(1,1,2,3), ncol=2, byrow=T))
+  par(mar=c(4,4,4,5))
+
+  if("Filtered" %in% colnames(x$BEADS)){
+    plotdata <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
+    plotdata_score <- x$SCORE[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
+  } else {
+    plotdata <- x$MFI
+    plotdata_score <- x$SCORE
+  }
+
+  plotcolor <- x$COKEY
+
+  beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
+           pwcol=ifelse(grepl("empty|bare|blank", rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T),"magenta",
+                        ifelse(grepl("his6abp|hisabp",rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), "chartreuse1",
+                               as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4))),
+           pwpch=rep(ifelse(grepl("empty|bare|blank|his6abp|hisabp", colnames(plotdata), ignore.case=T), 16, 1), dim(plotdata)[1]),
+           ylab="Signal intensity [AU]", cex.axis=0.5)
+  legend(par("usr")[2], 10^par("usr")[4], xpd=T, cex=0.7,
+         legend=c("empty", "his6abp", rev(rownames(plotcolor))),
+         col=c("magenta", "chartreuse1", paste(rev(plotcolor$color))),
+         pch=c(rep(16, 2), rep(1, length(plotcolor$color))))
+
+  par(pty="s")
+  plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep("empty|bare|blank", colnames(plotdata), ignore.case=T)],
+       las=1, xlab="Median signal per sample", ylab="Empty bead signal", main="Empty bead",
+       col=paste(plotcolor$color[plotdata_score[,grep("empty|bare|blank", colnames(plotdata), ignore.case=T)]*10+1]))
+
+  plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep("his6abp|hisabp", colnames(plotdata), ignore.case=T)],
+       las=1, xlab="Median signal per sample", ylab="His6ABP bead signal", main="His6ABP bead",
+       col=paste(plotcolor$color[plotdata_score[,grep("his6abp|hisabp", colnames(plotdata), ignore.case=T)]*10+1]))
+
+  dev.off()
+}
