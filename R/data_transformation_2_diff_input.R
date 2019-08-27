@@ -13,7 +13,8 @@
 #'
 #'     MFI = assay mfi,
 #'
-#'     BEADS = Beads info, including column "Filtered" with annotations for beads to not include if any,
+#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -23,7 +24,7 @@
 ap_mads2 <- function(x, constant=1, ...) {
 
   if("Filtered" %in% colnames(x$BEADS)){
-  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "")]
+  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
   } else {
     tmp_data <- x$MFI
   }
