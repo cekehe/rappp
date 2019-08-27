@@ -22,9 +22,10 @@ Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:a
 }
 \details{
 The x list needs to include at least the element
-    MFI = assay mfi,
 
-    SCORE = scored data,
+    MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+
+    SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
 
     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 
