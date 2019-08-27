@@ -299,21 +299,17 @@ ap_cutoff_selection2 <- function(x,
 
 ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
 
+  print("Doing MADs transformation")
   x <- ap_mads2(x, ...)
 
+  print("Doing Scoring")
   x <- ap_scoring2(x, MADlimits=MADlimits, ...)
 
+  print("Doing Binary transformation")
   x <- ap_binary2(x, cutoffs=x$COKEY, ...)
 
+  print("Finding cutoffs")
   x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
 
-  # output <- list(MFI=x,
-  #                MADs=tmp_mads,
-  #                Scoring=tmp_score$Scoring,
-  #                Binary=tmp_binary,
-  #                Slope_cutoff=tmp_slope$Slope_cutoff_discrete,
-  #                Score_density=tmp_slope$dens,
-  #                Cutoff_key=tmp_score$Cutoff_key)
-
-  return(x)
+    return(x)
 }
