@@ -2,7 +2,7 @@
 
 This is the read me for the package rappp
 
-ALWAYS UPDATE DEV NUMBER +1 BEFORE DOING A PULL REQUEST!
+ALWAYS UPDATE DEV NUMBER +1 AND DATE FOR NEW VERSION BEFORE DOING A PULL REQUEST!
 
 See further information about version numbering below. 
 
