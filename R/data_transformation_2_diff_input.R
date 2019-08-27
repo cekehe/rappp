@@ -388,5 +388,8 @@ ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
   print("Finding cutoffs")
   x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
 
-    return(x)
+  print("Summarize reactivities")
+  x <- ap_reactsummary2(x, ...)
+
+  return(x)
 }
