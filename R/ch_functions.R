@@ -925,12 +925,16 @@ ap_negbeads <- function(x,
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") will be included in the transformation.
 #'
+#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
+#'
+#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
+#'
 #' @export
 
 ap_agresults <- function(x,
-                                 samplegroups=NULL, #
-                                 groupcolors=1:6, #
-                                 agtoplot=NULL, #
+                                 samplegroups=NULL,
+                                 groupcolors=1:6,
+                                 agtoplot=NULL,
                                  filename="AntigenResults.pdf",
                                  height=15,
                                  useDingbats=F) {
@@ -950,6 +954,13 @@ ap_agresults <- function(x,
 
     cokey <- x$COKEY
 
+    data_size <- table(samplegroups)
+    data_sum <- x$REACTSUM_AG$Ag_selected
+    data_freq <- x$REACTFREQ_AG$Ag_selected
+
+    data_freq_all <- data.frame(do.call(rbind, x$REACTFREQ_AG[which(names(x$REACTFREQ_AG) != "Ag_selected")]),
+                                check.names=F)
+
     print("set samplegroups")
     if(is.null(samplegroups)){
       if("Filtered" %in% colnames(x$SAMPLES)){
@@ -967,7 +978,6 @@ ap_agresults <- function(x,
     }
 
     print("initiate pdf")
-    # if(shouldplot){
       # Create PDF
       pdf(filename,
           width=ifelse(length(levels(samplegroups)) > 1, 20, 15), height=height, useDingbats=useDingbats)
@@ -979,27 +989,17 @@ ap_agresults <- function(x,
         layout(rbind(c(1,2,2,3,3),
                      t(sapply(seq(3,9,3), function(x) c(1,2,2,3,3)+x))))
       }
-    # }
 
       n=1
     for(a in agtoplot){
       tmp_ag <- colnames(data_cont)[a]
-      print(paste("calc sum & freq for ag", n, "of", length(agtoplot),"(",tmp_ag,")"))
+      print(paste("Plotting ag", n, "of", length(agtoplot),"(",tmp_ag,")"))
       n=n+1
 
       dens <- x$DENS[[tmp_ag]]
       tmp_which_co <- cutoffs$score[which(cutoffs$bead == tmp_ag)]*10+1
       tmp_cutoff <- cokey$xmad[tmp_which_co]
 
-      data_sum <- lapply(data_bin, function(x) aggregate(x[,tmp_ag], by=list(samplegroups), FUN=sum))
-      names(data_sum) <- names(data_bin)
-      data_size <- table(samplegroups)
-      data_freq <- lapply(1:length(data_sum), function(cutoff) round(data_sum[[cutoff]]$x/data_size*100,1))
-      names(data_freq) <- names(data_sum)
-      data_freq <- do.call(rbind, data_freq)
-      data_sum <- do.call(rbind, lapply(data_sum, function(cutoff) cutoff$x)) ; colnames(data_sum) <- levels(samplegroups)
-
-      print("beeswarm")
       # MADs Beeswarm, antigen score coloring
       plotdata <- data_cont[,tmp_ag]
       boxplot(plotdata~samplegroups, col="lightgrey", outcol=0, las=2,
@@ -1010,16 +1010,15 @@ ap_agresults <- function(x,
                pwcol=as.color(paste(cokey$color[data_score[,tmp_ag]*10+1]), 0.8))
       mtext(paste0("Above dashed line: "), adj=0.5,
             side=1, at=par("usr")[1], line=0, cex=0.7)
-      mtext(paste0(data_sum[tmp_which_co,], " of ", data_size,
-                   " (", data_freq[tmp_which_co,], "%)\n", levels(samplegroups)),
+      mtext(paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], " of ", data_size,
+                   " (", data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))], "%)\n", levels(samplegroups)),
             side=1, at=1:length(levels(samplegroups)), line=1, cex=0.7)
       legend(par("usr")[2], par("usr")[4], legend=rev(c("<0",cokey$xmad[-1])),
              title=expression(bold("MADs cutoff")),
-             pch=16, cex=0.6, bty="n", #xjust=0.2, title.adj=4,
+             pch=16, cex=0.6, bty="n", xjust=0.2, title.adj=4,
              col=rev(paste(cokey$color)), xpd=NA)
       mtext("Visualization of signals.", line=0.1, cex=0.65)
 
-      print("hist")
       # Histrogram & Density
       h <- hist(data_score[,tmp_ag], breaks=seq(min(cokey$score)-0.1,max(cokey$score)+0.1, 0.1), prob=T, right=F,
                 main=NA, xlim=c(-0.1, max(cokey$score)+0.1), xlab="MADs cutoff\nDensity bandwidth = 0.1", xaxt="n")
@@ -1030,9 +1029,8 @@ ap_agresults <- function(x,
       lines(dens,
             col="maroon")
 
-      print("freq plot")
       # Frequency
-      plotdata <- data_freq
+      plotdata <- data_freq_all[,tmp_ag]
       plot(NULL, xlim=c(0,dim(cokey)[1]),
            ylim=c(0,100), xaxt="n", yaxt="n",
            ylab="Reactivity frequency [%]", xlab="MADs cutoff")

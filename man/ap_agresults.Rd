@@ -48,4 +48,8 @@ The x list needs to include at least the element
 
     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "") will be included in the transformation.
+
+    REACTSUM_AG = number of reactive samples per antigen and sample group,
+
+    REACTFREQ_AG = reactivity frequency per antigen and sample group,
 }
