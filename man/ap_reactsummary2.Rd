@@ -7,7 +7,7 @@
 ap_reactsummary2(x, samplegroups = NULL)
 }
 \arguments{
-\item{x}{List with at least two elements, see Deatils for naming and content.}
+\item{x}{List with at least three elements, see Deatils for naming and content.}
 
 \item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
 If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
@@ -28,6 +28,9 @@ Create binary matrices based on scored Autoimmunity profiling data.
 }
 \details{
 The x list needs to include at least the elements:
+
+    SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+    Any beads with no text (ie. "") in such column will be included.
 
     BINARY = list with one data.frame per cutoff
 

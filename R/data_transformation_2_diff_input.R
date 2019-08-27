@@ -267,12 +267,15 @@ ap_cutoff_selection2 <- function(x,
 #'
 #' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#' @param x List with at least two elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Deatils for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
 #'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
 #' @details
 #'
 #' The x list needs to include at least the elements:
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
 #'
 #'     BINARY = list with one data.frame per cutoff
 #'
@@ -345,16 +348,20 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'
 #' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
-#' @param x List with at least two elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Deatils for naming and content.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param ... See respective functions for details:
 #'     \code{\link[rappp:ap_mads2]{ap_mads2()}}, \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
-#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}},
+#'     and \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}}.
 #' @details The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
 #'
 #'     BEADS = Beads info (Filtered column with information about filtering),
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -371,6 +378,14 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
 #'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+#'
+#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
+#'
+#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
+#'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample.
 #'
 #' @export
 
