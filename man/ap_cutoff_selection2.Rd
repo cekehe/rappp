@@ -24,11 +24,13 @@ It is recommended to use the COKEY element in the output from \code{\link[rappp:
 \value{
 Updated input x with the new list elements
 
-    DENS = Density output used for cutoff selection.
+    DENS = Density output used for cutoff selection,
 
-    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps.
+    AGCO_CONT = Calculated antigen specific cutoffs, continues values,
 
-    AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+
+    BINARY_CO = Binary table based on the antigen specific cutoffs.
 }
 \description{
 Select cutoff based on the slope of the density of scores per antigen.

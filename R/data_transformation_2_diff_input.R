@@ -170,11 +170,14 @@ ap_binary2 <- function(x, cutoffs) {
 #'
 #' @return Updated input x with the new list elements
 #'
-#'     DENS = Density output used for cutoff selection.
+#'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps.
+#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'
+#'     BINARY_CO = Binary table based on the antigen specific cutoffs.
+#'
 #' @export
 
 ap_cutoff_selection2 <- function(x,
@@ -238,15 +241,25 @@ ap_cutoff_selection2 <- function(x,
       dens <- dens[match(colnames(x$SCORE), names(dens))]
       names(dens) <- colnames(x$SCORE)
 
+      binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
+        ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
+      colnames(binary_cutoff) <- colnames(inputdata)
+
       ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
       ag_score_cutoffs$bead <- colnames(x$SCORE)
 
       slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
       names(slope_cutoff_scores) <- colnames(x$SCORE)
 
+      binary_cutoff <- data.frame(binary_cutoff, NA, check.names=F)[, match(colnames(x$SCORE), colnames(binary_cutoff),
+                                                                            nomatch=dim(binary_cutoff)[2]+1)]
+      rownames(binary_cutoff) <- rownames(x$SCORE)
+      colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
+
       x <- append(x, list(DENS=dens,
+                          AGCO_CONT=slope_cutoff_scores,
                           AGCO=ag_score_cutoffs,
-                          AGCO_CONT=slope_cutoff_scores))
+                          BINARY_CO=binary_cutoff))
   return(x)
 }
 
