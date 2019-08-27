@@ -891,3 +891,183 @@ ap_negbeads <- function(x,
 
   dev.off()
 }
+
+#' Reactivity result plots
+#'
+#' Plot beeswarm, density and frequency plots for each antigen.
+#' Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
+#'
+#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
+#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#' @param groupcolors colors for each group in samplegroups.
+#' @param agtoplot Indices for which antigens to plot, default is all.
+#'     Character vector with column names of what to plot also ok.
+#' @param filename String with filename and desired path, end with .pdf
+#' @param height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @details The x list needs to include at least the element
+#'
+#'     MADs = assay MADs,
+#'
+#'     SCORE = scored data
+#'
+#'     BINARY = list with one data.frame per cutoff,
+#'
+#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     SAMPLES = Sample info. Including column "Sample" with sample names, preferably LIMS-IDs, where
+#'     replicates (named with one of pool|rep|mix|commercial)
+#'     and blanks (named with one of empty|blank|buffer) are also stated,
+#'
+#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") will be included in the transformation.
+#'
+#' @export
+
+ap_agresults <- function(x,
+                                 samplegroups=NULL, #
+                                 groupcolors=1:6, #
+                                 agtoplot=NULL, #
+                                 filename="AntigenResults.pdf",
+                                 height=15,
+                                 useDingbats=F) {
+
+    print("Extract data")
+    if("Filtered" %in% colnames(x$BEADS)){
+      data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
+      data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
+      cutoffs <- x$AGCO[which(x$BEADS$Filtered == ""), ]
+      data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
+    } else {
+      data_cont <- x$MADS
+      data_score <- x$SCORE
+      cutoffs <- x$AGCO
+      data_bin <- x$BINARY
+    }
+
+    cokey <- x$COKEY
+
+    print("set samplegroups")
+    if(is.null(samplegroups)){
+      if("Filtered" %in% colnames(x$SAMPLES)){
+        samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
+      } else {
+        samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
+      }
+    }
+
+    print("set agtoplot")
+    if(is.null(agtoplot)){
+      agtoplot <- 1:dim(data_cont)[2]
+    } else if(is.character(agtoplot)){
+      agtoplot <- match(agtoplot, colnames(data_cont))
+    }
+
+    print("initiate pdf")
+    # if(shouldplot){
+      # Create PDF
+      pdf(filename,
+          width=ifelse(length(levels(samplegroups)) > 1, 20, 15), height=height, useDingbats=useDingbats)
+      par(mfrow=c(4,3), mar=c(6,5,5,3), mgp=c(3,1,0))
+
+      if(length(levels(samplegroups)) > 1){
+        layout(matrix(1:16, nrow=4, byrow=T))
+      } else {
+        layout(rbind(c(1,2,2,3,3),
+                     t(sapply(seq(3,9,3), function(x) c(1,2,2,3,3)+x))))
+      }
+    # }
+
+      n=1
+    for(a in agtoplot){
+      tmp_ag <- colnames(data_cont)[a]
+      print(paste("calc sum & freq for ag", n, "of", length(agtoplot),"(",tmp_ag,")"))
+      n=n+1
+
+      dens <- x$DENS[[tmp_ag]]
+      tmp_which_co <- cutoffs$score[which(cutoffs$bead == tmp_ag)]*10+1
+      tmp_cutoff <- cokey$xmad[tmp_which_co]
+
+      data_sum <- lapply(data_bin, function(x) aggregate(x[,tmp_ag], by=list(samplegroups), FUN=sum))
+      names(data_sum) <- names(data_bin)
+      data_size <- table(samplegroups)
+      data_freq <- lapply(1:length(data_sum), function(cutoff) round(data_sum[[cutoff]]$x/data_size*100,1))
+      names(data_freq) <- names(data_sum)
+      data_freq <- do.call(rbind, data_freq)
+      data_sum <- do.call(rbind, lapply(data_sum, function(cutoff) cutoff$x)) ; colnames(data_sum) <- levels(samplegroups)
+
+      print("beeswarm")
+      # MADs Beeswarm, antigen score coloring
+      plotdata <- data_cont[,tmp_ag]
+      boxplot(plotdata~samplegroups, col="lightgrey", outcol=0, las=2,
+              ylab="MADs [AU]", xaxt="n", xlab=NA,
+              ylim=c(min(data_cont), ifelse(max(plotdata) > 50, max(plotdata), 50)))
+      abline(h=tmp_cutoff, lty=2)
+      beeswarm(plotdata~samplegroups, pch=16, corral="gutter", corralWidth=0.5, cex=0.8, add=T,
+               pwcol=as.color(paste(cokey$color[data_score[,tmp_ag]*10+1]), 0.8))
+      mtext(paste0("Above dashed line: "), adj=0.5,
+            side=1, at=par("usr")[1], line=0, cex=0.7)
+      mtext(paste0(data_sum[tmp_which_co,], " of ", data_size,
+                   " (", data_freq[tmp_which_co,], "%)\n", levels(samplegroups)),
+            side=1, at=1:length(levels(samplegroups)), line=1, cex=0.7)
+      legend(par("usr")[2], par("usr")[4], legend=rev(c("<0",cokey$xmad[-1])),
+             title=expression(bold("MADs cutoff")),
+             pch=16, cex=0.6, bty="n", #xjust=0.2, title.adj=4,
+             col=rev(paste(cokey$color)), xpd=NA)
+      mtext("Visualization of signals.", line=0.1, cex=0.65)
+
+      print("hist")
+      # Histrogram & Density
+      h <- hist(data_score[,tmp_ag], breaks=seq(min(cokey$score)-0.1,max(cokey$score)+0.1, 0.1), prob=T, right=F,
+                main=NA, xlim=c(-0.1, max(cokey$score)+0.1), xlab="MADs cutoff\nDensity bandwidth = 0.1", xaxt="n")
+      axis(1, labels=c("<0",cokey$xmad[-1]), at=h$breaks[-c(1, length(h$breaks))], cex.axis=0.8)
+      abline(v=(tmp_which_co-1)/10, lty=2)
+      mtext(tmp_ag, line=3, font=2)
+      mtext("Distribution of binned values, \n algorithm assigned cutoff at dashed line.", line=0, cex=0.65)
+      lines(dens,
+            col="maroon")
+
+      print("freq plot")
+      # Frequency
+      plotdata <- data_freq
+      plot(NULL, xlim=c(0,dim(cokey)[1]),
+           ylim=c(0,100), xaxt="n", yaxt="n",
+           ylab="Reactivity frequency [%]", xlab="MADs cutoff")
+      axis(2, at=seq(0,100,10), labels=seq(0,100,10), las=1)
+      axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
+      abline(h=seq(0,100,10), col="lightgrey", lty=2)
+      abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
+      abline(v=tmp_which_co, lty=2)
+      matplot(plotdata, type="l", ylim=c(0,100), lty=1, lwd=2, add=T,
+              col=groupcolors)
+      mtext("Percentage of reactivity at each exemplified cutoff.", line=0.1, cex=0.65)
+
+      ##### NOT INCLUDED YET!
+      # if(length(levels(samplegroups)) > 1){
+      #   # Fisher line plot
+      #   plotdata <- melt(fisher_p[[g]])
+      #   plotdata <- plotdata[which(plotdata$Var2 == tmp_ag),]
+      #   plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
+      #
+      #   matplot(plotdata, type="l", xaxt="n", las=1, lty=1, lwd=2,
+      #           col=apply(comparisons[[g]], 2,
+      #                     function(x) colorRampPalette(as.character(groupcolors))(3)[2]),
+      #           ylim=c(ifelse(min(plotdata) < -log10(cofisher), min(plotdata), -log10(cofisher)),
+      #                  ifelse(max(plotdata) > -log10(cofisher), max(plotdata), -log10(cofisher))),
+      #           ylab="Fisher's exact test p-value (-log10)",
+      #           xlab="Antigen specific MADs cutoff")
+      #   axis(1, at=1:dim(cokey)[1], labels=cokey$xmad, cex.axis=0.8)
+      #   abline(h=-log10(cofisher), lty=2)
+      #   legend(par("usr")[1], par("usr")[4], horiz=T, legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
+      #          lty=c(rep(1, dim(plotdata)[2]), 2), lwd=1.7,
+      #          col=c(apply(comparisons[[g]], 2,
+      #                      function(x) colorRampPalette(as.character(groupcolors$Color[match(x, groupcolors$Subtype)]))(3)[2]),
+      #                "black"),
+      #          cex=0.55, xpd=NA, bty="n", yjust=0.1, seg.len=2.7)
+      # }
+    }
+    dev.off()
+  }
