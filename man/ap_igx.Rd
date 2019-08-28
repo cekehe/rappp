@@ -45,7 +45,7 @@ The x list needs to include at least the elements:
 
 The SAMPLES element needs at least the columns:
 
-    "Sample" with sample names, preferably LIMS-IDs, where
+    "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
 

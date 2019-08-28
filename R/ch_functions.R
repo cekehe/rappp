@@ -103,7 +103,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'
 #' The SAMPLES element needs at least the columns:
 #'
-#'     "Sample" with sample names, preferably LIMS-IDs, where
+#'     "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'
@@ -121,7 +121,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
-    SamplesNames <- sampledata$Sample
+    SamplesNames <- sampledata$sample_name
     AssayNum <- sampledata$AssayNum
 
     cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
@@ -163,7 +163,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       # Display samples with high but still outliers
       if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
         plottext <- data.frame(AssayWell=sampledata$AssayWell,
-                               InternalID=sampledata$Sample,
+                               InternalID=sampledata$sample_name,
                                Subject=sampledata$tube_label,
                                MFI=plotdata)[which(plotdata<cosIgG[2] & plotdata>cosIgG[3]),]
         plottext <- plottext[order(plottext$MFI, decreasing=T),]
@@ -189,7 +189,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       # Display and remove samples with low total IgG signal
       if(length(which_lowIgG) > 0) {
         plottext <- data.frame(AssayWell=sampledata$AssayWell,
-                               InternalID=sampledata$Sample,
+                               InternalID=sampledata$sample_name,
                                Subject=sampledata$tube_label,
                                MFI=plotdata)[which_lowIgG,]
         plottext <- plottext[order(plottext$MFI, decreasing=T),]
@@ -270,7 +270,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #' The SAMPLES element needs at least the columns:
 #'
-#'     "Sample" with sample names, preferably LIMS-IDs, where
+#'     "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'
@@ -579,7 +579,7 @@ ap_overview <- function(x,
 #'
 #' The SAMPLES element needs at least the columns:
 #'
-#'     "Sample" with sample names, preferably LIMS-IDs, where
+#'     "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'
 #'     "AssayNum" with assay number (vector with 1s if only one assay),
@@ -607,7 +607,7 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 
   for(l in 1:length(data)){
     # Calculate for replicates
-    replicates <- data[[l]][grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
+    replicates <- data[[l]][grep("pool|rep|mix|commercial", samples[[l]]$sample_name, ignore.case=T),]
     nrreplicates[l] <- dim(replicates)[1]
     CVs[,l] <- apply(replicates, 2, cv, digits=5, na.rm=T)
 
@@ -619,7 +619,7 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 
     # Iterate over random sets of samples
     CVs_r <- matrix(NA, ncol=iter, nrow=dim(x$MFI)[2])
-    tmp_data <- data[[l]][-grep("pool|rep|mix|commercial", samples[[l]]$Sample, ignore.case=T),]
+    tmp_data <- data[[l]][-grep("pool|rep|mix|commercial", samples[[l]]$sample_name, ignore.case=T),]
     cor_samp_s_r <- matrix(NA, ncol=iter, nrow=(dim(tmp_data)[1]^2-dim(tmp_data)[1])/2)
     cor_samp_p_r <- matrix(NA, ncol=iter, nrow=(dim(tmp_data)[1]^2-dim(tmp_data)[1])/2)
     for(j in 1:iter){
@@ -918,7 +918,7 @@ ap_negbeads <- function(x,
 #'
 #'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
-#'     SAMPLES = Sample info. Including column "Sample" with sample names, preferably LIMS-IDs, where
+#'     SAMPLES = Sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'

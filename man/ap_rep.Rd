@@ -29,7 +29,7 @@ The x list needs to include at least the element
 
 The SAMPLES element needs at least the columns:
 
-    "Sample" with sample names, preferably LIMS-IDs, where
+    "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
 
     "AssayNum" with assay number (vector with 1s if only one assay),

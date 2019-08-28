@@ -42,7 +42,7 @@ The x list needs to include at least the element
 
     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 
-    SAMPLES = Sample info. Including column "Sample" with sample names, preferably LIMS-IDs, where
+    SAMPLES = Sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
 
