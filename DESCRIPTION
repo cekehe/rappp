@@ -25,4 +25,5 @@ Imports:
     reshape2,
     Rtsne,
     scales,
-    gridExtra
+    gridExtra,
+    ggplot2

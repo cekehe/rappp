@@ -7,4 +7,5 @@
 #' @importFrom scales hue_pal
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tibble tibble
+#' @import ggplot2
 NULL
