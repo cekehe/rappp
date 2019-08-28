@@ -9,7 +9,7 @@ See further information about version numbering below.
 Ideas for the future:
 ---------------------
 
-- colorful correlation values to pairs2 (Cecilia)
+
 
 
 Some important commands for the terminal:
@@ -21,7 +21,8 @@ git pull upstream master
 
 Some useful roxygen2 commands:
 -----------------------------------------
-\\cr - line break without empty line in between in neither code nor output.
+\\cr - line break without empty line in between in neither code nor output.\cr
+https://kbroman.org/pkg_primer/pages/depends.html - Good info on dependencies.
 
 This is how you should name versions: 
 -------------------------------------
