@@ -13,7 +13,8 @@
 #'
 #'     MFI = assay mfi,
 #'
-#'     BEADS = Beads info, including column "Filtered" with annotations for beads to not include if any,
+#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -23,7 +24,7 @@
 ap_mads2 <- function(x, constant=1, ...) {
 
   if("Filtered" %in% colnames(x$BEADS)){
-  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "")]
+  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
   } else {
     tmp_data <- x$MFI
   }
@@ -169,11 +170,14 @@ ap_binary2 <- function(x, cutoffs) {
 #'
 #' @return Updated input x with the new list elements
 #'
-#'     DENS = Density output used for cutoff selection.
+#'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps.
+#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'
+#'     BINARY_CO = Binary table based on the antigen specific cutoffs.
+#'
 #' @export
 
 ap_cutoff_selection2 <- function(x,
@@ -237,33 +241,125 @@ ap_cutoff_selection2 <- function(x,
       dens <- dens[match(colnames(x$SCORE), names(dens))]
       names(dens) <- colnames(x$SCORE)
 
+      binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
+        ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
+      colnames(binary_cutoff) <- colnames(inputdata)
+
       ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
       ag_score_cutoffs$bead <- colnames(x$SCORE)
 
       slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
       names(slope_cutoff_scores) <- colnames(x$SCORE)
 
+      binary_cutoff <- data.frame(binary_cutoff, NA, check.names=F)[, match(colnames(x$SCORE), colnames(binary_cutoff),
+                                                                            nomatch=dim(binary_cutoff)[2]+1)]
+      rownames(binary_cutoff) <- rownames(x$SCORE)
+      colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
+
       x <- append(x, list(DENS=dens,
+                          AGCO_CONT=slope_cutoff_scores,
                           AGCO=ag_score_cutoffs,
-                          AGCO_CONT=slope_cutoff_scores))
+                          BINARY_CO=binary_cutoff))
   return(x)
 }
 
+#' Calculate reactivity frequencies
+#'
+#' Create binary matrices based on scored Autoimmunity profiling data.
+#'
+#' @param x List with at least three elements, see Deatils for naming and content.
+#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
+#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#' @details
+#'
+#' The x list needs to include at least the elements:
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
+#'
+#'     BINARY = list with one data.frame per cutoff
+#'
+#'     BINARY_CO = Binary table based on the antigen specific cutoffs.
+#'
+#' @return Updated input x with the new list element
+#'
+#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
+#'
+#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
+#'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample,
+#'
+#' @export
+
+ap_reactsummary2 <- function(x, samplegroups=NULL) {
+
+  data_bin <- append(x$BINARY, list(Ag_selected=x$BINARY_CO))
+
+  if(is.null(samplegroups)){
+    if("Filtered" %in% colnames(x$SAMPLES)){
+      samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
+    } else {
+      samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
+    }
+  }
+  data_size <- table(samplegroups)
+  n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
+
+  # Calculate per antigen
+  data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
+  names(data_sum_ag) <- names(data_bin)
+
+  data_freq_ag <- lapply(1:length(data_sum_ag),
+                         function(cutoff) lapply(data_sum_ag[[cutoff]],
+                                                 function(antigen) round(antigen$x/data_size*100,1)))
+  names(data_freq_ag) <- names(data_sum_ag)
+
+
+  data_sum_ag <- lapply(data_sum_ag,
+                        function(cutoff) data.frame(do.call(cbind, lapply(cutoff,
+                                                                          function(antigen) antigen$x)), check.names=F))
+  data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names=F))
+
+  # Calculate per sample
+  data_sum_samp <- lapply(data_bin,
+                          function(i) apply(i, 1,
+                                            function(l) sum(l, na.rm=T)))
+  names(data_sum_samp) <- names(data_bin)
+
+  data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
+  names(data_freq_samp) <- names(data_sum_samp)
+
+  # Add to input
+  x <- append(x,
+              list(REACTSUM_AG=data_sum_ag,
+                   REACTFREQ_AG=data_freq_ag,
+                   REACTSUM_SAMP=data_sum_samp,
+                   REACTFREQ_SAMP=data_freq_samp))
+
+  return(x)
+}
 
 #' Full AP data transformation
 #'
 #' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
-#' @param x List with at least two elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Deatils for naming and content.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param ... See respective functions for details:
 #'     \code{\link[rappp:ap_mads2]{ap_mads2()}}, \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
-#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}},
+#'     and \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}}.
 #' @details The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
 #'
 #'     BEADS = Beads info (Filtered column with information about filtering),
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -281,25 +377,32 @@ ap_cutoff_selection2 <- function(x,
 #'
 #'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
 #'
+#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
+#'
+#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
+#'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample.
+#'
 #' @export
 
 ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
 
+  print("Doing MADs transformation")
   x <- ap_mads2(x, ...)
 
+  print("Doing Scoring")
   x <- ap_scoring2(x, MADlimits=MADlimits, ...)
 
+  print("Doing Binary transformation")
   x <- ap_binary2(x, cutoffs=x$COKEY, ...)
 
+  print("Finding cutoffs")
   x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
 
-  # output <- list(MFI=x,
-  #                MADs=tmp_mads,
-  #                Scoring=tmp_score$Scoring,
-  #                Binary=tmp_binary,
-  #                Slope_cutoff=tmp_slope$Slope_cutoff_discrete,
-  #                Score_density=tmp_slope$dens,
-  #                Cutoff_key=tmp_score$Cutoff_key)
+  print("Summarize reactivities")
+  x <- ap_reactsummary2(x, ...)
 
   return(x)
 }
