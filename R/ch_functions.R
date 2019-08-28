@@ -14,34 +14,48 @@
 #' @details The x list needs to include at least the elements
 #'     CT = coupling test mfi,
 #'
-#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
+#'     BEADS = Beads info. See below for required columns.
 #'
 #'     FILTERINFO = Vector with info on which filter steps has been done.
+#'
+#' The BEADS element needs at least the columns:
+#'
+#'     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+#'
+#'     "Plate" with numerical coupling plate number(s).
+#'
 #' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
-                  shouldplot=T, filename="coupling_efficiency.pdf", width=30, height=6, useDingbats=F, ...) {
+                  shouldplot=T, filename="coupling_efficiency.pdf", width=25, height=6, useDingbats=F, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
 
     if(shouldplot){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
       par(mar=c(12,4,2,8), cex.axis=0.8)
-      layout(matrix(c(1,1,1,2), nrow=1))
+      layout(matrix(c(1,1,1,1,2), nrow=1))
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
                   pwcol=rep(ifelse(grepl("empty|bare|blank", colnames(x$CT),ignore.case=T), "orange",
-                                   ifelse(grepl("his6abp", colnames(x$CT),ignore.case=T), "darkgreen",
-                                          ifelse(grepl("higg", colnames(x$CT),ignore.case=T), "blue",
+                                   ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
+                                          ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
                                                         ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
       axis(1, at=bs$x[seq(1, dim(bs)[1], 3)], labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
-      abline(v=seq(min(bs$x)-0.5, max(bs$x)+0.5, 1), lty=2, col="lightgrey")
+
+      vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
+      abline(v=vert_lines, lty=2,
+             col=ifelse(c(duplicated(x$BEADS$Plate),F), "lightgrey", "black"))
+      tmp <- vert_lines[which(!c(duplicated(x$BEADS$Plate),F))]
+      mtext(text=paste("Plate ",unique(x$BEADS$Plate)), at=diff(tmp)/2+tmp[-length(tmp)],
+            side=1, line=0, cex=0.7, font=2)
+
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Empty", "His6ABP", "ahIgG", "EBNA1", "Flagged"),
+             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Flagged"),
              col=c("orange", "darkgreen", "blue", "purple", "red"),
              pch=16, xpd=NA)
       abline(h=empty_co, lty=2)
