@@ -7,10 +7,12 @@
 ap_reactsummary2(x, samplegroups = NULL)
 }
 \arguments{
-\item{x}{List with at least three elements, see Deatils for naming and content.}
+\item{x}{List with at least three elements, see Details for naming and content.}
 
 \item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
 If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
+
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list element

@@ -284,9 +284,10 @@ ap_cutoff_selection2 <- function(x,
 #'
 #' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#' @param x List with at least three elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Details for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
 #'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details
 #'
 #' The x list needs to include at least the elements:
@@ -310,7 +311,9 @@ ap_cutoff_selection2 <- function(x,
 #'
 #' @export
 
-ap_reactsummary2 <- function(x, samplegroups=NULL) {
+ap_reactsummary2 <- function(x,
+                             samplegroups = NULL,
+                             check.names = FALSE) {
 
   data_bin <- append(x$BINARY, list(Ag_selected=x$BINARY_CO))
 
@@ -335,10 +338,21 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 
 
   data_sum_ag <- lapply(data_sum_ag,
-                        function(cutoff) data.frame(do.call(cbind, lapply(cutoff,
-                                                                          function(antigen) antigen$x)), check.names=F))
+                        function(cutoff) data.frame(do.call(cbind,
+                                                            lapply(cutoff,
+                                                                   function(antigen) antigen$x)), check.names = check.names))
   data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names=F))
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
+
+#   tmp <- do.call(rbind, data_sum_ag[-length(data_sum_ag)])
+#   colnames(tmp) <- colnames(data_sum_ag[[length(data_sum_ag)]])
+#   tmp <- rbind(tmp, data_sum_ag[[length(data_sum_ag)]])
+#   rownames(tmp)[length(data_sum_ag)] <- "Selected_co"
+#
+#   tmp <- do.call(rbind, data_freq_ag[-length(data_freq_ag)])
+#   colnames(tmp) <- colnames(data_freq_ag[[length(data_freq_ag)]])
+#   tmp <- rbind(tmp, data_freq_ag[[length(data_freq_ag)]])
+#   rownames(tmp)[length(data_freq_ag)] <- "Selected_co"
 
   # Calculate per sample
   data_sum_samp <- lapply(data_bin,
