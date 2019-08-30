@@ -3,11 +3,17 @@
 #' Sample based normalization to number of Median Absolute Deviations (MADs)
 #' from the median for Autoimmunity profiling data.
 #'
-#' @param x list with at least two elements, see Deatils for naming and content.
-#' @param constant constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).
-#' @param na.rm logical, indicating whether NA values should be stripped before the computation proceeds. Altered default from
+#' @param x list with at least two elements, see Details for naming and content.
+#' @param constant constant for \code{\link[stats:mad]{mad()}} function,
+#'     default is 1 (compared to 1.4826 in base function).
+#' @param na.rm logical, indicating whether NA values should be stripped
+#'     before the computation proceeds. Altered default from
 #'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
-#' @param ... Further arguments passed to \code{\link[stats:mad]{mad()}}
+#' @param low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
+#'     the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).
+#' @param high if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
+#'     for even sample size.(From \code{\link[stats:mad]{mad()}}).
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be normalized per sample to the number of MADs from the median
 #' using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using \code{mad(constant=1)}.
 #'
@@ -23,21 +29,28 @@
 #'     MADs = assay MADs.
 #' @export
 
-ap_mads2 <- function(x, constant=1, na.rm=TRUE, ...) {
+ap_mads2 <- function(x,
+                     constant = 1,
+                     na.rm = TRUE,
+                     low = FALSE,
+                     high = FALSE,
+                     check.names = FALSE) {
+  tmp_data <- x$MFI
 
   if("Filtered" %in% colnames(x$BEADS)){
-  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
+    tmp_data <- tmp_data[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
   } else {
-    tmp_data <- x$MFI
+    tmp_data <- tmp_data
   }
 
-  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm=na.rm)))/
-        apply(tmp_data, 1, function(i) mad(i, constant=constant, na.rm=na.rm, ...))
+  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
+    apply(tmp_data, 1, function(i) mad(i, constant = constant, na.rm = na.rm, low = low, high = high))
 
-  mads <- data.frame(mads, NA, check.names=F)[, match(colnames(x$MFI), colnames(mads), nomatch=dim(mads)[2]+1)]
-  colnames(mads) <- colnames(x$MFI)
+  mads <- data.frame(mads, NA, check.names = check.names)[, match(colnames(tmp_data), colnames(mads),
+                                                                  nomatch = dim(mads)[2]+1)]
+  colnames(mads) <- colnames(tmp_data)
 
-  x <- append(x, list(MADS=mads))
+  x <- append(x, list(MADS = mads))
 
   return(x)
 }
