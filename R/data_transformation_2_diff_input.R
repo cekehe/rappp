@@ -76,10 +76,10 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'
 #' @param x List with at least one element, see Deatils for naming and content.
 #' It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.
-#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' @param rightmost.closed,left.open logical, see \code{\link[base:findInterval]{findInterval()}} for details.
+#' @param MADlimits vector of MADs values used as boundaries for binning.
+#' @param rightmost.closed,left.open,all.inside logical, see \code{\link[base:findInterval]{findInterval()}} for details.
+#'     Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.
 #' @param check.names logical, see \code{\link[base:data.frame]{data.frame()}} for details
-#' @param ... Further arguments passed do \code{\link[base:findInterval]{findInterval()}}
 #' @details The input values will be binned into discrete bins (scores).
 #'
 #' The x list needs to include at least the element:
@@ -93,24 +93,26 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'     SCORE = scored data
 #' @export
 
-ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
-                       rightmost.closed=FALSE, left.open=FALSE,
-                       check.names=FALSE, ...) {
+ap_scoring2 <- function(x, MADlimits = seq(0,70,5),
+                       rightmost.closed = FALSE,
+                       left.open = FALSE,
+                       all.inside = FALSE,
+                       check.names = FALSE) {
 
   xmad_score <- ap_cutoffs2(MADlimits)
 
   tmp_data <- x$MADS
 
   scores <- data.frame(matrix(t(apply(tmp_data, 1,
-                                      function(i) findInterval(i, xmad_score$xmad[-1],
+                                      function(i) findInterval(x = i, vec = xmad_score$xmad[-1],
                                                                rightmost.closed = rightmost.closed,
-                                                               left.open = left.open, ...))),
+                                                               left.open = left.open, all.inside = all.inside))),
                               ncol=dim(tmp_data)[2],
                               dimnames=list(rownames(tmp_data),
                                             colnames(tmp_data)) )/10, check.names = check.names)
 
   x <- append(x, list(COKEY=xmad_score,
-                           SCORE=scores))
+                      SCORE=scores))
 
   return(x)
 }
