@@ -4,14 +4,17 @@
 \alias{ap_mads2}
 \title{MAD normalization}
 \usage{
-ap_mads2(x, constant = 1, ...)
+ap_mads2(x, constant = 1, na.rm = TRUE, ...)
 }
 \arguments{
-\item{x}{List with at least two elements, see Deatils for naming and content.}
+\item{x}{list with at least two elements, see Deatils for naming and content.}
 
-\item{constant}{Constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).}
+\item{constant}{constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).}
 
-\item{...}{Further arguments passed to \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}}
+\item{na.rm}{logical, indicating whether NA values should be stripped before the computation proceeds. Altered default from
+\code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.}
+
+\item{...}{Further arguments passed to \code{\link[stats:mad]{mad()}}}
 }
 \value{
 Updated input x with the new list element

@@ -3,9 +3,11 @@
 #' Sample based normalization to number of Median Absolute Deviations (MADs)
 #' from the median for Autoimmunity profiling data.
 #'
-#' @param x List with at least two elements, see Deatils for naming and content.
-#' @param constant Constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).
-#' @param ... Further arguments passed to \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}
+#' @param x list with at least two elements, see Deatils for naming and content.
+#' @param constant constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).
+#' @param na.rm logical, indicating whether NA values should be stripped before the computation proceeds. Altered default from
+#'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
+#' @param ... Further arguments passed to \code{\link[stats:mad]{mad()}}
 #' @details The input values will be normalized per sample to the number of MADs from the median
 #' using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using \code{mad(constant=1)}.
 #'
@@ -21,7 +23,7 @@
 #'     MADs = assay MADs.
 #' @export
 
-ap_mads2 <- function(x, constant=1, ...) {
+ap_mads2 <- function(x, constant=1, na.rm=TRUE, ...) {
 
   if("Filtered" %in% colnames(x$BEADS)){
   tmp_data <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
@@ -29,8 +31,8 @@ ap_mads2 <- function(x, constant=1, ...) {
     tmp_data <- x$MFI
   }
 
-  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, ...)))/
-        apply(tmp_data, 1, function(i) mad(i, constant=constant, ...))
+  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm=na.rm)))/
+        apply(tmp_data, 1, function(i) mad(i, constant=constant, na.rm=na.rm, ...))
 
   mads <- data.frame(mads, NA, check.names=F)[, match(colnames(x$MFI), colnames(mads), nomatch=dim(mads)[2]+1)]
   colnames(mads) <- colnames(x$MFI)
