@@ -4,15 +4,13 @@
 \alias{ap_binary2}
 \title{Binary}
 \usage{
-ap_binary2(x, cutoffs)
+ap_binary2(x, check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least one element, see Deatils for naming and content.
-It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
+\item{x}{List with at least two elements, see Details for naming and content.
+It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
 
-\item{cutoffs}{data.frame with at least one column named score with the desired cutoffs to use,
-and rownames you want to have as identifier for each cutoff.
-It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list element
@@ -25,7 +23,9 @@ Create binary matrices based on scored Autoimmunity profiling data.
 \details{
 The input values will be binned into binary data, consisting of 0 and 1.
 
-The x list needs to include at least the element:
+The x list needs to include at least the elements:
 
     SCORE = scored data,
+
+    COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 }

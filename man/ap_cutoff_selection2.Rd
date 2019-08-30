@@ -4,22 +4,20 @@
 \alias{ap_cutoff_selection2}
 \title{Cutoff selection}
 \usage{
-ap_cutoff_selection2(x, cutoffs, slope_cutoff = -0.5, offset = 0.1,
-  bw = 0.1)
+ap_cutoff_selection2(x, slope_cutoff = -0.5, offset = 0.1, bw = 0.1,
+  check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least one element, see Deatils for naming and content.
-It is recommended to use to element Scoring in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
-
-\item{cutoffs}{data.frame with at least one column named score with the desired cutoffs to use,
-and rownames you want to have as identifier for each cutoff.
-It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
+\item{x}{List with at least two elements, see Details for naming and content.
+It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
 
 \item{slope_cutoff}{Arbitrary slope cutoff value. Can be chosen freely.}
 
 \item{offset}{Offset used to prevent script from finding the peak (as slope = 0 there).}
 
 \item{bw}{Bandwidth for density funciton, default set to 0.1.}
+
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list elements
@@ -43,4 +41,6 @@ local min nearest the highest peak in a density plot using bandwidth=0.1.
 The x list needs to include at least the element:
 
     SCORE = scored data,
+
+    COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 }

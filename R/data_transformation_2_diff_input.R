@@ -134,16 +134,16 @@ ap_scoring2 <- function(x, MADlimits = seq(0,70,5),
 #'
 #' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
-#' It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
-#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
-#' and rownames you want to have as identifier for each cutoff.
-#' It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param x List with at least two elements, see Details for naming and content.
+#' It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be binned into binary data, consisting of 0 and 1.
 #'
-#' The x list needs to include at least the element:
+#' The x list needs to include at least the elements:
 #'
 #'     SCORE = scored data,
+#'
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -151,16 +151,17 @@ ap_scoring2 <- function(x, MADlimits = seq(0,70,5),
 #'
 #' @export
 
-ap_binary2 <- function(x, cutoffs) {
+ap_binary2 <- function(x, check.names = FALSE) {
 
   tmp_data <- x$SCORE
+  cutoffs <- x$COKEY
 
   binary_list <- lapply(cutoffs$score, function(cutoff)
-        data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = FALSE))
+        data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = check.names))
 
   names(binary_list) <- rownames(cutoffs)
 
-  x <- append(x, list(BINARY=binary_list))
+  x <- append(x, list(BINARY = binary_list))
 
   return(x)
 }
@@ -169,14 +170,12 @@ ap_binary2 <- function(x, cutoffs) {
 #'
 #' Select cutoff based on the slope of the density of scores per antigen.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
-#' It is recommended to use to element Scoring in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
-#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
-#' and rownames you want to have as identifier for each cutoff.
-#' It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param x List with at least two elements, see Details for naming and content.
+#' It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #' @param slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
 #' @param offset Offset used to prevent script from finding the peak (as slope = 0 there).
 #' @param bw Bandwidth for density funciton, default set to 0.1.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details A cutoff will be selected for each antigen based on the
 #' distribution of the scores for the antigen. The algorithm will search for a
 #' local min nearest the highest peak in a density plot using bandwidth=0.1.
@@ -184,6 +183,8 @@ ap_binary2 <- function(x, cutoffs) {
 #' The x list needs to include at least the element:
 #'
 #'     SCORE = scored data,
+#'
+#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -198,10 +199,12 @@ ap_binary2 <- function(x, cutoffs) {
 #' @export
 
 ap_cutoff_selection2 <- function(x,
-                                cutoffs,
-                                slope_cutoff=-0.5,
-                                offset=0.1,
-                                bw=0.1) {
+                                slope_cutoff = -0.5,
+                                offset = 0.1,
+                                bw = 0.1,
+                                check.names = FALSE) {
+
+  cutoffs <- x$COKEY
 
       inputdata <- x$SCORE
       inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
@@ -268,7 +271,7 @@ ap_cutoff_selection2 <- function(x,
       slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
       names(slope_cutoff_scores) <- colnames(x$SCORE)
 
-      binary_cutoff <- data.frame(binary_cutoff, NA, check.names=F)[, match(colnames(x$SCORE), colnames(binary_cutoff),
+      binary_cutoff <- data.frame(binary_cutoff, NA, check.names = check.names)[, match(colnames(x$SCORE), colnames(binary_cutoff),
                                                                             nomatch=dim(binary_cutoff)[2]+1)]
       rownames(binary_cutoff) <- rownames(x$SCORE)
       colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
