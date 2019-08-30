@@ -363,13 +363,32 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'
 #' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
-#' @param x List with at least three elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Details for naming and content.
+#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
+#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' @param ... See respective functions for details:
-#'     \code{\link[rappp:ap_mads2]{ap_mads2()}}, \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
-#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}},
-#'     and \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}}.
-#' @details The x list needs to include at least the elements:
+#' @param na.rm logical, indicating whether NA values should be stripped
+#'     before the computation proceeds. Altered default from
+#'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @param mad_constant constant for \code{\link[stats:mad]{mad()}} function,
+#'     default is 1 (compared to 1.4826 in base function).
+#' @param mad_low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
+#'     the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).
+#' @param mad_high if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
+#'     for even sample size.(From \code{\link[stats:mad]{mad()}}).
+#' @param score_rightmost.closed,score_left.open,score_all.inside logical,
+#'     see \code{\link[base:findInterval]{findInterval()}} for details.
+#'     Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.
+#' @param coselect_slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
+#' @param coselect_offset Offset used to prevent script from finding the peak (as slope = 0 there).
+#' @param coselect_bw Bandwidth for density funciton, default set to 0.1.
+#' @details Arguments starting with mad_ are specific for \code{\link[rappp:ap_mads2]{ap_mads2()}},
+#' score_ for \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
+#' and coselect_ for \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#' These arguments are seldom altered.
+#'
+#' The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
 #'
@@ -404,22 +423,49 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'
 #' @export
 
-ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
+ap_norm2 <- function(x,
+                     samplegroups = NULL,
+                     MADlimits = seq(0,70,5),
+                     na.rm = TRUE,
+                     check.names = FALSE,
+                     mad_constant = 1,
+                     mad_low = FALSE,
+                     mad_high = FALSE,
+                     score_rightmost.closed = FALSE,
+                     score_left.open = FALSE,
+                     score_all.inside = FALSE,
+                     coselect_slope_cutoff = -0.5,
+                     coselect_offset = 0.1,
+                     coselect_bw = 0.1){
+
 
   print("Doing MADs transformation")
-  x <- ap_mads2(x, ...)
+  x <- ap_mads2(x,
+                constant = mad_constant,
+                na.rm = na.rm,
+                low = mad_low,
+                high = mad_high)
 
   print("Doing Scoring")
-  x <- ap_scoring2(x, MADlimits=MADlimits, ...)
+  x <- ap_scoring2(x,
+                   MADlimits = MADlimits,
+                   rightmost.closed = score_rightmost.closed,
+                   left.open = score_left.open,
+                   all.inside = score_all.inside,
+                   check.names = check.names)
 
   print("Doing Binary transformation")
-  x <- ap_binary2(x, cutoffs=x$COKEY, ...)
+  x <- ap_binary2(x)
 
   print("Finding cutoffs")
-  x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
+  x <- ap_cutoff_selection2(x,
+                            slope_cutoff = coselect_slope_cutoff,
+                            offset = coselect_offset,
+                            bw = coselect_bw)
 
   print("Summarize reactivities")
-  x <- ap_reactsummary2(x, ...)
+  x <- ap_reactsummary2(x,
+                        samplegroups = samplegroups)
 
   return(x)
 }
