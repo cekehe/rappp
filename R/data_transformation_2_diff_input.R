@@ -203,87 +203,89 @@ ap_binary2 <- function(x, check.names = FALSE) {
 #' @export
 
 ap_cutoff_selection2 <- function(x,
-                                slope_cutoff = -0.5,
-                                offset = 0.1,
-                                bw = 0.1,
-                                check.names = FALSE) {
+                                 slope_cutoff = -0.5,
+                                 offset = 0.1,
+                                 bw = 0.1,
+                                 check.names = FALSE) {
 
   cutoffs <- x$COKEY
 
-      inputdata <- x$SCORE
-      inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
+  inputdata <- x$SCORE
+  if(sum(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1]) > 0){
+    inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
+  }
 
-      ## Apply density function on the scores to get x and y values for density-plots
-      dens <- apply(inputdata, 2, function(y) density(y, bw=bw))
+  ## Apply density function on the scores to get x and y values for density-plots
+  dens <- apply(inputdata, 2, function(y) density(y, bw=bw))
 
-      # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
-      slope <- lapply(dens, function(y) diff(y$y)/diff(y$x))
+  # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
+  slope <- lapply(dens, function(y) diff(y$y)/diff(y$x))
 
-      slope_cutoff_indices <- rep(NA, length.out = length(slope))
-      names(slope_cutoff_indices) <- names(slope)
-      for (i in 1:length(slope)) { #For each bead
-        # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
-        if (dens[[i]]$x[which.max(dens[[i]]$y)] <= max(cutoffs$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
-          lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]+offset))) #Find start index just to the right of highest peak.
-          lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
-          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
-            slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] >= score.median + minCOdistanceFromMedian
-          }
-        } else if (dens[[i]]$x[which.max(dens[[i]]$y)] > max(cutoffs$score)/2){ #Else, if the highest peak is on the right hand side of the plot
-          lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]-offset)))#Find start index just to the left of highest peak.
-          lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
-          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
-            slope[[i]][j] < -slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] <= score.median - minCOdistanceFromMedian
-          }
-        } else {
-          stop("Error in slope-based cutoff assignment")
-        }
-        for (j in lookupVector) { #Now, for each slope step
-          if (CO.fun(i,j,slope_cutoff)) { #If the slope at this step fulfils the cutoff function
-            slope_cutoff_indices[i] <- j #Then store that slope step for that bead
-            break() #And exit the slope step loop to continue with next bead
-          }
-        }
-      } # End loop i for each bead (slope)
+  slope_cutoff_indices <- rep(NA, length.out = length(slope))
+  names(slope_cutoff_indices) <- names(slope)
+  for (i in 1:length(slope)) { #For each bead
+    # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
+    if (dens[[i]]$x[which.max(dens[[i]]$y)] <= max(cutoffs$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
+      lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]+offset))) #Find start index just to the right of highest peak.
+      lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
+      CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
+        slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] >= score.median + minCOdistanceFromMedian
+      }
+    } else if (dens[[i]]$x[which.max(dens[[i]]$y)] > max(cutoffs$score)/2){ #Else, if the highest peak is on the right hand side of the plot
+      lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]-offset)))#Find start index just to the left of highest peak.
+      lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
+      CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
+        slope[[i]][j] < -slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] <= score.median - minCOdistanceFromMedian
+      }
+    } else {
+      stop("Error in slope-based cutoff assignment")
+    }
+    for (j in lookupVector) { #Now, for each slope step
+      if (CO.fun(i,j,slope_cutoff)) { #If the slope at this step fulfils the cutoff function
+        slope_cutoff_indices[i] <- j #Then store that slope step for that bead
+        break() #And exit the slope step loop to continue with next bead
+      }
+    }
+  } # End loop i for each bead (slope)
 
-      slope_cutoff_scores <- rep(NA, length.out = length(dens))
-      for (i in seq_along(dens)) {
-        if (!is.na(slope_cutoff_indices[i])) {
-          slope_cutoff_scores[i] <- dens[[i]]$x[slope_cutoff_indices[i]] #Find the score at the index where the slope is above cutoff. These are the cutoffs that are red lines in the density plot!
-        } else {
-          slope_cutoff_scores[i] <- max(dens[[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
-        }
-      } # End loop i for each bead (dens)
-      names(slope_cutoff_scores) <- colnames(inputdata)
+  slope_cutoff_scores <- rep(NA, length.out = length(dens))
+  for (i in seq_along(dens)) {
+    if (!is.na(slope_cutoff_indices[i])) {
+      slope_cutoff_scores[i] <- dens[[i]]$x[slope_cutoff_indices[i]] #Find the score at the index where the slope is above cutoff. These are the cutoffs that are red lines in the density plot!
+    } else {
+      slope_cutoff_scores[i] <- max(dens[[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
+    }
+  } # End loop i for each bead (dens)
+  names(slope_cutoff_scores) <- colnames(inputdata)
 
   # Translate the continuous slope cutoff values to the above discrete score value
-      ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),
-                                 score=ceiling(slope_cutoff_scores*10)/10,
-                                 xmad=cutoffs$xmad[match(score, cutoffs$score)])
+  ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),
+                             score=ceiling(slope_cutoff_scores*10)/10,
+                             xmad=cutoffs$xmad[match(score, cutoffs$score)])
 
-      # Add NA elements for non-included beads to match original data
-      dens <- dens[match(colnames(x$SCORE), names(dens))]
-      names(dens) <- colnames(x$SCORE)
+  # Add NA elements for non-included beads to match original data
+  dens <- dens[match(colnames(x$SCORE), names(dens))]
+  names(dens) <- colnames(x$SCORE)
 
-      binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
-        ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
-      colnames(binary_cutoff) <- colnames(inputdata)
+  binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
+    ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
+  colnames(binary_cutoff) <- colnames(inputdata)
 
-      ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
-      ag_score_cutoffs$bead <- colnames(x$SCORE)
+  ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
+  ag_score_cutoffs$bead <- colnames(x$SCORE)
 
-      slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
-      names(slope_cutoff_scores) <- colnames(x$SCORE)
+  slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
+  names(slope_cutoff_scores) <- colnames(x$SCORE)
 
-      binary_cutoff <- data.frame(binary_cutoff, NA, check.names = check.names)[, match(colnames(x$SCORE), colnames(binary_cutoff),
-                                                                            nomatch=dim(binary_cutoff)[2]+1)]
-      rownames(binary_cutoff) <- rownames(x$SCORE)
-      colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
+  binary_cutoff <- data.frame(binary_cutoff, NA, check.names = check.names)[, match(colnames(x$SCORE), colnames(binary_cutoff),
+                                                                                    nomatch=dim(binary_cutoff)[2]+1)]
+  rownames(binary_cutoff) <- rownames(x$SCORE)
+  colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
 
-      x <- append(x, list(DENS=dens,
-                          AGCO_CONT=slope_cutoff_scores,
-                          AGCO=ag_score_cutoffs,
-                          BINARY_CO=binary_cutoff))
+  x <- append(x, list(DENS=dens,
+                      AGCO_CONT=slope_cutoff_scores,
+                      AGCO=ag_score_cutoffs,
+                      BINARY_CO=binary_cutoff))
   return(x)
 }
 
