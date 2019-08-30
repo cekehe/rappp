@@ -35,6 +35,8 @@ ap_mads2 <- function(x,
                      low = FALSE,
                      high = FALSE,
                      check.names = FALSE) {
+
+  org_names <- colnames(x$MFI)
   tmp_data <- x$MFI
 
   if("Filtered" %in% colnames(x$BEADS)){
@@ -46,9 +48,9 @@ ap_mads2 <- function(x,
   mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
     apply(tmp_data, 1, function(i) mad(i, constant = constant, na.rm = na.rm, low = low, high = high))
 
-  mads <- data.frame(mads, NA, check.names = check.names)[, match(colnames(tmp_data), colnames(mads),
+  mads <- data.frame(mads, NA, check.names = check.names)[, match(org_names, colnames(mads),
                                                                   nomatch = dim(mads)[2]+1)]
-  colnames(mads) <- colnames(tmp_data)
+  colnames(mads) <- org_names
 
   x <- append(x, list(MADS = mads))
 
