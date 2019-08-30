@@ -72,13 +72,14 @@ ap_mads2 <- function(x,
 #'    [,3] Corresponding color using the Zissou1 palette in \code{\link[wesanderson]{wes_palette}}
 #' @export
 
-ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
+ap_cutoffs2 <- function(MADlimits = seq(0,70,5)){
 
   xmad_score <- data.frame(xmad=c(NA, MADlimits),
                            score=c(0, 1:length(MADlimits)/10),
                            color=as.character(wes_palette(name = "Zissou1",
                                                           n = length(MADlimits)+1, type = "continuous")))
-  rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
+  rownames(xmad_score) <- c(paste0("Below", min(MADlimits), "xMAD"),
+                            paste0(MADlimits, rep("xMAD",length(MADlimits))))
   return(xmad_score)
 }
 
@@ -87,12 +88,12 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'
 #' Binning of MADs values in Autoimmunity Profiling.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
+#' @param x List with at least one element, see Details for naming and content.
 #' It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.
 #' @param MADlimits vector of MADs values used as boundaries for binning.
 #' @param rightmost.closed,left.open,all.inside logical, see \code{\link[base:findInterval]{findInterval()}} for details.
 #'     Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.
-#' @param check.names logical, see \code{\link[base:data.frame]{data.frame()}} for details
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be binned into discrete bins (scores).
 #'
 #' The x list needs to include at least the element:
@@ -106,11 +107,12 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'     SCORE = scored data
 #' @export
 
-ap_scoring2 <- function(x, MADlimits = seq(0,70,5),
-                       rightmost.closed = FALSE,
-                       left.open = FALSE,
-                       all.inside = FALSE,
-                       check.names = FALSE) {
+ap_scoring2 <- function(x,
+                        MADlimits = seq(0,70,5),
+                        rightmost.closed = FALSE,
+                        left.open = FALSE,
+                        all.inside = FALSE,
+                        check.names = FALSE) {
 
   xmad_score <- ap_cutoffs2(MADlimits)
 
