@@ -4,7 +4,7 @@
 \alias{ap_reactsummary2}
 \title{Calculate reactivity frequencies}
 \usage{
-ap_reactsummary2(x, samplegroups = NULL)
+ap_reactsummary2(x, samplegroups = NULL, check.names = FALSE)
 }
 \arguments{
 \item{x}{List with at least three elements, see Details for naming and content.}

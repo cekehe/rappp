@@ -322,7 +322,7 @@ ap_reactsummary2 <- function(x,
                              samplegroups = NULL,
                              check.names = FALSE) {
 
-  data_bin <- append(x$BINARY, list(Ag_selected=x$BINARY_CO))
+  data_bin <- append(x$BINARY, list(Selected_co=x$BINARY_CO))
 
   if(is.null(samplegroups)){
     if("Filtered" %in% colnames(x$SAMPLES)){
@@ -348,18 +348,16 @@ ap_reactsummary2 <- function(x,
                         function(cutoff) data.frame(do.call(cbind,
                                                             lapply(cutoff,
                                                                    function(antigen) antigen$x)), check.names = check.names))
-  data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
+  data_sum_ag <- lapply(data_sum_ag, function(i) {
+    rownames(i) <- levels(samplegroups) ;
+    colnames(i) <- colnames(data_sum_ag[[length(data_sum_ag)]]) ; i } )
 
-#   tmp <- do.call(rbind, data_sum_ag[-length(data_sum_ag)])
-#   colnames(tmp) <- colnames(data_sum_ag[[length(data_sum_ag)]])
-#   tmp <- rbind(tmp, data_sum_ag[[length(data_sum_ag)]])
-#   rownames(tmp)[length(data_sum_ag)] <- "Selected_co"
-#
-#   tmp <- do.call(rbind, data_freq_ag[-length(data_freq_ag)])
-#   colnames(tmp) <- colnames(data_freq_ag[[length(data_freq_ag)]])
-#   tmp <- rbind(tmp, data_freq_ag[[length(data_freq_ag)]])
-#   rownames(tmp)[length(data_freq_ag)] <- "Selected_co"
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
+  data_freq_ag <- lapply(data_freq_ag, function(i) {
+    colnames(i) <- colnames(data_freq_ag[[length(data_freq_ag)]]) ; i } )
+
+  data_sum_ag <- do.call(rbind, data_sum_ag)
+  data_freq_ag <- do.call(rbind, data_freq_ag)
 
   # Calculate per sample
   data_sum_samp <- lapply(data_bin,
@@ -369,6 +367,9 @@ ap_reactsummary2 <- function(x,
 
   data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
   names(data_freq_samp) <- names(data_sum_samp)
+
+  data_sum_samp <- do.call(cbind, data_sum_samp)
+  data_freq_samp <- do.call(cbind, data_freq_samp)
 
   # Add to input
   x <- append(x,
