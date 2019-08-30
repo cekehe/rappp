@@ -289,107 +289,11 @@ ap_cutoff_selection2 <- function(x,
   return(x)
 }
 
-#' Calculate reactivity frequencies
-#'
-#' Create binary matrices based on scored Autoimmunity profiling data.
-#'
-#' @param x List with at least three elements, see Details for naming and content.
-#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
-#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
-#' @details
-#'
-#' The x list needs to include at least the elements:
-#'
-#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
-#'
-#'     BINARY = list with one data.frame per cutoff
-#'
-#'     BINARY_CO = Binary table based on the antigen specific cutoffs.
-#'
-#' @return Updated input x with the new list element
-#'
-#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
-#'
-#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
-#'
-#'     REACTSUM_SAMP = number of reactive antigens per sample,
-#'
-#'     REACTFREQ_SAMP = reactivity frequency per sample,
-#'
-#' @export
-
-ap_reactsummary2 <- function(x,
-                             samplegroups = NULL,
-                             check.names = FALSE) {
-
-  data_bin <- append(x$BINARY, list(Selected_co=x$BINARY_CO))
-
-  if(is.null(samplegroups)){
-    if("Filtered" %in% colnames(x$SAMPLES)){
-      samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
-    } else {
-      samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
-    }
-  }
-  data_size <- table(samplegroups)
-  n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
-
-  # Calculate per antigen
-  data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
-  names(data_sum_ag) <- names(data_bin)
-
-  data_freq_ag <- lapply(1:length(data_sum_ag),
-                         function(cutoff) lapply(data_sum_ag[[cutoff]],
-                                                 function(antigen) round(antigen$x/data_size*100,1)))
-  names(data_freq_ag) <- names(data_sum_ag)
-
-
-  data_sum_ag <- lapply(data_sum_ag,
-                        function(cutoff) data.frame(do.call(cbind,
-                                                            lapply(cutoff,
-                                                                   function(antigen) antigen$x)), check.names = check.names))
-  data_sum_ag <- lapply(data_sum_ag, function(i) {
-    rownames(i) <- levels(samplegroups) ;
-    colnames(i) <- colnames(data_sum_ag[[length(data_sum_ag)]]) ; i } )
-
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
-  data_freq_ag <- lapply(data_freq_ag, function(i) {
-    colnames(i) <- colnames(data_freq_ag[[length(data_freq_ag)]]) ; i } )
-
-  data_sum_ag <- do.call(rbind, data_sum_ag)
-  data_freq_ag <- do.call(rbind, data_freq_ag)
-
-  # Calculate per sample
-  data_sum_samp <- lapply(data_bin,
-                          function(i) apply(i, 1,
-                                            function(l) sum(l, na.rm=T)))
-  names(data_sum_samp) <- names(data_bin)
-
-  data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
-  names(data_freq_samp) <- names(data_sum_samp)
-
-  data_sum_samp <- do.call(cbind, data_sum_samp)
-  data_freq_samp <- do.call(cbind, data_freq_samp)
-
-  # Add to input
-  x <- append(x,
-              list(REACTSUM_AG=data_sum_ag,
-                   REACTFREQ_AG=data_freq_ag,
-                   REACTSUM_SAMP=data_sum_samp,
-                   REACTFREQ_SAMP=data_freq_samp))
-
-  return(x)
-}
-
 #' Full AP data transformation
 #'
 #' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
 #' @param x List with at least three elements, see Details for naming and content.
-#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @param na.rm logical, indicating whether NA values should be stripped
 #'     before the computation proceeds. Altered default from
@@ -437,18 +341,9 @@ ap_reactsummary2 <- function(x,
 #'
 #'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
 #'
-#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
-#'
-#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
-#'
-#'     REACTSUM_SAMP = number of reactive antigens per sample,
-#'
-#'     REACTFREQ_SAMP = reactivity frequency per sample.
-#'
 #' @export
 
 ap_norm2 <- function(x,
-                     samplegroups = NULL,
                      MADlimits = seq(0,70,5),
                      na.rm = TRUE,
                      check.names = FALSE,
@@ -488,10 +383,6 @@ ap_norm2 <- function(x,
                               slope_cutoff = coselect_slope_cutoff,
                               offset = coselect_offset,
                               bw = coselect_bw)
-
-  print("Summarize reactivities")
-  tmp <- ap_reactsummary2(x = tmp,
-                          samplegroups = samplegroups)
 
   return(tmp)
 }
