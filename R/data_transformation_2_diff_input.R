@@ -460,34 +460,36 @@ ap_norm2 <- function(x,
                      coselect_offset = 0.1,
                      coselect_bw = 0.1){
 
+  tmp <- x
 
   print("Doing MADs transformation")
-  x <- ap_mads2(x,
-                constant = mad_constant,
-                na.rm = na.rm,
-                low = mad_low,
-                high = mad_high)
+  tmp <- ap_mads2(x = tmp,
+                  constant = mad_constant,
+                  na.rm = na.rm,
+                  low = mad_low,
+                  high = mad_high)
 
   print("Doing Scoring")
-  x <- ap_scoring2(x,
-                   MADlimits = MADlimits,
-                   rightmost.closed = score_rightmost.closed,
-                   left.open = score_left.open,
-                   all.inside = score_all.inside,
-                   check.names = check.names)
+  tmp <- ap_scoring2(x = tmp,
+                     MADlimits = MADlimits,
+                     rightmost.closed = score_rightmost.closed,
+                     left.open = score_left.open,
+                     all.inside = score_all.inside,
+                     check.names = check.names)
 
   print("Doing Binary transformation")
-  x <- ap_binary2(x)
+  tmp <- ap_binary2(x = tmp,
+                    check.names = check.names)
 
   print("Finding cutoffs")
-  x <- ap_cutoff_selection2(x,
-                            slope_cutoff = coselect_slope_cutoff,
-                            offset = coselect_offset,
-                            bw = coselect_bw)
+  tmp <- ap_cutoff_selection2(x = tmp,
+                              slope_cutoff = coselect_slope_cutoff,
+                              offset = coselect_offset,
+                              bw = coselect_bw)
 
   print("Summarize reactivities")
-  x <- ap_reactsummary2(x,
-                        samplegroups = samplegroups)
+  tmp <- ap_reactsummary2(x = tmp,
+                          samplegroups = samplegroups)
 
-  return(x)
+  return(tmp)
 }
