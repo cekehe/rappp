@@ -9,7 +9,7 @@ ap_agresults(x, samplegroups = NULL, groupcolors = 1:6,
   useDingbats = F)
 }
 \arguments{
-\item{x}{List with at least four elements, see Deatils for naming and content.}
+\item{x}{List with at least nine elements, see Deatils for naming and content.}
 
 \item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
 If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
@@ -25,6 +25,17 @@ Character vector with column names of what to plot also ok.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
+\value{
+A list with the elements
+
+    REACTSUM_AG = number of reactive samples per antigen and sample group,
+
+    REACTFREQ_AG = reactivity frequency per antigen and sample group,
+
+    REACTSUM_SAMP = number of reactive antigens per sample,
+
+    REACTFREQ_SAMP = reactivity frequency per sample,
+}
 \description{
 Plot beeswarm, density and frequency plots for each antigen.
 Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
@@ -38,18 +49,18 @@ The x list needs to include at least the element
 
     BINARY = list with one data.frame per cutoff,
 
-    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+    BINARY_CO = binary table based on antigen specific cutoffs.
 
-    COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+    AGCO = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
-    SAMPLES = Sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
+    COKEY = cutoff key as data.frame with cutoff values, scores and colors.
+
+    SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
 
-    BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+    BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "") will be included in the transformation.
 
-    REACTSUM_AG = number of reactive samples per antigen and sample group,
-
-    REACTFREQ_AG = reactivity frequency per antigen and sample group,
+    DENS = Density output used for cutoff selection,
 }

@@ -40,9 +40,6 @@ Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cu
 \item{coselect_offset}{Offset used to prevent script from finding the peak (as slope = 0 there).}
 
 \item{coselect_bw}{Bandwidth for density funciton, default set to 0.1.}
-
-\item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
-If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
 }
 \value{
 Updated input x with the new list elements
@@ -60,14 +57,6 @@ Updated input x with the new list elements
     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
-
-    REACTSUM_AG = number of reactive samples per antigen and sample group,
-
-    REACTFREQ_AG = reactivity frequency per antigen and sample group,
-
-    REACTSUM_SAMP = number of reactive antigens per sample,
-
-    REACTFREQ_SAMP = reactivity frequency per sample.
 }
 \description{
 Wrapper function for full Autoimmunity Profiling data transformations.

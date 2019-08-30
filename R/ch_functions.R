@@ -1011,7 +1011,7 @@ ap_reactsummary2 <- function(x,
 #' Plot beeswarm, density and frequency plots for each antigen.
 #' Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
 #'
-#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param x List with at least nine elements, see Deatils for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
 #'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
 #' @param groupcolors colors for each group in samplegroups.
@@ -1028,52 +1028,71 @@ ap_reactsummary2 <- function(x,
 #'
 #'     BINARY = list with one data.frame per cutoff,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     BINARY_CO = binary table based on antigen specific cutoffs.
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     AGCO = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
-#'     SAMPLES = Sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
+#'     COKEY = cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'
-#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") will be included in the transformation.
+#'
+#'     DENS = Density output used for cutoff selection,
+#'
+#' @return A list with the elements
 #'
 #'     REACTSUM_AG = number of reactive samples per antigen and sample group,
 #'
 #'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
 #'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample,
+#'
 #' @export
 
 ap_agresults <- function(x,
-                                 samplegroups=NULL,
-                                 groupcolors=1:6,
-                                 agtoplot=NULL,
-                                 filename="AntigenResults.pdf",
-                                 height=15,
-                                 useDingbats=F) {
+                         samplegroups=NULL,
+                         groupcolors=1:6,
+                         agtoplot=NULL,
+                         filename="AntigenResults.pdf",
+                         height=15,
+                         useDingbats=F) {
+
+  print("Calculating frequencies")
+  react_summary <- ap_reactsummary2(x,
+                                    samplegroups = samplegroups)
 
     print("Extract data")
     if("Filtered" %in% colnames(x$BEADS)){
       data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
       data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
       cutoffs <- x$AGCO[which(x$BEADS$Filtered == ""), ]
-      data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
+      # data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE
       cutoffs <- x$AGCO
-      data_bin <- x$BINARY
+      # data_bin <- x$BINARY
     }
 
     cokey <- x$COKEY
 
     data_size <- table(samplegroups)
-    data_sum <- x$REACTSUM_AG$Ag_selected
-    data_freq <- x$REACTFREQ_AG$Ag_selected
 
-    data_freq_all <- data.frame(do.call(rbind, x$REACTFREQ_AG[which(names(x$REACTFREQ_AG) != "Ag_selected")]),
-                                check.names=F)
+    if(sum(grepl("Selected_co", rownames(react_summary$REACTSUM_AG))) > 0){
+      data_sum <- react_summary$REACTSUM_AG[grep("Selected_co", rownames(react_summary$REACTSUM_AG)), ]
+      data_freq <- react_summary$REACTFREQ_AG[grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+      data_freq_all <- react_summary$REACTFREQ_AG[-grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+    } else {
+      data_sum <- react_summary$REACTSUM_AG
+      data_freq <- react_summary$REACTFREQ_AG
+      data_freq_all <- react_summary$REACTFREQ_AG
+    }
 
     print("set samplegroups")
     if(is.null(samplegroups)){
@@ -1144,7 +1163,12 @@ ap_agresults <- function(x,
             col="maroon")
 
       # Frequency
-      plotdata <- data_freq_all[,tmp_ag]
+      plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
+      if(length(levels(samplegroups)) > 1){
+        plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
+        plotdata <- do.call(cbind, plotdata)
+        colnames(plotdata) <- names(data_size)
+      }
       plot(NULL, xlim=c(0,dim(cokey)[1]),
            ylim=c(0,100), xaxt="n", yaxt="n",
            ylab="Reactivity frequency [%]", xlab="MADs cutoff")
@@ -1155,7 +1179,14 @@ ap_agresults <- function(x,
       abline(v=tmp_which_co, lty=2)
       matplot(plotdata, type="l", ylim=c(0,100), lty=1, lwd=2, add=T,
               col=groupcolors)
-      mtext("Percentage of reactivity at each exemplified cutoff.", line=0.1, cex=0.65)
+      mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=1, cex=0.65)
+      legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0, xpd=NA, bty="n", cex=0.8,
+             lty=1, lwd=2, col=groupcolors[seq_along(samplegroups)], legend=levels(samplegroups))
+
+      # Empty plot-spot until Fisher is added
+      if(length(levels(samplegroups)) > 1){
+        frame()
+      }
 
       ##### NOT INCLUDED YET!
       # if(length(levels(samplegroups)) > 1){
@@ -1182,6 +1213,8 @@ ap_agresults <- function(x,
       # }
     }
     dev.off()
+
+    return(react_summary)
   }
 
 #' Analysis summary
