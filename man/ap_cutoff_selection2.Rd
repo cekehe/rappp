@@ -24,9 +24,9 @@ Updated input x with the new list elements
 
     DENS = Density output used for cutoff selection,
 
-    AGCO_CONT = Calculated antigen specific cutoffs, continues values,
+    ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values,
 
-    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+    ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
     BINARY_CO = Binary table based on the antigen specific cutoffs.
 }

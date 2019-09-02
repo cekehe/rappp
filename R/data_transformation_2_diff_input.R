@@ -194,9 +194,9 @@ ap_binary2 <- function(x, check.names = FALSE) {
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values,
+#'     ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
 #'     BINARY_CO = Binary table based on the antigen specific cutoffs.
 #'
@@ -283,8 +283,8 @@ ap_cutoff_selection2 <- function(x,
   colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
 
   x <- append(x, list(DENS=dens,
-                      AGCO_CONT=slope_cutoff_scores,
-                      AGCO=ag_score_cutoffs,
+                      ANTIGEN_CUTOFFS_CONT=slope_cutoff_scores,
+                      ANTIGEN_CUTOFFS=ag_score_cutoffs,
                       BINARY_CO=binary_cutoff))
   return(x)
 }
@@ -337,9 +337,9 @@ ap_cutoff_selection2 <- function(x,
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+#'     ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values.
 #'
 #' @export
 

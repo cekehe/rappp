@@ -54,9 +54,9 @@ Updated input x with the new list elements
 
     DENS = Density output used for cutoff selection,
 
-    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+    ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
-    AGCO_CONT = Calculated antigen specific cutoffs, continues values.
+    ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values.
 }
 \description{
 Wrapper function for full Autoimmunity Profiling data transformations.

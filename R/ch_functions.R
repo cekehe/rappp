@@ -1030,7 +1030,7 @@ ap_reactsummary2 <- function(x,
 #'
 #'     BINARY_CO = binary table based on antigen specific cutoffs.
 #'
-#'     AGCO = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     ANTIGEN_CUTOFFS = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
 #'     COKEY = cutoff key as data.frame with cutoff values, scores and colors.
 #'
@@ -1071,12 +1071,12 @@ ap_agresults <- function(x,
     if("Filtered" %in% colnames(x$BEADS)){
       data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
       data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
-      cutoffs <- x$AGCO[which(x$BEADS$Filtered == ""), ]
+      cutoffs <- x$ANTIGEN_CUTOFFS[which(x$BEADS$Filtered == ""), ]
       # data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE
-      cutoffs <- x$AGCO
+      cutoffs <- x$ANTIGEN_CUTOFFS
       # data_bin <- x$BINARY
     }
 

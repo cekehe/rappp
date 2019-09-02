@@ -51,7 +51,7 @@ The x list needs to include at least the element
 
     BINARY_CO = binary table based on antigen specific cutoffs.
 
-    AGCO = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+    ANTIGEN_CUTOFFS = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
     COKEY = cutoff key as data.frame with cutoff values, scores and colors.
 
