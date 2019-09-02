@@ -21,7 +21,7 @@ Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cu
 \value{
 Updated input x with the new list elements
 
-    COKEY = Cutoff key as data.frame with cutoff values, scores and colors
+    CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors
 
     SCORE = scored data
 }

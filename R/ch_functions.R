@@ -858,7 +858,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
 #'
 #'     SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
@@ -881,7 +881,7 @@ ap_negbeads <- function(x,
     plotdata_score <- x$SCORE
   }
 
-  plotcolor <- x$COKEY
+  plotcolor <- x$CUTOFF_KEY
 
   beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
            pwcol=ifelse(grepl("empty|bare|blank", rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T),"magenta",
@@ -1032,7 +1032,7 @@ ap_reactsummary2 <- function(x,
 #'
 #'     ANTIGEN_CUTOFFS = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
-#'     COKEY = cutoff key as data.frame with cutoff values, scores and colors.
+#'     CUTOFF_KEY = cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #'     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
@@ -1080,7 +1080,7 @@ ap_agresults <- function(x,
       # data_bin <- x$BINARY
     }
 
-    cokey <- x$COKEY
+    cokey <- x$CUTOFF_KEY
 
     data_size <- table(samplegroups)
 

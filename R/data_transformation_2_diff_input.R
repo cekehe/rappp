@@ -104,7 +104,7 @@ ap_cutoffs2 <- function(MADlimits = seq(0,70,5)){
 #'
 #' @return Updated input x with the new list elements
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors
 #'
 #'     SCORE = scored data
 #' @export
@@ -128,7 +128,7 @@ ap_scoring2 <- function(x,
                               dimnames=list(rownames(tmp_data),
                                             colnames(tmp_data)) )/10, check.names = check.names)
 
-  x <- append(x, list(COKEY=xmad_score,
+  x <- append(x, list(CUTOFF_KEY=xmad_score,
                       SCORE=scores))
 
   return(x)
@@ -147,7 +147,7 @@ ap_scoring2 <- function(x,
 #'
 #'     SCORE = scored data,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -158,7 +158,7 @@ ap_scoring2 <- function(x,
 ap_binary2 <- function(x, check.names = FALSE) {
 
   tmp_data <- x$SCORE
-  cutoffs <- x$COKEY
+  cutoffs <- x$CUTOFF_KEY
 
   binary_list <- lapply(cutoffs$score, function(cutoff)
         data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = check.names))
@@ -188,7 +188,7 @@ ap_binary2 <- function(x, check.names = FALSE) {
 #'
 #'     SCORE = scored data,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -208,7 +208,7 @@ ap_cutoff_selection2 <- function(x,
                                  bw = 0.1,
                                  check.names = FALSE) {
 
-  cutoffs <- x$COKEY
+  cutoffs <- x$CUTOFF_KEY
 
   inputdata <- x$SCORE
   if(sum(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1]) > 0){
@@ -329,7 +329,7 @@ ap_cutoff_selection2 <- function(x,
 #'
 #'     MADs = assay MADs,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors,
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors,
 #'
 #'     SCORE = scored data,
 #'

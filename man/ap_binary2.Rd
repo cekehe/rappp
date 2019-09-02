@@ -27,5 +27,5 @@ The x list needs to include at least the elements:
 
     SCORE = scored data,
 
-    COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+    CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 }

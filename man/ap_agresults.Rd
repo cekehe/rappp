@@ -53,7 +53,7 @@ The x list needs to include at least the element
 
     ANTIGEN_CUTOFFS = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
-    COKEY = cutoff key as data.frame with cutoff values, scores and colors.
+    CUTOFF_KEY = cutoff key as data.frame with cutoff values, scores and colors.
 
     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
