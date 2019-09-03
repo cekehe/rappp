@@ -8,20 +8,6 @@ ap_summary(x)
 }
 \arguments{
 \item{x}{List with at least two elements, see Deatils for naming and content.}
-
-\item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
-If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
-
-\item{groupcolors}{colors for each group in samplegroups.}
-
-\item{agtoplot}{Indices for which antigens to plot, default is all.
-Character vector with column names of what to plot also ok.}
-
-\item{filename}{String with filename and desired path, end with .pdf}
-
-\item{height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
-
-\item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \description{
 Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.

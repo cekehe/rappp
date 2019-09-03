@@ -1233,14 +1233,6 @@ ap_agresults <- function(x,
 #' Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.
 #'
 #' @param x List with at least two elements, see Deatils for naming and content.
-#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
-#' @param groupcolors colors for each group in samplegroups.
-#' @param agtoplot Indices for which antigens to plot, default is all.
-#'     Character vector with column names of what to plot also ok.
-#' @param filename String with filename and desired path, end with .pdf
-#' @param height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
 #' @details The x list needs to include at least the elements
 #'
 #'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs.
