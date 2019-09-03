@@ -41,8 +41,6 @@ ap_mads2 <- function(x,
 
   if("Filtered" %in% colnames(x$BEADS)){
     tmp_data <- tmp_data[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
-  } else {
-    tmp_data <- tmp_data
   }
 
   mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
