@@ -131,7 +131,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
-                   shouldplot=T, filename="anti-humanIgX.pdf", width=10, height=6, useDingbats=F) {
+                   shouldplot=T, filename="anti-humanIgX.pdf", width=12, height=6, useDingbats=F) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
@@ -146,12 +146,12 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
     if(shouldplot){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
-      layout(matrix(c(1,1,1,6,7,
-                      1,1,1,2,3,
-                      1,1,1,4,5), nrow=3, byrow=T))
+      layout(matrix(c(1,1,1,2,3,
+                      1,1,1,4,5,
+                      1,1,1,6,7), nrow=3, byrow=T))
       par(mar=c(5,5,4,4))
 
-      plot(1:length(plotdata), plotdata, cex=0.5, pch=c(16:18,6,8)[AssayNum],
+      plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum],
            xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Total hIg", IgType, ""),
            col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
                       ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
@@ -174,6 +174,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), "Filter cutoff"),
              offset=0.6, xpd=NA)
 
+      par(mar=c(5,1,4,1))
+      frame()
+      frame()
       # Display samples with high but still outliers
       if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
         plottext <- data.frame(AssayWell=sampledata$AssayWell,
@@ -184,14 +187,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
           ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5, xpd=NA, at=-0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6)
           frame()
         }
 
@@ -210,14 +213,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
           ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5, xpd=NA, at=-0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6)
           frame()
         }
 
