@@ -1185,11 +1185,13 @@ ap_agresults <- function(x,
       abline(v=tmp_which_co, lty=2)
       matplot(plotdata, type="l", ylim=c(0,100), lty=1, lwd=2, add=T,
               col=groupcolors)
-      mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=1, cex=0.65)
 
       if(length(levels(samplegroups)) > 1){
+        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=1, cex=0.65)
       legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0, xpd=NA, bty="n", cex=0.8,
              lty=1, lwd=2, col=groupcolors[seq_along(samplegroups)], legend=levels(samplegroups))
+      } else {
+        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=0.1, cex=0.65)
       }
 
       # Empty plot-spot until Fisher is added
