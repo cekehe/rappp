@@ -1,0 +1,81 @@
+---
+title: "Summary of what we learnt among the Rauks<br><br><br><br><br>"
+output: 
+  ioslides_presentation:
+    css: style.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Take home things
+
+Robust and reproducible data analysis through
+
+- Work in projects in RStudio
+- Git and GitKraken/Source Tree
+- Rmarkdown
+- Making functions instead of copy paste
+
+
+Additional things that help with robustness and reproducibility indirectly
+
+- Naming things clearly and consistently
+- Tidyverse
+
+## Benefits from working in projects
+
+- No need for setwd() (or getwd())
+- No need to mix up global variables between projects
+
+NOW A DEMO!
+
+## Git and GitHub
+
+- Version control
+- Collaborations
+
+NOW A DEMO!
+
+## Rmarkdown
+
+## Making functions
+
+- If you do something more than twice: make it into a function!
+- Less error prone
+- Cleaner code in actual analysis script
+- Keep them short
+- Make wrappers for smaller functions for bigger workflow
+
+
+## Things that are good to remember
+
+Divide and conquer
+
+## Things that opened our minds
+
+- ggplot
+- Interactive plots and shiny apps
+
+## Presention
+
+This presention was done using Rmarkdown in RStudio
+
+```{r , echo = TRUE}
+sessionInfo()
+```
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+
