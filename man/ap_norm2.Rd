@@ -74,5 +74,5 @@ The x list needs to include at least the elements:
     BEADS = Beads info (Filtered column with information about filtering),
 
     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") in such column will be included.
+    Any samples with no text (ie. "") in such column will be included.
 }
