@@ -26,4 +26,5 @@ Imports:
     Rtsne,
     scales,
     gridExtra,
-    ggplot2
+    ggplot2,
+    WriteXLS

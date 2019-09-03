@@ -8,4 +8,5 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tibble tibble
 #' @import ggplot2
+#' @importFrom WriteXLS WriteXLS
 NULL

@@ -1284,3 +1284,69 @@ ap_summary <- function(x) {
   print(table(x$SAMPLES$Filtered))
 }
 
+#' Export data from Autoimmunity Profiling analysis to excel
+#'
+#' Exports chosen list elemnts to sheets in an Excel-file.
+#' Default elements are based on output from \code{\link[rappp:ap_norm2]{ap_norm2()}}, and
+#'  \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or \code{\link[rappp:ap_agresults]{ap_agresults()}}
+#'
+#' @param x list with at least the elements to export, see Deatils for more information and exceptions to the rule.
+#' @param elements character vector of names of the list elements to export.
+#'     The sheets will be ordered in the same order as the vector.
+#' @param row.names if TRUE, the row names of the data frames are included in the Excel file worksheets.
+#'     Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
+#' @param filename string with filename and desired path, end with .xlsx.
+#' @param ... arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
+#' @details The x list needs to include at least the elements specified under \code{elements}.
+#'   It is recommended to append the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
+#'   \code{\link[rappp:ap_agresults]{ap_agresults()}} to the output from \code{\link[rappp:ap_norm2]{ap_norm2()}}
+#'   and use the combined list as function input.
+#'
+#'   Exceptions for input element names:\cr
+#'   - If an element is named BEADS in the input data, its name will be changed to ANTIGENS.
+#'   Therefore, ANTIGENS is a default element to export while BEADS is not.\cr
+#'   - Sums and frequencies at the cutoffs from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
+#'   will be combined into a new element called REACTIVITIES
+#'  if the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
+#'  \code{\link[rappp:ap_agresults]{ap_agresults()}} is included in the output
+#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.
+#'
+#'   If other list structures are used, it is most likely more convenient to just use
+#'   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.
+#'
+#' @export
+
+ap_excel <- function(x,
+                     elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
+                                "REACTIVITIES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+                                "ANTIGENS", "SAMPLES", "COUNT"),
+                     filename = "DataOutput.xlsx",
+                     row.names = TRUE,
+                     ...) {
+  excel <- x
+  if("BEADS" %in% names(excel)){
+  names(excel)[which(names(excel) == "BEADS")] <- "ANTIGENS"
+  }
+
+  if("REACTSUM_AG" %in% names(excel)){
+  tmp_sum <- excel$REACTSUM_AG[grep("Selected", rownames(excel$REACTSUM_AG)),]
+  rownames(tmp_sum) <- gsub("Selected_co","Sum", rownames(tmp_sum))
+  }
+
+  if("REACTSUM_AG" %in% names(excel)){
+  tmp_freq <- excel$REACTFREQ_AG[grep("Selected", rownames(excel$REACTFREQ_AG)),]
+  rownames(tmp_freq) <- gsub("Selected_co","Frequency", rownames(tmp_freq))
+  }
+
+  if(exists("tmp_sum") & exists("tmp_freq")){
+  excel <- append(excel,
+                  list(REACTIVITIES=data.frame(t(tmp_sum),t(tmp_freq))))
+  }
+
+  excel <- excel[match(elements,
+                       names(excel))]
+
+  WriteXLS(excel,
+           ExcelFileName = filename,
+           row.names = row.names, ...)
+}
