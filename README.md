@@ -15,9 +15,12 @@ Ideas for the future:
 Some important commands for the terminal:
 -----------------------------------------
 
-git pull upstream master --ff-only
+git pull upstream master --ff-only # Fast forward merge, try this first
 
-git pull upstream master
+git pull upstream master # If Fast forward is not possible and you have to solve a merge conflict.
+
+git reset HEAD~1 # Undo the last commit (for Windows), but keep all changes (the changes in the last commit will be unstaged).
+Some good info about the reset command at https://stackoverflow.com/questions/2530060/in-plain-english-what-does-git-reset-do
 
 Some useful roxygen2 commands:
 ------------------------------
