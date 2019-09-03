@@ -181,12 +181,20 @@ ap_binary2 <- function(x, check.names = FALSE) {
 #' @details A cutoff will be selected for each antigen based on the
 #' distribution of the scores for the antigen. The algorithm will search for a
 #' local min nearest the highest peak in a density plot using bandwidth=0.1.
+#' The input data will also be transformed into binary data based on the iterated cutoffs.
+#'
+#' Only samples that passed previous QC-filtering will be included when iterating the cutoff,
+#' but if more samples are included in the input data all will be transformed to binary data so
+#' that reactivities in for example control wells can be assessed as well.
 #'
 #' The x list needs to include at least the element:
 #'
 #'     SCORE = scored data,
 #'
 #'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any samples with no text (ie. "") in such column will be included.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -213,8 +221,14 @@ ap_cutoff_selection2 <- function(x,
     inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
   }
 
+  if("Filtered" %in% colnames(x$SAMPLES)){
+    inputdata_sampfilt <- inputdata[which(x$SAMPLES$Filtered == ""), ]
+  } else {
+    inputdata_sampfilt <- inputdata
+  }
+
   ## Apply density function on the scores to get x and y values for density-plots
-  dens <- apply(inputdata, 2, function(y) density(y, bw=bw))
+  dens <- apply(inputdata_sampfilt, 2, function(y) density(y, bw=bw))
 
   # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
   slope <- lapply(dens, function(y) diff(y$y)/diff(y$x))
@@ -254,7 +268,7 @@ ap_cutoff_selection2 <- function(x,
       slope_cutoff_scores[i] <- max(dens[[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
     }
   } # End loop i for each bead (dens)
-  names(slope_cutoff_scores) <- colnames(inputdata)
+  names(slope_cutoff_scores) <- colnames(inputdata_sampfilt)
 
   # Translate the continuous slope cutoff values to the above discrete score value
   ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),

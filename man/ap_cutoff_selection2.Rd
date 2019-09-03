@@ -37,10 +37,18 @@ Select cutoff based on the slope of the density of scores per antigen.
 A cutoff will be selected for each antigen based on the
 distribution of the scores for the antigen. The algorithm will search for a
 local min nearest the highest peak in a density plot using bandwidth=0.1.
+The input data will also be transformed into binary data based on the iterated cutoffs.
+
+Only samples that passed previous QC-filtering will be included when iterating the cutoff,
+but if more samples are included in the input data all will be transformed to binary data so
+that reactivities in for example control wells can be assessed as well.
 
 The x list needs to include at least the element:
 
     SCORE = scored data,
 
     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
+
+    SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+    Any samples with no text (ie. "") in such column will be included.
 }
