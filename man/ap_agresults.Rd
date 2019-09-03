@@ -6,27 +6,33 @@
 \usage{
 ap_agresults(x, samplegroups = NULL, groupcolors = 1:6,
   agtoplot = NULL, filename = "AntigenResults.pdf", height = 15,
-  useDingbats = F)
+  useDingbats = F, check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least nine elements, see Deatils for naming and content.}
+\item{x}{list with at least nine elements, see Deatils for naming and content.}
 
 \item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
-If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
+If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+otherwise all, will be assigned "Sample".
+Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
 \item{groupcolors}{colors for each group in samplegroups.}
 
-\item{agtoplot}{Indices for which antigens to plot, default is all.
+\item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
 
-\item{filename}{String with filename and desired path, end with .pdf}
+\item{filename}{string with filename and desired path, end with .pdf}
 
-\item{height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
+\item{height}{width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
-\item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+\item{useDingbats}{logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
-A list with the elements
+A list with the elements (output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}})
+
+    SAMPLEGROUPS = annnotation of which group each sample has been assigned,
 
     REACTSUM_AG = number of reactive samples per antigen and sample group,
 
@@ -41,7 +47,7 @@ Plot beeswarm, density and frequency plots for each antigen.
 Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
 }
 \details{
-The x list needs to include at least the element
+the x list needs to include at least the element
 
     MADs = assay MADs,
 
@@ -58,6 +64,8 @@ The x list needs to include at least the element
     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
+    If any wells should be excluded then these should be annotated in a column called "Filtered".
+    Any beads with no text (ie. "") in such column will be included.
 
     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "") will be included in the transformation.

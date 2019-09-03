@@ -923,6 +923,7 @@ ap_negbeads <- function(x,
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") in such column will be included.
+#'     Column "sample_name" with sample names needed.
 #'
 #'     BINARY = list with one data.frame per cutoff
 #'
@@ -932,6 +933,8 @@ ap_negbeads <- function(x,
 #'     from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
 #'
 #' @return A list with the elements
+#'
+#'     SAMPLEGROUPS = annnotation of which group each sample has been assigned,
 #'
 #'     REACTSUM_AG = number of reactive samples per antigen and sample group,
 #'
@@ -957,7 +960,7 @@ ap_reactsummary2 <- function(x,
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
     } else {
-      samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
+      samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
     }
   }
   data_size <- table(samplegroups)
@@ -1001,10 +1004,12 @@ ap_reactsummary2 <- function(x,
   data_freq_samp <- do.call(cbind, data_freq_samp)
 
   # Add to input
-  output <- list(REACTSUM_AG=data_sum_ag,
-                   REACTFREQ_AG=data_freq_ag,
-                   REACTSUM_SAMP=data_sum_samp,
-                   REACTFREQ_SAMP=data_freq_samp)
+  output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
+                                         Grouping=samplegroups),
+                 REACTSUM_AG=data_sum_ag,
+                 REACTFREQ_AG=data_freq_ag,
+                 REACTSUM_SAMP=data_sum_samp,
+                 REACTFREQ_SAMP=data_freq_samp)
 
   return(output)
 }
@@ -1014,16 +1019,19 @@ ap_reactsummary2 <- function(x,
 #' Plot beeswarm, density and frequency plots for each antigen.
 #' Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
 #'
-#' @param x List with at least nine elements, see Deatils for naming and content.
+#' @param x list with at least nine elements, see Deatils for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#'     If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+#'     otherwise all, will be assigned "Sample".
+#'     Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.
 #' @param groupcolors colors for each group in samplegroups.
-#' @param agtoplot Indices for which antigens to plot, default is all.
+#' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
-#' @param filename String with filename and desired path, end with .pdf
-#' @param height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
-#' @details The x list needs to include at least the element
+#' @param filename string with filename and desired path, end with .pdf
+#' @param height width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @details the x list needs to include at least the element
 #'
 #'     MADs = assay MADs,
 #'
@@ -1040,13 +1048,17 @@ ap_reactsummary2 <- function(x,
 #'     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
+#'     If any wells should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
 #'
 #'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") will be included in the transformation.
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
-#' @return A list with the elements
+#' @return A list with the elements (output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}})
+#'
+#'     SAMPLEGROUPS = annnotation of which group each sample has been assigned,
 #'
 #'     REACTSUM_AG = number of reactive samples per antigen and sample group,
 #'
@@ -1064,28 +1076,28 @@ ap_agresults <- function(x,
                          agtoplot=NULL,
                          filename="AntigenResults.pdf",
                          height=15,
-                         useDingbats=F) {
+                         useDingbats=F,
+                         check.names=FALSE) {
 
   print("Calculating frequencies")
   react_summary <- ap_reactsummary2(x,
-                                    samplegroups = samplegroups)
+                                    samplegroups = samplegroups,
+                                    check.names = check.names)
+  samplegroups <- react_summary$SAMPLEGROUPS$Grouping
+  data_size <- table(samplegroups)
 
     print("Extract data")
     if("Filtered" %in% colnames(x$BEADS)){
       data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
       data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
       cutoffs <- x$ANTIGEN_CUTOFFS[which(x$BEADS$Filtered == ""), ]
-      # data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE
       cutoffs <- x$ANTIGEN_CUTOFFS
-      # data_bin <- x$BINARY
     }
 
     cokey <- x$CUTOFF_KEY
-
-    data_size <- table(samplegroups)
 
     if(sum(grepl("Selected_co", rownames(react_summary$REACTSUM_AG))) > 0){
       data_sum <- react_summary$REACTSUM_AG[grep("Selected_co", rownames(react_summary$REACTSUM_AG)), ]
@@ -1095,15 +1107,6 @@ ap_agresults <- function(x,
       data_sum <- react_summary$REACTSUM_AG
       data_freq <- react_summary$REACTFREQ_AG
       data_freq_all <- react_summary$REACTFREQ_AG
-    }
-
-    print("set samplegroups")
-    if(is.null(samplegroups)){
-      if("Filtered" %in% colnames(x$SAMPLES)){
-        samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
-      } else {
-        samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
-      }
     }
 
     print("set agtoplot")

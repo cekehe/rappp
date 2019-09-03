@@ -17,6 +17,8 @@ If left as \code{NULL} (default), the all non-filtered, if filetring done otherw
 \value{
 A list with the elements
 
+    SAMPLEGROUPS = annnotation of which group each sample has been assigned,
+
     REACTSUM_AG = number of reactive samples per antigen and sample group,
 
     REACTFREQ_AG = reactivity frequency per antigen and sample group,
@@ -33,6 +35,7 @@ The x list needs to include at least the elements:
 
     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "") in such column will be included.
+    Column "sample_name" with sample names needed.
 
     BINARY = list with one data.frame per cutoff
 
