@@ -1342,3 +1342,62 @@ ap_excel <- function(x,
            ExcelFileName = filename,
            row.names = row.names, ...)
 }
+
+#' Cutoff key image
+#'
+#' Create a cutoff key for scoring of Autoimmunity Profiling data and
+#' also produce an image.
+#' Uses \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}}
+#'
+#' @param cutoffkey table matching output from \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}},
+#'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
+#'     Not used if cutoffkey is provided.
+#' @return If MADlimits is provided a data.frame with three columns will be returned:
+#'
+#'    [,1] MADs cutoff value
+#'
+#'    [,2] Corresponding score value
+#'
+#'    [,3] Corresponding color using the Zissou1 palette in \code{\link[wesanderson]{wes_palette}}
+#' @export
+
+ap_cutoffs2image <- function(cutoffkey = NULL,
+                             MADlimits = NULL) {
+
+  if(!is.null(cutoffkey)){
+    xmad_score <- cutoffkey
+  } else if(!is.null(MADlimits)){
+    xmad_score <- ap_cutoffs2(MADlimits = MADlimits)
+  } else {
+    warning("Either cutoffkey or MADlimits has to be provided.")
+  }
+
+  par(mar=c(4,6,4,1))
+  plot(x=xmad_score$score, y=rep(1,dim(xmad_score)[1]),
+       ylim=c(0.9,1.1), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
+       xlab=NA, ylab=NA, xaxt="n", yaxt="n", frame.plot=F,
+       pch=22, bg=paste(xmad_score$color), col="black", cex=4)
+  text(x=min(xmad_score$score)-0.2, y=1, xpd=NA,
+       labels="Color", font=2, offset=0, cex=1, adj=1)
+  # Add score boxes
+  points(x=xmad_score$score, y=rep(1.015,dim(xmad_score)[1]),
+         pch=22, col="black", cex=4)
+  textxy(X=xmad_score$score,
+         Y=rep(1.015,dim(xmad_score)[1]),
+         labs=sprintf("%.1f",xmad_score$score), offset=0, cex=0.8)
+  text(x=min(xmad_score$score)-0.2, y=1.015, xpd=NA,
+       labels="Score", font=2, offset=0, cex=1, adj=1)
+  # Add xMAD boxes
+  points(x=xmad_score$score, y=rep(1.03,dim(xmad_score)[1]),
+         pch=22, col="black", cex=4)
+  textxy(X=xmad_score$score,
+         Y=rep(1.03,dim(xmad_score)[1]),
+         labs=c("<0", xmad_score$xmad[-1]), offset=0, cex=0.8)
+  text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+       labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+
+  if(is.null(cutoffkey)){
+    return(xmad_score)
+  }
+}
