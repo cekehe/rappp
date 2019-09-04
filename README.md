@@ -30,6 +30,8 @@ Some useful general package tips:
 ---------------------------------
 https://kbroman.org/pkg_primer/pages/depends.html - Good info on dependencies.
 
+https://www.w3schools.com/cssref/default.asp - Good reference list for css-syntax (eg useful in Rmarkdown).
+
 This is how you should name versions: 
 -------------------------------------
 
