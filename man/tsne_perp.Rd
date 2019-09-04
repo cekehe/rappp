@@ -4,15 +4,17 @@
 \alias{tsne_perp}
 \title{tSNE plots with different perplexities}
 \usage{
-tsne_perp(z, perp = c(2, 5, 10, 50), iterations = 1000, groups, names,
-  legend = T, legendname = NULL, main = NULL,
-  filename = "t-SNE_perplezities.pdf", height = 16, useDingbats = F)
+tsne_perp(z, perp = c(2, 5, 10, 50), sqrt = TRUE, iterations = 1000,
+  groups, names, legend = T, legendname = NULL, main = NULL,
+  filename = "t-SNE_perplexities.pdf", height = 16, useDingbats = F)
 }
 \arguments{
-\item{z}{a list of data}
+\item{z}{the data as a data.frame}
 
-\item{perp}{a vector of values to test as perplexities, eg. c(2,5,10,50).
-sqrt(Nsamples) will always be included.}
+\item{perp}{a vector of values to test as perplexities, eg. c(2,5,10,50).}
+
+\item{sqrt}{logical, should sqrt(Nsamples) be added to perplexities?
+Potentially the lowest needed perplexity.}
 
 \item{iterations}{number of iterations per tSNE}
 
@@ -34,8 +36,4 @@ sqrt(Nsamples) will always be included.}
 }
 \description{
 tSNE plots with different perplexities and designs.
-}
-\details{
-The x list needs to include at least the element
-    MFI = assay mfi,
 }

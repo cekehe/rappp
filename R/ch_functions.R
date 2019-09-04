@@ -764,9 +764,10 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #'
 #' tSNE plots with different perplexities and designs.
 #'
-#' @param z a list of data
+#' @param z the data as a data.frame
 #' @param perp a vector of values to test as perplexities, eg. c(2,5,10,50).
-#'     sqrt(Nsamples) will always be included.
+#' @param sqrt logical, should sqrt(Nsamples) be added to perplexities?
+#'     Potentially the lowest needed perplexity.
 #' @param iterations number of iterations per tSNE
 #' @param groups grouping for colors and lines
 #' @param names text to display as point labels
@@ -776,21 +777,22 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #' @param filename String with filename and desired path, end with .pdf
 #' @param height height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
-#' @details The x list needs to include at least the element
-#'     MFI = assay mfi,
 #'
 #' @export
 
-tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
+tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, names,
                       legend=T, legendname=NULL, main=NULL,
-                      filename="t-SNE_perplezities.pdf", height=16, useDingbats=F) {
+                      filename="t-SNE_perplexities.pdf", height=16, useDingbats=F) {
 
-  g <- rep(list(NULL), length(z)*(length(perp)+1))
   n=1
-  for(l in 1:length(z)){
-    perp <- sort(c(perp, round(sqrt(dim(z[[l]])[1]))))
+    if(sqrt){
+    perp <- sort(c(perp, round(sqrt(dim(z)[1]))))
+    }
+
+    g <- rep(list(NULL), (length(perp)))
+
     for(p in 1:length(perp)){
-      tsne_tmp = Rtsne(z[[l]], check_duplicates=F, perplezity=perp[p], maz_iter=iterations)
+      tsne_tmp = Rtsne(z, check_duplicates=F, perplezity=perp[p], maz_iter=iterations)
 
       x=tsne_tmp$Y[,1]
       y=tsne_tmp$Y[,2]
@@ -837,7 +839,6 @@ tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
       g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
       n=n+1
     }
-  }
 
   lay <- matrix(1:(4*length(perp)), nrow=4)
 
