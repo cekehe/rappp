@@ -60,8 +60,6 @@ ap_mads2 <- function(x,
 #'
 #' Create a cutoff key for scoring of Autoimmunity Profiling data.
 #'
-#' @details The input values will be binned into discrete bins (scores).
-#'
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @return data.frame with three columns:
 #'
