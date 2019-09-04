@@ -6,7 +6,8 @@ FOR NEW RELEASES, IE PULL REQUESTS:
 -----------------------------------
 - UPDATE DEV NUMBER +1 IN DESCRIPTION
 - UPDATE DATE IN DESCRIPTION
-- CREATE A tar.gz-file AND PUT ON BOX (PAPP>Data>R codes>R_packages>rappp (under development))
+- DO PULL REQUEST
+- CREATE A .tar.gz-file AND PUT ON BOX (PAPP>Data>R codes>R_packages>rappp (under development))
 
 See further information about version numbering and creating tar.gz-files below. 
 
@@ -36,7 +37,7 @@ https://kbroman.org/pkg_primer/pages/depends.html - Good info on dependencies.
 
 https://www.w3schools.com/cssref/default.asp - Good reference list for css-syntax (eg useful in Rmarkdown).
 
-Create tar.gz-file - In RStudio terminal, write 'cd..', press ENTER (goes one folder upp), write 'R CMD build rappp', press ENTER (creates the file in the folder above package folder).
+Create .tar.gz-file - In RStudio terminal, write 'cd..', press ENTER (goes one folder upp), write 'R CMD build rappp', press ENTER (creates the file in the folder above package folder).
 
 This is how you should name versions: 
 -------------------------------------
