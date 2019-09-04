@@ -1,0 +1,8 @@
+slides > .title-slide {
+  background-image: url("images/RaukR.JPG");
+  background-size: 100% 100%;
+}
+.title-slide hgroup h1 {
+  color: #555555;
+}
+
