@@ -14,34 +14,48 @@
 #' @details The x list needs to include at least the elements
 #'     CT = coupling test mfi,
 #'
-#'     BEADS = Beads info (including Type-column with PrEST for PrESTs),
+#'     BEADS = Beads info. See below for required columns.
 #'
 #'     FILTERINFO = Vector with info on which filter steps has been done.
+#'
+#' The BEADS element needs at least the columns:
+#'
+#'     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+#'
+#'     "Plate" with numerical coupling plate number(s).
+#'
 #' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
-                  shouldplot=T, filename="coupling_efficiency.pdf", width=30, height=6, useDingbats=F, ...) {
+                  shouldplot=T, filename="coupling_efficiency.pdf", width=25, height=6, useDingbats=F, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
 
     if(shouldplot){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
       par(mar=c(12,4,2,8), cex.axis=0.8)
-      layout(matrix(c(1,1,1,2), nrow=1))
+      layout(matrix(c(1,1,1,1,2), nrow=1))
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
                   pwcol=rep(ifelse(grepl("empty|bare|blank", colnames(x$CT),ignore.case=T), "orange",
-                                   ifelse(grepl("his6abp", colnames(x$CT),ignore.case=T), "darkgreen",
-                                          ifelse(grepl("higg", colnames(x$CT),ignore.case=T), "blue",
+                                   ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
+                                          ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
                                                         ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
       axis(1, at=bs$x[seq(1, dim(bs)[1], 3)], labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
-      abline(v=seq(min(bs$x)-0.5, max(bs$x)+0.5, 1), lty=2, col="lightgrey")
+
+      vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
+      abline(v=vert_lines, lty=2,
+             col=ifelse(c(duplicated(x$BEADS$Plate),F), "lightgrey", "black"))
+      tmp <- vert_lines[which(!c(duplicated(x$BEADS$Plate),F))]
+      mtext(text=paste("Plate ",unique(x$BEADS$Plate)), at=diff(tmp)/2+tmp[-length(tmp)],
+            side=1, line=0, cex=0.7, font=2)
+
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Empty", "His6ABP", "ahIgG", "EBNA1", "Flagged"),
+             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Flagged"),
              col=c("orange", "darkgreen", "blue", "purple", "red"),
              pch=16, xpd=NA)
       abline(h=empty_co, lty=2)
@@ -117,7 +131,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
-                   shouldplot=T, filename="anti-humanIgX.pdf", width=10, height=6, useDingbats=F) {
+                   shouldplot=T, filename="anti-humanIgX.pdf", width=12, height=6, useDingbats=F) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
@@ -132,12 +146,12 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
     if(shouldplot){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
-      layout(matrix(c(1,1,1,6,7,
-                      1,1,1,2,3,
-                      1,1,1,4,5), nrow=3, byrow=T))
+      layout(matrix(c(1,1,1,2,3,
+                      1,1,1,4,5,
+                      1,1,1,6,7), nrow=3, byrow=T))
       par(mar=c(5,5,4,4))
 
-      plot(1:length(plotdata), plotdata, cex=0.5, pch=c(16:18,6,8)[AssayNum],
+      plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum],
            xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Total hIg", IgType, ""),
            col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
                       ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
@@ -160,6 +174,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), "Filter cutoff"),
              offset=0.6, xpd=NA)
 
+      par(mar=c(5,1,4,1))
+      frame()
+      frame()
       # Display samples with high but still outliers
       if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
         plottext <- data.frame(AssayWell=sampledata$AssayWell,
@@ -170,14 +187,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
           ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5, xpd=NA, at=-0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top", cex=0.6)
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6)
           frame()
         }
 
@@ -196,14 +213,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
           ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5, xpd=NA, at=-0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=1, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.5)
+                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6)
           frame()
         }
 
@@ -747,9 +764,10 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #'
 #' tSNE plots with different perplexities and designs.
 #'
-#' @param z a list of data
+#' @param z the data as a data.frame
 #' @param perp a vector of values to test as perplexities, eg. c(2,5,10,50).
-#'     sqrt(Nsamples) will always be included.
+#' @param sqrt logical, should sqrt(Nsamples) be added to perplexities?
+#'     Potentially the lowest needed perplexity.
 #' @param iterations number of iterations per tSNE
 #' @param groups grouping for colors and lines
 #' @param names text to display as point labels
@@ -759,21 +777,22 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
 #' @param filename String with filename and desired path, end with .pdf
 #' @param height height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
-#' @details The x list needs to include at least the element
-#'     MFI = assay mfi,
 #'
 #' @export
 
-tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
+tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, names,
                       legend=T, legendname=NULL, main=NULL,
-                      filename="t-SNE_perplezities.pdf", height=16, useDingbats=F) {
+                      filename="t-SNE_perplexities.pdf", height=16, useDingbats=F) {
 
-  g <- rep(list(NULL), length(z)*(length(perp)+1))
   n=1
-  for(l in 1:length(z)){
-    perp <- sort(c(perp, round(sqrt(dim(z[[l]])[1]))))
+    if(sqrt){
+    perp <- sort(c(perp, round(sqrt(dim(z)[1]))))
+    }
+
+    g <- rep(list(NULL), (length(perp)))
+
     for(p in 1:length(perp)){
-      tsne_tmp = Rtsne(z[[l]], check_duplicates=F, perplezity=perp[p], maz_iter=iterations)
+      tsne_tmp = Rtsne(z, check_duplicates=F, perplezity=perp[p], maz_iter=iterations)
 
       x=tsne_tmp$Y[,1]
       y=tsne_tmp$Y[,2]
@@ -820,7 +839,6 @@ tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
       g[[n]]$layout$clip[g[[n]]$layout$name == "panel"] <- "off"
       n=n+1
     }
-  }
 
   lay <- matrix(1:(4*length(perp)), nrow=4)
 
@@ -844,7 +862,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), iterations=1000, groups, names,
 #'
 #'     SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
@@ -867,7 +885,7 @@ ap_negbeads <- function(x,
     plotdata_score <- x$SCORE
   }
 
-  plotcolor <- x$COKEY
+  plotcolor <- x$CUTOFF_KEY
 
   beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
            pwcol=ifelse(grepl("empty|bare|blank", rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T),"magenta",
@@ -892,21 +910,129 @@ ap_negbeads <- function(x,
   dev.off()
 }
 
+#' Calculate reactivity frequencies
+#'
+#' Calculate number of reactivities and the corresponding frequencies in Autoimmunity Profiling data.
+#'
+#' @param x List with at least two elements, see Details for naming and content.
+#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
+#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @details
+#'
+#' The x list needs to include at least the elements:
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
+#'     Column "sample_name" with sample names needed.
+#'
+#'     BINARY = list with one data.frame per cutoff
+#'
+#'     Optional element:
+#'
+#'     BINARY_CO = Binary table based on antigen specific cutoffs
+#'     from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#'
+#' @return A list with the elements
+#'
+#'     SAMPLEGROUPS = annnotation of which group each sample has been assigned,
+#'
+#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
+#'
+#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
+#'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample,
+#'
+#' @export
+
+ap_reactsummary2 <- function(x,
+                             samplegroups = NULL,
+                             check.names = FALSE) {
+
+  if("BINARY_CO" %in%  names(x)){
+    data_bin <- append(x$BINARY, list(Selected_co=x$BINARY_CO))
+  } else {
+    data_bin <- x$BINARY
+  }
+
+  if(is.null(samplegroups)){
+    if("Filtered" %in% colnames(x$SAMPLES)){
+      samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
+    } else {
+      samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
+    }
+  }
+  data_size <- table(samplegroups)
+  n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
+
+  # Calculate per antigen
+  data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
+  names(data_sum_ag) <- names(data_bin)
+
+  data_freq_ag <- lapply(1:length(data_sum_ag),
+                         function(cutoff) lapply(data_sum_ag[[cutoff]],
+                                                 function(antigen) round(antigen$x/data_size*100,1)))
+  names(data_freq_ag) <- names(data_sum_ag)
+
+
+  data_sum_ag <- lapply(data_sum_ag,
+                        function(cutoff) data.frame(do.call(cbind,
+                                                            lapply(cutoff,
+                                                                   function(antigen) antigen$x)), check.names = check.names))
+  data_sum_ag <- lapply(data_sum_ag, function(i) {
+    rownames(i) <- levels(samplegroups) ;
+    colnames(i) <- colnames(data_sum_ag[[length(data_sum_ag)]]) ; i } )
+
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
+  data_freq_ag <- lapply(data_freq_ag, function(i) {
+    colnames(i) <- colnames(data_freq_ag[[length(data_freq_ag)]]) ; i } )
+
+  data_sum_ag <- do.call(rbind, data_sum_ag)
+  data_freq_ag <- do.call(rbind, data_freq_ag)
+
+  # Calculate per sample
+  data_sum_samp <- lapply(data_bin,
+                          function(i) apply(i, 1,
+                                            function(l) sum(l, na.rm=T)))
+  names(data_sum_samp) <- names(data_bin)
+
+  data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
+  names(data_freq_samp) <- names(data_sum_samp)
+
+  data_sum_samp <- do.call(cbind, data_sum_samp)
+  data_freq_samp <- do.call(cbind, data_freq_samp)
+
+  # Add to input
+  output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
+                                         Grouping=samplegroups),
+                 REACTSUM_AG=data_sum_ag,
+                 REACTFREQ_AG=data_freq_ag,
+                 REACTSUM_SAMP=data_sum_samp,
+                 REACTFREQ_SAMP=data_freq_samp)
+
+  return(output)
+}
+
 #' Reactivity result plots
 #'
 #' Plot beeswarm, density and frequency plots for each antigen.
 #' Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
 #'
-#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param x list with at least nine elements, see Deatils for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#'     If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+#'     otherwise all, will be assigned "Sample".
+#'     Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.
 #' @param groupcolors colors for each group in samplegroups.
-#' @param agtoplot Indices for which antigens to plot, default is all.
+#' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
-#' @param filename String with filename and desired path, end with .pdf
-#' @param height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
-#' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
-#' @details The x list needs to include at least the element
+#' @param filename string with filename and desired path, end with .pdf
+#' @param height width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @details the x list needs to include at least the element
 #'
 #'     MADs = assay MADs,
 #'
@@ -914,60 +1040,74 @@ ap_negbeads <- function(x,
 #'
 #'     BINARY = list with one data.frame per cutoff,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     BINARY_CO = binary table based on antigen specific cutoffs.
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'     ANTIGEN_CUTOFFS = calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
-#'     SAMPLES = Sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
+#'     CUTOFF_KEY = cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     SAMPLES = sample info. Including column "sample_name" with sample names, preferably LIMS-IDs, where
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
+#'     If any wells should be excluded then these should be annotated in a column called "Filtered".
+#'     Any beads with no text (ie. "") in such column will be included.
 #'
-#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "") will be included in the transformation.
+#'
+#'     DENS = Density output used for cutoff selection,
+#'
+#' @return A list with the elements (output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}})
+#'
+#'     SAMPLEGROUPS = annnotation of which group each sample has been assigned,
 #'
 #'     REACTSUM_AG = number of reactive samples per antigen and sample group,
 #'
 #'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
 #'
+#'     REACTSUM_SAMP = number of reactive antigens per sample,
+#'
+#'     REACTFREQ_SAMP = reactivity frequency per sample,
+#'
 #' @export
 
 ap_agresults <- function(x,
-                                 samplegroups=NULL,
-                                 groupcolors=1:6,
-                                 agtoplot=NULL,
-                                 filename="AntigenResults.pdf",
-                                 height=15,
-                                 useDingbats=F) {
+                         samplegroups=NULL,
+                         groupcolors=1:6,
+                         agtoplot=NULL,
+                         filename="AntigenResults.pdf",
+                         height=15,
+                         useDingbats=F,
+                         check.names=FALSE) {
+
+  print("Calculating frequencies")
+  react_summary <- ap_reactsummary2(x,
+                                    samplegroups = samplegroups,
+                                    check.names = check.names)
+  samplegroups <- react_summary$SAMPLEGROUPS$Grouping
+  data_size <- table(samplegroups)
 
     print("Extract data")
     if("Filtered" %in% colnames(x$BEADS)){
       data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
       data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
-      cutoffs <- x$AGCO[which(x$BEADS$Filtered == ""), ]
-      data_bin <- lapply(x$BINARY, function(i) i[, which(x$BEADS$Filtered == "")])
+      cutoffs <- x$ANTIGEN_CUTOFFS[which(x$BEADS$Filtered == ""), ]
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE
-      cutoffs <- x$AGCO
-      data_bin <- x$BINARY
+      cutoffs <- x$ANTIGEN_CUTOFFS
     }
 
-    cokey <- x$COKEY
+    cokey <- x$CUTOFF_KEY
 
-    data_size <- table(samplegroups)
-    data_sum <- x$REACTSUM_AG$Ag_selected
-    data_freq <- x$REACTFREQ_AG$Ag_selected
-
-    data_freq_all <- data.frame(do.call(rbind, x$REACTFREQ_AG[which(names(x$REACTFREQ_AG) != "Ag_selected")]),
-                                check.names=F)
-
-    print("set samplegroups")
-    if(is.null(samplegroups)){
-      if("Filtered" %in% colnames(x$SAMPLES)){
-        samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
-      } else {
-        samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
-      }
+    if(sum(grepl("Selected_co", rownames(react_summary$REACTSUM_AG))) > 0){
+      data_sum <- react_summary$REACTSUM_AG[grep("Selected_co", rownames(react_summary$REACTSUM_AG)), ]
+      data_freq <- react_summary$REACTFREQ_AG[grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+      data_freq_all <- react_summary$REACTFREQ_AG[-grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+    } else {
+      data_sum <- react_summary$REACTSUM_AG
+      data_freq <- react_summary$REACTFREQ_AG
+      data_freq_all <- react_summary$REACTFREQ_AG
     }
 
     print("set agtoplot")
@@ -1030,7 +1170,12 @@ ap_agresults <- function(x,
             col="maroon")
 
       # Frequency
-      plotdata <- data_freq_all[,tmp_ag]
+      plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
+      if(length(levels(samplegroups)) > 1){
+        plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
+        plotdata <- do.call(cbind, plotdata)
+        colnames(plotdata) <- names(data_size)
+      }
       plot(NULL, xlim=c(0,dim(cokey)[1]),
            ylim=c(0,100), xaxt="n", yaxt="n",
            ylab="Reactivity frequency [%]", xlab="MADs cutoff")
@@ -1041,7 +1186,19 @@ ap_agresults <- function(x,
       abline(v=tmp_which_co, lty=2)
       matplot(plotdata, type="l", ylim=c(0,100), lty=1, lwd=2, add=T,
               col=groupcolors)
-      mtext("Percentage of reactivity at each exemplified cutoff.", line=0.1, cex=0.65)
+
+      if(length(levels(samplegroups)) > 1){
+        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=1, cex=0.65)
+      legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0, xpd=NA, bty="n", cex=0.8,
+             lty=1, lwd=2, col=groupcolors[seq_along(samplegroups)], legend=levels(samplegroups))
+      } else {
+        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=0.1, cex=0.65)
+      }
+
+      # Empty plot-spot until Fisher is added
+      if(length(levels(samplegroups)) > 1){
+        frame()
+      }
 
       ##### NOT INCLUDED YET!
       # if(length(levels(samplegroups)) > 1){
@@ -1068,4 +1225,180 @@ ap_agresults <- function(x,
       # }
     }
     dev.off()
+
+    return(react_summary)
   }
+
+#' Analysis summary
+#'
+#' Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.
+#'
+#' @param x List with at least two elements, see Deatils for naming and content.
+#' @details The x list needs to include at least the elements
+#'
+#'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs.
+#'
+#'     BEADS = Beads info. Including columns:
+#'
+#'     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+#'
+#'     "PrEST.seq..aa." with amino acid sequences,
+#'
+#'     "Filtered" with filtering annotation, e.g. from other ap_-functions
+#'
+#'     "Flagged" with filtering annotation, e.g. from other ap_-functions
+#'
+#' @export
+
+ap_summary <- function(x) {
+  # Cohorts
+  print("Samples per cohort")
+  print(table(matrix(unlist(strsplit(as.character(x$SAMPLES$sample_name),"-")), ncol=2, byrow=T)[,1]))
+  # Uniprot IDs
+  print("Table of Uniprot IDs")
+  print(sort(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
+  print("Unique Uniprot IDs")
+  print(length(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
+  # Aminoacids
+  print("Table of sequence lenghts")
+  print(sort(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
+  print("min sequence lenghts")
+  print(min(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
+  print("max sequence lenghts")
+  print(max(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
+  print("median sequence lenghts")
+  print(median(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence median length
+  # Filtered & Flagged summary
+  print("Filtered antigens")
+  print(table(x$BEADS$Filtered))
+  print("Flagged antigens")
+  print(table(x$BEADS$Flagged))
+  print("Filtered samples")
+  print(table(x$SAMPLES$Filtered))
+}
+
+#' Export data from Autoimmunity Profiling analysis to excel
+#'
+#' Exports chosen list elemnts to sheets in an Excel-file.
+#' Default elements are based on output from \code{\link[rappp:ap_norm2]{ap_norm2()}}, and
+#'  \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or \code{\link[rappp:ap_agresults]{ap_agresults()}}
+#'
+#' @param x list with at least the elements to export, see Deatils for more information and exceptions to the rule.
+#' @param elements character vector of names of the list elements to export.
+#'     The sheets will be ordered in the same order as the vector.
+#' @param row.names if TRUE, the row names of the data frames are included in the Excel file worksheets.
+#'     Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
+#' @param filename string with filename and desired path, end with .xlsx.
+#' @param ... arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
+#' @details The x list needs to include at least the elements specified under \code{elements}.
+#'   It is recommended to append the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
+#'   \code{\link[rappp:ap_agresults]{ap_agresults()}} to the output from \code{\link[rappp:ap_norm2]{ap_norm2()}}
+#'   and use the combined list as function input.
+#'
+#'   Exceptions for input element names:\cr
+#'   - If an element is named BEADS in the input data, its name will be changed to ANTIGENS.
+#'   Therefore, ANTIGENS is a default element to export while BEADS is not.\cr
+#'   - Sums and frequencies at the cutoffs from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
+#'   will be combined into a new element called REACTIVITIES
+#'  if the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
+#'  \code{\link[rappp:ap_agresults]{ap_agresults()}} is included in the output
+#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.
+#'
+#'   If other list structures are used, it is most likely more convenient to just use
+#'   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.
+#'
+#' @export
+
+ap_excel <- function(x,
+                     elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
+                                "REACTIVITIES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+                                "ANTIGENS", "SAMPLES", "COUNT"),
+                     filename = "DataOutput.xlsx",
+                     row.names = TRUE,
+                     ...) {
+  excel <- x
+  if("BEADS" %in% names(excel)){
+  names(excel)[which(names(excel) == "BEADS")] <- "ANTIGENS"
+  }
+
+  if("REACTSUM_AG" %in% names(excel)){
+  tmp_sum <- excel$REACTSUM_AG[grep("Selected", rownames(excel$REACTSUM_AG)),]
+  rownames(tmp_sum) <- gsub("Selected_co","Sum", rownames(tmp_sum))
+  }
+
+  if("REACTSUM_AG" %in% names(excel)){
+  tmp_freq <- excel$REACTFREQ_AG[grep("Selected", rownames(excel$REACTFREQ_AG)),]
+  rownames(tmp_freq) <- gsub("Selected_co","Frequency", rownames(tmp_freq))
+  }
+
+  if(exists("tmp_sum") & exists("tmp_freq")){
+  excel <- append(excel,
+                  list(REACTIVITIES=data.frame(t(tmp_sum),t(tmp_freq))))
+  }
+
+  excel <- excel[match(elements,
+                       names(excel))]
+
+  WriteXLS(excel,
+           ExcelFileName = filename,
+           row.names = row.names, ...)
+}
+
+#' Cutoff key image
+#'
+#' Create a cutoff key for scoring of Autoimmunity Profiling data and
+#' also produce an image.
+#' Uses \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}}
+#'
+#' @param cutoffkey table matching output from \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}},
+#'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
+#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
+#'     Not used if cutoffkey is provided.
+#' @return If MADlimits is provided a data.frame with three columns will be returned:
+#'
+#'    [,1] MADs cutoff value
+#'
+#'    [,2] Corresponding score value
+#'
+#'    [,3] Corresponding color using the Zissou1 palette in \code{\link[wesanderson]{wes_palette}}
+#' @export
+
+ap_cutoffs2image <- function(cutoffkey = NULL,
+                             MADlimits = NULL) {
+
+  if(!is.null(cutoffkey)){
+    xmad_score <- cutoffkey
+  } else if(!is.null(MADlimits)){
+    xmad_score <- ap_cutoffs2(MADlimits = MADlimits)
+  } else {
+    warning("Either cutoffkey or MADlimits has to be provided.")
+  }
+
+  par(mar=c(4,6,4,1))
+  plot(x=xmad_score$score, y=rep(1,dim(xmad_score)[1]),
+       ylim=c(0.9,1.1), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
+       xlab=NA, ylab=NA, xaxt="n", yaxt="n", frame.plot=F,
+       pch=22, bg=paste(xmad_score$color), col="black", cex=4)
+  text(x=min(xmad_score$score)-0.2, y=1, xpd=NA,
+       labels="Color", font=2, offset=0, cex=1, adj=1)
+  # Add score boxes
+  points(x=xmad_score$score, y=rep(1.015,dim(xmad_score)[1]),
+         pch=22, col="black", cex=4)
+  textxy(X=xmad_score$score,
+         Y=rep(1.015,dim(xmad_score)[1]),
+         labs=sprintf("%.1f",xmad_score$score), offset=0, cex=0.8)
+  text(x=min(xmad_score$score)-0.2, y=1.015, xpd=NA,
+       labels="Score", font=2, offset=0, cex=1, adj=1)
+  # Add xMAD boxes
+  points(x=xmad_score$score, y=rep(1.03,dim(xmad_score)[1]),
+         pch=22, col="black", cex=4)
+  textxy(X=xmad_score$score,
+         Y=rep(1.03,dim(xmad_score)[1]),
+         labs=c("<0", xmad_score$xmad[-1]), offset=0, cex=0.8)
+  text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+       labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+
+  if(is.null(cutoffkey)){
+    return(xmad_score)
+  }
+}

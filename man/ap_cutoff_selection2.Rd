@@ -4,31 +4,29 @@
 \alias{ap_cutoff_selection2}
 \title{Cutoff selection}
 \usage{
-ap_cutoff_selection2(x, cutoffs, slope_cutoff = -0.5, offset = 0.1,
-  bw = 0.1)
+ap_cutoff_selection2(x, slope_cutoff = -0.5, offset = 0.1, bw = 0.1,
+  check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least one element, see Deatils for naming and content.
-It is recommended to use to element Scoring in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
-
-\item{cutoffs}{data.frame with at least one column named score with the desired cutoffs to use,
-and rownames you want to have as identifier for each cutoff.
-It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
+\item{x}{List with at least two elements, see Details for naming and content.
+It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.}
 
 \item{slope_cutoff}{Arbitrary slope cutoff value. Can be chosen freely.}
 
 \item{offset}{Offset used to prevent script from finding the peak (as slope = 0 there).}
 
 \item{bw}{Bandwidth for density funciton, default set to 0.1.}
+
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list elements
 
     DENS = Density output used for cutoff selection,
 
-    AGCO_CONT = Calculated antigen specific cutoffs, continues values,
+    ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values,
 
-    AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+    ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 
     BINARY_CO = Binary table based on the antigen specific cutoffs.
 }
@@ -39,8 +37,18 @@ Select cutoff based on the slope of the density of scores per antigen.
 A cutoff will be selected for each antigen based on the
 distribution of the scores for the antigen. The algorithm will search for a
 local min nearest the highest peak in a density plot using bandwidth=0.1.
+The input data will also be transformed into binary data based on the iterated cutoffs.
+
+Only samples that passed previous QC-filtering will be included when iterating the cutoff,
+but if more samples are included in the input data all will be transformed to binary data so
+that reactivities in for example control wells can be assessed as well.
 
 The x list needs to include at least the element:
 
     SCORE = scored data,
+
+    CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
+
+    SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+    Any samples with no text (ie. "") in such column will be included.
 }

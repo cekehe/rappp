@@ -5,7 +5,7 @@
 \title{Coupling efficency test}
 \usage{
 ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
-  filename = "coupling_efficiency.pdf", width = 30, height = 6,
+  filename = "coupling_efficiency.pdf", width = 25, height = 6,
   useDingbats = F, ...)
 }
 \arguments{
@@ -35,7 +35,13 @@ Flags beads with signal similar to empty bead in coupling test, produces plot if
 The x list needs to include at least the elements
     CT = coupling test mfi,
 
-    BEADS = Beads info (including Type-column with PrEST for PrESTs),
+    BEADS = Beads info. See below for required columns.
 
     FILTERINFO = Vector with info on which filter steps has been done.
+
+The BEADS element needs at least the columns:
+
+    "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+
+    "Plate" with numerical coupling plate number(s).
 }

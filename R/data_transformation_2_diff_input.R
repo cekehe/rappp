@@ -3,9 +3,17 @@
 #' Sample based normalization to number of Median Absolute Deviations (MADs)
 #' from the median for Autoimmunity profiling data.
 #'
-#' @param x List with at least two elements, see Deatils for naming and content.
-#' @param constant Constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).
-#' @param ... Further arguments passed to \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}
+#' @param x list with at least two elements, see Details for naming and content.
+#' @param constant constant for \code{\link[stats:mad]{mad()}} function,
+#'     default is 1 (compared to 1.4826 in base function).
+#' @param na.rm logical, indicating whether NA values should be stripped
+#'     before the computation proceeds. Altered default from
+#'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
+#' @param low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
+#'     the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).
+#' @param high if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
+#'     for even sample size.(From \code{\link[stats:mad]{mad()}}).
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be normalized per sample to the number of MADs from the median
 #' using the algorithm MADs = (MFI - median )/MAD, where MAD is calculated using \code{mad(constant=1)}.
 #'
@@ -21,21 +29,28 @@
 #'     MADs = assay MADs.
 #' @export
 
-ap_mads2 <- function(x, constant=1, ...) {
+ap_mads2 <- function(x,
+                     constant = 1,
+                     na.rm = TRUE,
+                     low = FALSE,
+                     high = FALSE,
+                     check.names = FALSE) {
+
+  org_names <- colnames(x$MFI)
+  tmp_data <- x$MFI
 
   if("Filtered" %in% colnames(x$BEADS)){
-  tmp_data <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
-  } else {
-    tmp_data <- x$MFI
+    tmp_data <- tmp_data[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
   }
 
-  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, ...)))/
-        apply(tmp_data, 1, function(i) mad(i, constant=constant, ...))
+  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
+    apply(tmp_data, 1, function(i) mad(i, constant = constant, na.rm = na.rm, low = low, high = high))
 
-  mads <- data.frame(mads, NA, check.names=F)[, match(colnames(x$MFI), colnames(mads), nomatch=dim(mads)[2]+1)]
-  colnames(mads) <- colnames(x$MFI)
+  mads <- data.frame(mads, NA, check.names = check.names)[, match(org_names, colnames(mads),
+                                                                  nomatch = dim(mads)[2]+1)]
+  colnames(mads) <- org_names
 
-  x <- append(x, list(MADS=mads))
+  x <- append(x, list(MADS = mads))
 
   return(x)
 }
@@ -44,8 +59,6 @@ ap_mads2 <- function(x, constant=1, ...) {
 #' Cutoff key
 #'
 #' Create a cutoff key for scoring of Autoimmunity Profiling data.
-#'
-#' @details The input values will be binned into discrete bins (scores).
 #'
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
 #' @return data.frame with three columns:
@@ -57,13 +70,14 @@ ap_mads2 <- function(x, constant=1, ...) {
 #'    [,3] Corresponding color using the Zissou1 palette in \code{\link[wesanderson]{wes_palette}}
 #' @export
 
-ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
+ap_cutoffs2 <- function(MADlimits = seq(0,70,5)){
 
   xmad_score <- data.frame(xmad=c(NA, MADlimits),
                            score=c(0, 1:length(MADlimits)/10),
                            color=as.character(wes_palette(name = "Zissou1",
                                                           n = length(MADlimits)+1, type = "continuous")))
-  rownames(xmad_score) <- c("Below0xMAD",paste0(MADlimits,rep("xMAD",length(MADlimits))))
+  rownames(xmad_score) <- c(paste0("Below", min(MADlimits), "xMAD"),
+                            paste0(MADlimits, rep("xMAD",length(MADlimits))))
   return(xmad_score)
 }
 
@@ -72,12 +86,12 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'
 #' Binning of MADs values in Autoimmunity Profiling.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
+#' @param x List with at least one element, see Details for naming and content.
 #' It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.
-#' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' @param rightmost.closed,left.open logical, see \code{\link[base:findInterval]{findInterval()}} for details.
-#' @param check.names logical, see \code{\link[base:data.frame]{data.frame()}} for details
-#' @param ... Further arguments passed do \code{\link[base:findInterval]{findInterval()}}
+#' @param MADlimits vector of MADs values used as boundaries for binning.
+#' @param rightmost.closed,left.open,all.inside logical, see \code{\link[base:findInterval]{findInterval()}} for details.
+#'     Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be binned into discrete bins (scores).
 #'
 #' The x list needs to include at least the element:
@@ -86,29 +100,32 @@ ap_cutoffs2 <- function(MADlimits=seq(0,70,5)){
 #'
 #' @return Updated input x with the new list elements
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors
 #'
 #'     SCORE = scored data
 #' @export
 
-ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
-                       rightmost.closed=FALSE, left.open=FALSE,
-                       check.names=FALSE, ...) {
+ap_scoring2 <- function(x,
+                        MADlimits = seq(0,70,5),
+                        rightmost.closed = FALSE,
+                        left.open = FALSE,
+                        all.inside = FALSE,
+                        check.names = FALSE) {
 
   xmad_score <- ap_cutoffs2(MADlimits)
 
   tmp_data <- x$MADS
 
   scores <- data.frame(matrix(t(apply(tmp_data, 1,
-                                      function(i) findInterval(i, xmad_score$xmad[-1],
+                                      function(i) findInterval(x = i, vec = xmad_score$xmad[-1],
                                                                rightmost.closed = rightmost.closed,
-                                                               left.open = left.open, ...))),
+                                                               left.open = left.open, all.inside = all.inside))),
                               ncol=dim(tmp_data)[2],
                               dimnames=list(rownames(tmp_data),
                                             colnames(tmp_data)) )/10, check.names = check.names)
 
-  x <- append(x, list(COKEY=xmad_score,
-                           SCORE=scores))
+  x <- append(x, list(CUTOFF_KEY=xmad_score,
+                      SCORE=scores))
 
   return(x)
 }
@@ -117,16 +134,16 @@ ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
 #'
 #' Create binary matrices based on scored Autoimmunity profiling data.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
-#' It is recommended to use to element SCORE in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
-#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
-#' and rownames you want to have as identifier for each cutoff.
-#' It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param x List with at least two elements, see Details for naming and content.
+#' It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details The input values will be binned into binary data, consisting of 0 and 1.
 #'
-#' The x list needs to include at least the element:
+#' The x list needs to include at least the elements:
 #'
 #'     SCORE = scored data,
+#'
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -134,16 +151,17 @@ ap_scoring2 <- function(x, MADlimits=seq(0,70,5),
 #'
 #' @export
 
-ap_binary2 <- function(x, cutoffs) {
+ap_binary2 <- function(x, check.names = FALSE) {
 
   tmp_data <- x$SCORE
+  cutoffs <- x$CUTOFF_KEY
 
   binary_list <- lapply(cutoffs$score, function(cutoff)
-        data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = FALSE))
+        data.frame(ifelse(tmp_data >= cutoff, 1, 0), check.names = check.names))
 
   names(binary_list) <- rownames(cutoffs)
 
-  x <- append(x, list(BINARY=binary_list))
+  x <- append(x, list(BINARY = binary_list))
 
   return(x)
 }
@@ -152,193 +170,132 @@ ap_binary2 <- function(x, cutoffs) {
 #'
 #' Select cutoff based on the slope of the density of scores per antigen.
 #'
-#' @param x List with at least one element, see Deatils for naming and content.
-#' It is recommended to use to element Scoring in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
-#' @param cutoffs data.frame with at least one column named score with the desired cutoffs to use,
-#' and rownames you want to have as identifier for each cutoff.
-#' It is recommended to use the COKEY element in the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
+#' @param x List with at least two elements, see Details for naming and content.
+#' It is recommended to use the output from \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #' @param slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
 #' @param offset Offset used to prevent script from finding the peak (as slope = 0 there).
 #' @param bw Bandwidth for density funciton, default set to 0.1.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details A cutoff will be selected for each antigen based on the
 #' distribution of the scores for the antigen. The algorithm will search for a
 #' local min nearest the highest peak in a density plot using bandwidth=0.1.
+#' The input data will also be transformed into binary data based on the iterated cutoffs.
+#'
+#' Only samples that passed previous QC-filtering will be included when iterating the cutoff,
+#' but if more samples are included in the input data all will be transformed to binary data so
+#' that reactivities in for example control wells can be assessed as well.
 #'
 #' The x list needs to include at least the element:
 #'
 #'     SCORE = scored data,
 #'
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
+#'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any samples with no text (ie. "") in such column will be included.
+#'
 #' @return Updated input x with the new list elements
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values,
+#'     ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
 #'     BINARY_CO = Binary table based on the antigen specific cutoffs.
 #'
 #' @export
 
 ap_cutoff_selection2 <- function(x,
-                                cutoffs,
-                                slope_cutoff=-0.5,
-                                offset=0.1,
-                                bw=0.1) {
+                                 slope_cutoff = -0.5,
+                                 offset = 0.1,
+                                 bw = 0.1,
+                                 check.names = FALSE) {
 
-      inputdata <- x$SCORE
-      inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
+  cutoffs <- x$CUTOFF_KEY
 
-      ## Apply density function on the scores to get x and y values for density-plots
-      dens <- apply(inputdata, 2, function(y) density(y, bw=bw))
+  inputdata <- x$SCORE
+  if(sum(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1]) > 0){
+    inputdata <- inputdata[,-which(apply(inputdata, 2, function(i) sum(is.na(i))) == dim(inputdata)[1])]
+  }
 
-      # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
-      slope <- lapply(dens, function(y) diff(y$y)/diff(y$x))
+  if("Filtered" %in% colnames(x$SAMPLES)){
+    inputdata_sampfilt <- inputdata[which(x$SAMPLES$Filtered == ""), ]
+  } else {
+    inputdata_sampfilt <- inputdata
+  }
 
-      slope_cutoff_indices <- rep(NA, length.out = length(slope))
-      names(slope_cutoff_indices) <- names(slope)
-      for (i in 1:length(slope)) { #For each bead
-        # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
-        if (dens[[i]]$x[which.max(dens[[i]]$y)] <= max(cutoffs$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
-          lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]+offset))) #Find start index just to the right of highest peak.
-          lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
-          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
-            slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] >= score.median + minCOdistanceFromMedian
-          }
-        } else if (dens[[i]]$x[which.max(dens[[i]]$y)] > max(cutoffs$score)/2){ #Else, if the highest peak is on the right hand side of the plot
-          lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]-offset)))#Find start index just to the left of highest peak.
-          lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
-          CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
-            slope[[i]][j] < -slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] <= score.median - minCOdistanceFromMedian
-          }
-        } else {
-          stop("Error in slope-based cutoff assignment")
-        }
-        for (j in lookupVector) { #Now, for each slope step
-          if (CO.fun(i,j,slope_cutoff)) { #If the slope at this step fulfils the cutoff function
-            slope_cutoff_indices[i] <- j #Then store that slope step for that bead
-            break() #And exit the slope step loop to continue with next bead
-          }
-        }
-      } # End loop i for each bead (slope)
+  ## Apply density function on the scores to get x and y values for density-plots
+  dens <- apply(inputdata_sampfilt, 2, function(y) density(y, bw=bw))
 
-      slope_cutoff_scores <- rep(NA, length.out = length(dens))
-      for (i in seq_along(dens)) {
-        if (!is.na(slope_cutoff_indices[i])) {
-          slope_cutoff_scores[i] <- dens[[i]]$x[slope_cutoff_indices[i]] #Find the score at the index where the slope is above cutoff. These are the cutoffs that are red lines in the density plot!
-        } else {
-          slope_cutoff_scores[i] <- max(dens[[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
-        }
-      } # End loop i for each bead (dens)
-      names(slope_cutoff_scores) <- colnames(inputdata)
+  # Calculate the slope in all points (except the last) by looking ahead one point. Do this for all beads.
+  slope <- lapply(dens, function(y) diff(y$y)/diff(y$x))
+
+  slope_cutoff_indices <- rep(NA, length.out = length(slope))
+  names(slope_cutoff_indices) <- names(slope)
+  for (i in 1:length(slope)) { #For each bead
+    # AJF code is based on starting from the median, but I changed to highest peak on left or right side of plot.
+    if (dens[[i]]$x[which.max(dens[[i]]$y)] <= max(cutoffs$score)/2) { #If the highest peak is on the left hand side of the plot (most cases).
+      lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]+offset))) #Find start index just to the right of highest peak.
+      lookupVector <- (lookupStartIdx):length(slope[[i]]) #Start looking from the start index to the end of the plot.
+      CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is above the chosen CO value
+        slope[[i]][j] > slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] >= score.median + minCOdistanceFromMedian
+      }
+    } else if (dens[[i]]$x[which.max(dens[[i]]$y)] > max(cutoffs$score)/2){ #Else, if the highest peak is on the right hand side of the plot
+      lookupStartIdx <- which.min(abs(dens[[i]]$x-(dens[[i]]$x[which.max(dens[[i]]$y)]-offset)))#Find start index just to the left of highest peak.
+      lookupVector <- (lookupStartIdx):1 #Start looking from the start index to the beginning of the plot.
+      CO.fun <- function(i,j,slope_cutoff) { #And set the cutoff function to look for the first point where the slope is below the negative chosen CO value
+        slope[[i]][j] < -slope_cutoff #Removed from AJF code (incorporated in start index instead): & dens[[i]]$x[j] <= score.median - minCOdistanceFromMedian
+      }
+    } else {
+      stop("Error in slope-based cutoff assignment")
+    }
+    for (j in lookupVector) { #Now, for each slope step
+      if (CO.fun(i,j,slope_cutoff)) { #If the slope at this step fulfils the cutoff function
+        slope_cutoff_indices[i] <- j #Then store that slope step for that bead
+        break() #And exit the slope step loop to continue with next bead
+      }
+    }
+  } # End loop i for each bead (slope)
+
+  slope_cutoff_scores <- rep(NA, length.out = length(dens))
+  for (i in seq_along(dens)) {
+    if (!is.na(slope_cutoff_indices[i])) {
+      slope_cutoff_scores[i] <- dens[[i]]$x[slope_cutoff_indices[i]] #Find the score at the index where the slope is above cutoff. These are the cutoffs that are red lines in the density plot!
+    } else {
+      slope_cutoff_scores[i] <- max(dens[[i]]$x)+0.1 #If no cutoff was found (i.e. no samples were reactive), set the cutoff to 0.1 above the maximum score for which there is density.
+    }
+  } # End loop i for each bead (dens)
+  names(slope_cutoff_scores) <- colnames(inputdata_sampfilt)
 
   # Translate the continuous slope cutoff values to the above discrete score value
-      ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),
-                                 score=ceiling(slope_cutoff_scores*10)/10,
-                                 xmad=cutoffs$xmad[match(score, cutoffs$score)])
+  ag_score_cutoffs <- tibble(bead=names(slope_cutoff_scores),
+                             score=ceiling(slope_cutoff_scores*10)/10,
+                             xmad=cutoffs$xmad[match(score, cutoffs$score)])
 
-      # Add NA elements for non-included beads to match original data
-      dens <- dens[match(colnames(x$SCORE), names(dens))]
-      names(dens) <- colnames(x$SCORE)
+  # Add NA elements for non-included beads to match original data
+  dens <- dens[match(colnames(x$SCORE), names(dens))]
+  names(dens) <- colnames(x$SCORE)
 
-      binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
-        ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
-      colnames(binary_cutoff) <- colnames(inputdata)
+  binary_cutoff <- data.frame(do.call(cbind, lapply(1:dim(inputdata)[2], function(i)
+    ifelse(inputdata[,i] >= ag_score_cutoffs$score[i], 1, 0))))
+  colnames(binary_cutoff) <- colnames(inputdata)
 
-      ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
-      ag_score_cutoffs$bead <- colnames(x$SCORE)
+  ag_score_cutoffs <- ag_score_cutoffs[match(colnames(x$SCORE), ag_score_cutoffs$bead),]
+  ag_score_cutoffs$bead <- colnames(x$SCORE)
 
-      slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
-      names(slope_cutoff_scores) <- colnames(x$SCORE)
+  slope_cutoff_scores <- slope_cutoff_scores[match(colnames(x$SCORE), names(slope_cutoff_scores))]
+  names(slope_cutoff_scores) <- colnames(x$SCORE)
 
-      binary_cutoff <- data.frame(binary_cutoff, NA, check.names=F)[, match(colnames(x$SCORE), colnames(binary_cutoff),
-                                                                            nomatch=dim(binary_cutoff)[2]+1)]
-      rownames(binary_cutoff) <- rownames(x$SCORE)
-      colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
+  binary_cutoff <- data.frame(binary_cutoff, NA, check.names = check.names)[, match(colnames(x$SCORE), colnames(binary_cutoff),
+                                                                                    nomatch=dim(binary_cutoff)[2]+1)]
+  rownames(binary_cutoff) <- rownames(x$SCORE)
+  colnames(binary_cutoff) <- paste0(ag_score_cutoffs$bead, "_co", ag_score_cutoffs$xmad, "xMAD")
 
-      x <- append(x, list(DENS=dens,
-                          AGCO_CONT=slope_cutoff_scores,
-                          AGCO=ag_score_cutoffs,
-                          BINARY_CO=binary_cutoff))
-  return(x)
-}
-
-#' Calculate reactivity frequencies
-#'
-#' Create binary matrices based on scored Autoimmunity profiling data.
-#'
-#' @param x List with at least three elements, see Deatils for naming and content.
-#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
-#' @details
-#'
-#' The x list needs to include at least the elements:
-#'
-#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
-#'
-#'     BINARY = list with one data.frame per cutoff
-#'
-#'     BINARY_CO = Binary table based on the antigen specific cutoffs.
-#'
-#' @return Updated input x with the new list element
-#'
-#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
-#'
-#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
-#'
-#'     REACTSUM_SAMP = number of reactive antigens per sample,
-#'
-#'     REACTFREQ_SAMP = reactivity frequency per sample,
-#'
-#' @export
-
-ap_reactsummary2 <- function(x, samplegroups=NULL) {
-
-  data_bin <- append(x$BINARY, list(Ag_selected=x$BINARY_CO))
-
-  if(is.null(samplegroups)){
-    if("Filtered" %in% colnames(x$SAMPLES)){
-      samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
-    } else {
-      samplegroups <- factor(rep("Sample", dim(data_cont)[1]))
-    }
-  }
-  data_size <- table(samplegroups)
-  n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
-
-  # Calculate per antigen
-  data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
-  names(data_sum_ag) <- names(data_bin)
-
-  data_freq_ag <- lapply(1:length(data_sum_ag),
-                         function(cutoff) lapply(data_sum_ag[[cutoff]],
-                                                 function(antigen) round(antigen$x/data_size*100,1)))
-  names(data_freq_ag) <- names(data_sum_ag)
-
-
-  data_sum_ag <- lapply(data_sum_ag,
-                        function(cutoff) data.frame(do.call(cbind, lapply(cutoff,
-                                                                          function(antigen) antigen$x)), check.names=F))
-  data_sum_ag <- lapply(data_sum_ag, function(i) { rownames(i) <- levels(samplegroups) ; i } )
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names=F))
-
-  # Calculate per sample
-  data_sum_samp <- lapply(data_bin,
-                          function(i) apply(i, 1,
-                                            function(l) sum(l, na.rm=T)))
-  names(data_sum_samp) <- names(data_bin)
-
-  data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
-  names(data_freq_samp) <- names(data_sum_samp)
-
-  # Add to input
-  x <- append(x,
-              list(REACTSUM_AG=data_sum_ag,
-                   REACTFREQ_AG=data_freq_ag,
-                   REACTSUM_SAMP=data_sum_samp,
-                   REACTFREQ_SAMP=data_freq_samp))
-
+  x <- append(x, list(DENS=dens,
+                      ANTIGEN_CUTOFFS_CONT=slope_cutoff_scores,
+                      ANTIGEN_CUTOFFS=ag_score_cutoffs,
+                      BINARY_CO=binary_cutoff))
   return(x)
 }
 
@@ -346,26 +303,43 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'
 #' Wrapper function for full Autoimmunity Profiling data transformations.
 #'
-#' @param x List with at least three elements, see Deatils for naming and content.
+#' @param x List with at least three elements, see Details for naming and content.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs).
-#' @param ... See respective functions for details:
-#'     \code{\link[rappp:ap_mads2]{ap_mads2()}}, \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
-#'     \code{\link[rappp:ap_binary2]{ap_binary2()}}, \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}},
-#'     and \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}}.
-#' @details The x list needs to include at least the elements:
+#' @param na.rm logical, indicating whether NA values should be stripped
+#'     before the computation proceeds. Altered default from
+#'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
+#' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @param mad_constant constant for \code{\link[stats:mad]{mad()}} function,
+#'     default is 1 (compared to 1.4826 in base function).
+#' @param mad_low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
+#'     the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).
+#' @param mad_high if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
+#'     for even sample size.(From \code{\link[stats:mad]{mad()}}).
+#' @param score_rightmost.closed,score_left.open,score_all.inside logical,
+#'     see \code{\link[base:findInterval]{findInterval()}} for details.
+#'     Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.
+#' @param coselect_slope_cutoff Arbitrary slope cutoff value. Can be chosen freely.
+#' @param coselect_offset Offset used to prevent script from finding the peak (as slope = 0 there).
+#' @param coselect_bw Bandwidth for density funciton, default set to 0.1.
+#' @details Arguments starting with mad_ are specific for \code{\link[rappp:ap_mads2]{ap_mads2()}},
+#' score_ for \code{\link[rappp:ap_scoring2]{ap_scoring2()}},
+#' and coselect_ for \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}.
+#' These arguments are seldom altered.
+#'
+#' The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
 #'
 #'     BEADS = Beads info (Filtered column with information about filtering),
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
+#'     Any samples with no text (ie. "") in such column will be included.
 #'
 #' @return Updated input x with the new list elements
 #'
 #'     MADs = assay MADs,
 #'
-#'     COKEY = Cutoff key as data.frame with cutoff values, scores and colors,
+#'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors,
 #'
 #'     SCORE = scored data,
 #'
@@ -373,36 +347,52 @@ ap_reactsummary2 <- function(x, samplegroups=NULL) {
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
-#'     AGCO = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
+#'     ANTIGEN_CUTOFFS = Calculated antigen specific cutoffs, translated into the descrete cutoff steps,
 #'
-#'     AGCO_CONT = Calculated antigen specific cutoffs, continues values.
-#'
-#'     REACTSUM_AG = number of reactive samples per antigen and sample group,
-#'
-#'     REACTFREQ_AG = reactivity frequency per antigen and sample group,
-#'
-#'     REACTSUM_SAMP = number of reactive antigens per sample,
-#'
-#'     REACTFREQ_SAMP = reactivity frequency per sample.
+#'     ANTIGEN_CUTOFFS_CONT = Calculated antigen specific cutoffs, continues values.
 #'
 #' @export
 
-ap_norm2 <- function(x, MADlimits=seq(0,70,5), ...){
+ap_norm2 <- function(x,
+                     MADlimits = seq(0,70,5),
+                     na.rm = TRUE,
+                     check.names = FALSE,
+                     mad_constant = 1,
+                     mad_low = FALSE,
+                     mad_high = FALSE,
+                     score_rightmost.closed = FALSE,
+                     score_left.open = FALSE,
+                     score_all.inside = FALSE,
+                     coselect_slope_cutoff = -0.5,
+                     coselect_offset = 0.1,
+                     coselect_bw = 0.1){
+
+  tmp <- x
 
   print("Doing MADs transformation")
-  x <- ap_mads2(x, ...)
+  tmp <- ap_mads2(x = tmp,
+                  constant = mad_constant,
+                  na.rm = na.rm,
+                  low = mad_low,
+                  high = mad_high)
 
   print("Doing Scoring")
-  x <- ap_scoring2(x, MADlimits=MADlimits, ...)
+  tmp <- ap_scoring2(x = tmp,
+                     MADlimits = MADlimits,
+                     rightmost.closed = score_rightmost.closed,
+                     left.open = score_left.open,
+                     all.inside = score_all.inside,
+                     check.names = check.names)
 
   print("Doing Binary transformation")
-  x <- ap_binary2(x, cutoffs=x$COKEY, ...)
+  tmp <- ap_binary2(x = tmp,
+                    check.names = check.names)
 
   print("Finding cutoffs")
-  x <- ap_cutoff_selection2(x, cutoffs=x$COKEY, ...)
+  tmp <- ap_cutoff_selection2(x = tmp,
+                              slope_cutoff = coselect_slope_cutoff,
+                              offset = coselect_offset,
+                              bw = coselect_bw)
 
-  print("Summarize reactivities")
-  x <- ap_reactsummary2(x, ...)
-
-  return(x)
+  return(tmp)
 }

@@ -4,14 +4,26 @@
 \alias{ap_mads2}
 \title{MAD normalization}
 \usage{
-ap_mads2(x, constant = 1, ...)
+ap_mads2(x, constant = 1, na.rm = TRUE, low = FALSE, high = FALSE,
+  check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least two elements, see Deatils for naming and content.}
+\item{x}{list with at least two elements, see Details for naming and content.}
 
-\item{constant}{Constant for \code{\link[stats:mad]{mad()}} function, default is 1 (compared to 1.4826 in base function).}
+\item{constant}{constant for \code{\link[stats:mad]{mad()}} function,
+default is 1 (compared to 1.4826 in base function).}
 
-\item{...}{Further arguments passed to \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}}
+\item{na.rm}{logical, indicating whether NA values should be stripped
+before the computation proceeds. Altered default from
+\code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.}
+
+\item{low}{if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
+the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).}
+
+\item{high}{if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
+for even sample size.(From \code{\link[stats:mad]{mad()}}).}
+
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list element

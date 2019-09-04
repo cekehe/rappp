@@ -21,6 +21,3 @@ data.frame with three columns:
 \description{
 Create a cutoff key for scoring of Autoimmunity Profiling data.
 }
-\details{
-The input values will be binned into discrete bins (scores).
-}

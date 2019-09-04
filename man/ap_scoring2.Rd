@@ -5,24 +5,23 @@
 \title{Scoring}
 \usage{
 ap_scoring2(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
-  left.open = FALSE, check.names = FALSE, ...)
+  left.open = FALSE, all.inside = FALSE, check.names = FALSE)
 }
 \arguments{
-\item{x}{List with at least one element, see Deatils for naming and content.
+\item{x}{List with at least one element, see Details for naming and content.
 It is recommended to use the the output from \code{\link[rappp:ap_mads2]{ap_mads2()}}.}
 
-\item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs).}
+\item{MADlimits}{vector of MADs values used as boundaries for binning.}
 
-\item{rightmost.closed, left.open}{logical, see \code{\link[base:findInterval]{findInterval()}} for details.}
+\item{rightmost.closed, left.open, all.inside}{logical, see \code{\link[base:findInterval]{findInterval()}} for details.
+Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cutoff gets score 0.}
 
-\item{check.names}{logical, see \code{\link[base:data.frame]{data.frame()}} for details}
-
-\item{...}{Further arguments passed do \code{\link[base:findInterval]{findInterval()}}}
+\item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
 Updated input x with the new list elements
 
-    COKEY = Cutoff key as data.frame with cutoff values, scores and colors
+    CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors
 
     SCORE = scored data
 }
