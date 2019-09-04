@@ -229,5 +229,8 @@
   #
   #-------------------------------------------------------------------------
 
-  sessionInfo() # See all version numbers used in the current script run.
+    # Save all version numbers used in the current script run.
+  writeLines(capture.output(sessionInfo()), 
+             paste0("Results/",analysis,"sessioninfo_",
+                    format(Sys.time(),"%Y-%m-%d_%H%M%S"),".txt"))
 } # END All
