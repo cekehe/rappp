@@ -1402,3 +1402,75 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
     return(xmad_score)
   }
 }
+
+#' Make peptides
+#'
+#' Get possible peptide designs across different lengths and overlaps.
+#'
+#' @param sequence string with amino acid sequence to make peptides from,
+#'     see Examples for how to use with the Clipboard.
+#' @param lengths number of amino acids per peptide, can be a vector of lenghts.
+#' @param min_overlap the shortest allowed overlap between peptides
+#' @param min_shift the shortest allowed shift between peptides
+#' @return A list with one element per design
+#' @examples
+#' ## The input sequence can easily be copied from wherever,
+#'     like Excel, LIMS etc and used directly in the function:
+#' ## on PC
+#' make_peptides(readClipboard())
+#'
+#' ## on MAC
+#' make_peptides(t(read.table(pipe("pbpaste"), stringsAsFactors = FALSE)))
+#'
+#' @export
+
+make_peptides <- function(sequence,
+                          lengths = 15:20,
+                          min_overlap = 2,
+                          min_shift = 1) {
+
+  if(length(sequence) > 1){
+  sequence <- paste0(sequence,collapse="")
+  }
+  sequence <- substring(sequence, seq(1,nchar(sequence),1), seq(1,nchar(sequence),1))
+
+  lengths <- lengths
+  min_overlap <- min_overlap
+  min_shift <- min_shift
+
+  ## Search for possible length & overlap with no NAs
+  {
+    overlaps <- lapply(lengths, function(i) min_overlap:(i-min_shift))
+    peptides_list <- rep(list(NA), length(unlist(overlaps)))
+    m=1
+    for(l in seq_along(lengths)){
+      aa_length <- lengths[l]
+
+      for(o in overlaps[[l]]){
+        aa_overlap <- o
+
+        start_aas <- seq(1, length(sequence), aa_length-aa_overlap)
+        if(start_aas[which.max(start_aas)-1] > (length(sequence)-aa_length+1)){
+          start_aas <- start_aas[-which(start_aas %in% (length(sequence)-aa_length+1):length(sequence))[-1]]
+        }
+
+        peptides <- matrix(NA, nrow=length(start_aas), ncol=aa_length)
+        n=1
+        for(i in start_aas){
+          peptides[n,] <- sequence[i:(i+aa_length-1)]
+        n=n+1
+          }
+
+          peptides_list[[m]] <- peptides
+          names(peptides_list)[m] <- paste0("Length",aa_length,"_Overlap",aa_overlap,"_N", dim(peptides)[1])
+          m=m+1
+
+      }
+    }
+
+    peptides_list <- peptides_list[-which(unlist(lapply(peptides_list, function(i) sum(is.na(i)))) > 0)]
+    peptides_collapsed_noNA <- lapply(peptides_list, function(x) apply(x, 1, function(y) paste0(y, collapse="")))
+  }
+  return(peptides_collapsed_noNA)
+}
+
