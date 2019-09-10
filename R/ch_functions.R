@@ -1474,3 +1474,110 @@ make_peptides <- function(sequence,
   return(peptides_collapsed_noNA)
 }
 
+#' Align sequences
+#'
+#' Align sequence to a full length protein (exact matches).
+#'
+#' @param filename file with sequence information, see Details for needed columns
+#' @param gene genename (or other name-identifier) for the alignment.
+#' @param uniprot Uniprot ID (or other ID-identifier) for the alignment.
+#' @param shouldtextplot logical, should a table with sequence info be plotted below the alignment?
+#' @param textplotcolumns columns to include if printing a table below the alignment.
+#' @details The input file needs to have one row per peptide/protein
+#'     (full length sequence to align as the top row) and the columns\cr
+#'     - Name (identifier to be written above the sequence)\cr
+#'     - Sequence1 (1 in column name also if only one sequence per row)\cr
+#'     - Sequence2 (only if mosaic, not necessary if only one sequence per row)\cr
+#'     - Color (color for the sequence bar)\cr
+#'     - Include (values 1 or 0, which sequences in input file should be included in plot?)
+#'
+#' If printing table underneath extra columns may be needed in the input file
+#'     depending on what information you want to print.
+#'
+#' @export
+
+    align_sequences <- function(filename,
+                                gene = NULL,
+                                uniprot = NULL,
+                                shouldtextplot = FALSE,
+                                textplotcolumns = NULL) {
+      # filename <- "NT5C1A sequences.txt"
+      # gene <- "NT5C1A"
+      # uniprot <- "Q9BXI3"
+      # shouldtextplot <- FALSE
+      sequences <- read.delim(filename, na.strings="")
+      all <- lapply(as.character(sequences$Sequence1), function(x) substring(x, seq(1,nchar(x),1), seq(1,nchar(x),1)))
+      names(all) <- sequences$Name
+      FLlength <- length(all$Sequence)
+
+      if(sum(grepl("Sequence2", colnames(sequences))) > 0){
+        for(i in 1:dim(sequences)[1]){
+          if(!is.na(sequences$Sequence2[i])){
+            tmp <- as.character(sequences$Sequence2[i])
+            all[[i]] <- list(all[[i]], substring(tmp, seq(1,nchar(tmp),1), seq(1,nchar(tmp),1)))
+          }
+        }
+        rm(tmp)
+      }
+      all <- all[which(sequences$Include == 1)]
+      sequences <- sequences[which(sequences$Include == 1),]
+    # }
+
+    # {
+      pdf(paste0(gsub(".txt", "",filename), "_",format(Sys.time(),"%Y-%m-%d_%H%M%S"),".pdf"),
+          height=ifelse(length(all)*0.5 < 3, 5, length(all)*0.5),
+          width=25, useDingbats=F)
+      if(shouldtextplot){
+        layout(matrix(c(1,1,2), ncol=1))
+      } else {
+        layout(matrix(1, ncol=1))
+      }
+      par(lend="butt", mar=c(2,2,2,25))
+      y_at <- seq(0, length(all)*0.5-0.5, 0.5)
+      ylabs <- ifelse(sequences$Type == "Peptide", paste0(sequences$Sequence1), "")
+      aasteps <- ifelse(FLlength < 200, 10, ifelse(FLlength < 500, 50, 100))
+      plot(0,0, col=0, xlim=c(1,FLlength), ylim=c(0,sum(sequences$Include)*0.5+0.5), xaxt="n",xlab=NA, las=1, yaxt="n", ylab=NA)
+      axis(1, at=seq(1, FLlength, aasteps),
+           labels=as.character(seq(1, FLlength, aasteps)),
+           las=1)
+      axis(4, at=y_at, labels=ylabs, las=2, cex=0.8)
+      abline(v=seq(1, FLlength, aasteps), lty=2, col="lightgrey")
+      abline(h=y_at, lty=2, col="lightgrey")
+      n=0
+      for(i in 1:length(all)){
+        if(length(all[[i]]) != 2){
+          x0=which(rollapply(all[[1]], length(all[[i]]), identical, all[[i]]))
+          x1=(which(rollapply(all[[1]], length(all[[i]]), identical, all[[i]]))+length(all[[i]])-1)
+          segments(x0=x0, y0=n,
+                   x1=x1, y1=n,
+                   lwd=5, col=as.character(sequences$Color[i]))
+          text(x=ifelse(x0[1] < FLlength*0.75, x0[1], x1[1]), y=(n+0.1), adj=ifelse(x0[1] < FLlength*0.75, 0, 1),
+               labels=paste0(names(all)[i]," (",x0,"-",x1,", ",length(all[[i]])," aa)"),
+               cex=0.9, offset=0, xpd=NA)
+        } else {
+          x0_1=which(rollapply(all[[1]], length(all[[i]][[1]]), identical, all[[i]][[1]]))
+          x1_1=(which(rollapply(all[[1]], length(all[[i]][[1]]), identical, all[[i]][[1]]))+length(all[[i]][[1]])-1)
+          segments(x0=x0_1, y0=n,
+                   x1=x1_1, y1=n,
+                   lwd=5, col=as.character(sequences$Color[i]))
+          x0_2=which(rollapply(all[[1]], length(all[[i]][[2]]), identical, all[[i]][[2]]))
+          x1_2=(which(rollapply(all[[1]], length(all[[i]][[2]]), identical, all[[i]][[2]]))+length(all[[i]][[2]])-1)
+          segments(x0=x0_2, y0=n,
+                   x1=x1_2, y1=n,
+                   lwd=5, col=as.character(sequences$Color[i]))
+          text(x=ifelse(x0[1] < FLlength*0.75, x0[1], x1[1]), y=(n+0.1), adj=ifelse(x0[1] < FLlength*0.75, 0, 1),
+               labels=paste0(names(all)[i]," (",x0_1,"-",x1_1,", ",x0_2,"-",x1_2,", ",
+                             length(all[[i]][[1]]),"+",length(all[[i]][[2]])," aa)"),
+               cex=0.9, offset=0, xpd=NA)
+        }
+        n=n+0.5
+      }
+      mtext(paste0(gene," (Uniprot ",uniprot,")"), side=3, font=2)
+
+      if(shouldtextplot){
+        ap_textplot(sequences[,textplotcolumns][-1,], show.rownames=F)
+      }
+
+      dev.off()
+    }
+
