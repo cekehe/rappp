@@ -27,4 +27,5 @@ Imports:
     scales,
     gridExtra,
     ggplot2,
-    WriteXLS
+    WriteXLS,
+    zoo
