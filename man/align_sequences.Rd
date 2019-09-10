@@ -4,15 +4,17 @@
 \alias{align_sequences}
 \title{Align sequences}
 \usage{
-align_sequences(filename, gene = NULL, uniprot = NULL,
+align_sequences(inputfile, ouputfile, gene = NULL, uniprot = NULL,
   shouldtextplot = FALSE, textplotcolumns = NULL)
 }
 \arguments{
-\item{filename}{file with sequence information, see Details for needed columns}
+\item{inputfile}{file with sequence information, see Details for needed formatting and columns.}
 
-\item{gene}{genename (or other name-identifier) for the alignment.}
+\item{ouputfile}{filename for the output file.}
 
-\item{uniprot}{Uniprot ID (or other ID-identifier) for the alignment.}
+\item{gene}{string with genename (or other name-identifier) for the alignment.}
+
+\item{uniprot}{string with Uniprot ID for the alignment.}
 
 \item{shouldtextplot}{logical, should a table with sequence info be plotted below the alignment?}
 
@@ -22,9 +24,11 @@ align_sequences(filename, gene = NULL, uniprot = NULL,
 Align sequence to a full length protein (exact matches).
 }
 \details{
-The input file needs to have one row per peptide/protein
-    (full length sequence to align as the top row) and the columns\cr
+The input file needs to be tab-delimited, have one row per peptide/protein and the columns\cr
     - Name (identifier to be written above the sequence)\cr
+    - Type ("Full_length" for sequence to align against,
+            "Peptide" for peptides (sequence will be printed on the side),
+            any other label can be used but will not be considered in the function)
     - Sequence1 (1 in column name also if only one sequence per row)\cr
     - Sequence2 (only if mosaic, not necessary if only one sequence per row)\cr
     - Color (color for the sequence bar)\cr

@@ -1478,14 +1478,17 @@ make_peptides <- function(sequence,
 #'
 #' Align sequence to a full length protein (exact matches).
 #'
-#' @param filename file with sequence information, see Details for needed columns
-#' @param gene genename (or other name-identifier) for the alignment.
-#' @param uniprot Uniprot ID (or other ID-identifier) for the alignment.
+#' @param inputfile file with sequence information, see Details for needed formatting and columns.
+#' @param ouputfile filename for the output file.
+#' @param gene string with genename (or other name-identifier) for the alignment.
+#' @param uniprot string with Uniprot ID for the alignment.
 #' @param shouldtextplot logical, should a table with sequence info be plotted below the alignment?
 #' @param textplotcolumns columns to include if printing a table below the alignment.
-#' @details The input file needs to have one row per peptide/protein
-#'     (full length sequence to align as the top row) and the columns\cr
+#' @details The input file needs to be tab-delimited, have one row per peptide/protein and the columns\cr
 #'     - Name (identifier to be written above the sequence)\cr
+#'     - Type ("Full_length" for sequence to align against,
+#'             "Peptide" for peptides (sequence will be printed on the side),
+#'             any other label can be used but will not be considered in the function)
 #'     - Sequence1 (1 in column name also if only one sequence per row)\cr
 #'     - Sequence2 (only if mosaic, not necessary if only one sequence per row)\cr
 #'     - Color (color for the sequence bar)\cr
@@ -1496,19 +1499,17 @@ make_peptides <- function(sequence,
 #'
 #' @export
 
-    align_sequences <- function(filename,
+    align_sequences <- function(inputfile,
+                                ouputfile,
                                 gene = NULL,
                                 uniprot = NULL,
                                 shouldtextplot = FALSE,
                                 textplotcolumns = NULL) {
-      # filename <- "NT5C1A sequences.txt"
-      # gene <- "NT5C1A"
-      # uniprot <- "Q9BXI3"
-      # shouldtextplot <- FALSE
-      sequences <- read.delim(filename, na.strings="")
+
+      sequences <- read.delim(inputfile, na.strings="")
       all <- lapply(as.character(sequences$Sequence1), function(x) substring(x, seq(1,nchar(x),1), seq(1,nchar(x),1)))
       names(all) <- sequences$Name
-      FLlength <- length(all$Sequence)
+      FLlength <- length(all[[which(sequences$Type == "Full_length")]])
 
       if(sum(grepl("Sequence2", colnames(sequences))) > 0){
         for(i in 1:dim(sequences)[1]){
@@ -1524,7 +1525,7 @@ make_peptides <- function(sequence,
     # }
 
     # {
-      pdf(paste0(gsub(".txt", "",filename), "_",format(Sys.time(),"%Y-%m-%d_%H%M%S"),".pdf"),
+      pdf(ouputfile,
           height=ifelse(length(all)*0.5 < 3, 5, length(all)*0.5),
           width=25, useDingbats=F)
       if(shouldtextplot){
