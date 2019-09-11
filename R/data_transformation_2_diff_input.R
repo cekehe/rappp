@@ -22,7 +22,7 @@
 #'     MFI = assay mfi,
 #'
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
+#'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
 #' @return Updated input x with the new list element
 #'
@@ -40,7 +40,9 @@ ap_mads2 <- function(x,
   tmp_data <- x$MFI
 
   if("Filtered" %in% colnames(x$BEADS)){
-    tmp_data <- tmp_data[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
+    tmp_data <- tmp_data[, which(is.na(x$BEADS$Filtered) |
+                                   x$BEADS$Filtered == "" |
+                                   grepl("NegControl", x$BEADS$Filtered))]
   }
 
   mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
@@ -192,7 +194,7 @@ ap_binary2 <- function(x, check.names = FALSE) {
 #'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any samples with no text (ie. "") in such column will be included.
+#'     Any samples with no text (ie. "" or NA) in such column will be included.
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -220,7 +222,8 @@ ap_cutoff_selection2 <- function(x,
   }
 
   if("Filtered" %in% colnames(x$SAMPLES)){
-    inputdata_sampfilt <- inputdata[which(x$SAMPLES$Filtered == ""), ]
+    inputdata_sampfilt <- inputdata[which(is.na(x$SAMPLES$Filtered) |
+                                            x$SAMPLES$Filtered == ""), ]
   } else {
     inputdata_sampfilt <- inputdata
   }
