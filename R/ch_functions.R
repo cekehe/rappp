@@ -865,7 +865,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
+#'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
 #' @export
 
@@ -878,8 +878,12 @@ ap_negbeads <- function(x,
   par(mar=c(4,4,4,5))
 
   if("Filtered" %in% colnames(x$BEADS)){
-    plotdata <- x$MFI[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
-    plotdata_score <- x$SCORE[, which(x$BEADS$Filtered == "" | grepl("NegControl", x$BEADS$Filtered))]
+    plotdata <- x$MFI[, which(is.na(x$BEADS$Filtered) |
+                                x$BEADS$Filtered == "" |
+                                grepl("NegControl", x$BEADS$Filtered))]
+    plotdata_score <- x$SCORE[, which(is.na(x$BEADS$Filtered) |
+                                        x$BEADS$Filtered == "" |
+                                        grepl("NegControl", x$BEADS$Filtered))]
   } else {
     plotdata <- x$MFI
     plotdata_score <- x$SCORE
@@ -1050,10 +1054,10 @@ ap_reactsummary2 <- function(x,
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'     If any wells should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
+#'     Any beads with no text (ie. "" or NA) in such column will be included.
 #'
 #'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") will be included in the transformation.
+#'     Any beads with no text (ie. "" or NA) will be included in the transformation.
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
@@ -1089,9 +1093,9 @@ ap_agresults <- function(x,
 
     print("Extract data")
     if("Filtered" %in% colnames(x$BEADS)){
-      data_cont <- x$MADS[, which(x$BEADS$Filtered == "")]
-      data_score <- x$SCORE[, which(x$BEADS$Filtered == "")]
-      cutoffs <- x$ANTIGEN_CUTOFFS[which(x$BEADS$Filtered == ""), ]
+      data_cont <- x$MADS[, which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
+      data_score <- x$SCORE[, which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
+      cutoffs <- x$ANTIGEN_CUTOFFS[which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == ""), ]
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE

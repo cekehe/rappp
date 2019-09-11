@@ -30,5 +30,5 @@ The x list needs to include at least the element
     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 
     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") or "NegControl" in such column will be included in the transformation.
+    Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 }

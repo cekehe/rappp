@@ -65,10 +65,10 @@ the x list needs to include at least the element
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
     If any wells should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") in such column will be included.
+    Any beads with no text (ie. "" or NA) in such column will be included.
 
     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") will be included in the transformation.
+    Any beads with no text (ie. "" or NA) will be included in the transformation.
 
     DENS = Density output used for cutoff selection,
 }
