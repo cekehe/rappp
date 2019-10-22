@@ -1093,9 +1093,9 @@ ap_agresults <- function(x,
 
     print("Extract data")
     if("Filtered" %in% colnames(x$BEADS)){
-      data_cont <- x$MADS[, which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
-      data_score <- x$SCORE[, which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
-      cutoffs <- x$ANTIGEN_CUTOFFS[which(is.an(x$BEADS$Filtered) | x$BEADS$Filtered == ""), ]
+      data_cont <- x$MADS[, which(is.na(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
+      data_score <- x$SCORE[, which(is.na(x$BEADS$Filtered) | x$BEADS$Filtered == "")]
+      cutoffs <- x$ANTIGEN_CUTOFFS[which(is.na(x$BEADS$Filtered) | x$BEADS$Filtered == ""), ]
     } else {
       data_cont <- x$MADS
       data_score <- x$SCORE
