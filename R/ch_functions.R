@@ -963,7 +963,7 @@ ap_reactsummary2 <- function(x,
 
   if(is.null(samplegroups)){
     if("Filtered" %in% colnames(x$SAMPLES)){
-      samplegroups <- factor(ifelse(x$SAMPLES$'Filtered' == "", "Sample", NA))
+      samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA))
     } else {
       samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
     }
