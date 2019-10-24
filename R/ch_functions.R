@@ -973,25 +973,66 @@ ap_reactsummary2 <- function(x,
 
   # Calculate per antigen
   data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
-  names(data_sum_ag) <- names(data_bin)
+  # names(data_sum_ag) <- names(data_bin)
 
-  data_freq_ag <- lapply(1:length(data_sum_ag),
-                         function(cutoff) lapply(data_sum_ag[[cutoff]],
+  data_freq_ag <- lapply(data_sum_ag,
+                         function(cutoff) lapply(cutoff,
                                                  function(antigen) round(antigen$x/data_size*100,1)))
-  names(data_freq_ag) <- names(data_sum_ag)
+
+  # data_freq_ag <- lapply(1:length(data_sum_ag),
+  #                        function(cutoff) lapply(data_sum_ag[[cutoff]],
+  #                                                function(antigen) round(antigen$x/data_size*100,1)))
+  # names(data_freq_ag) <- names(data_sum_ag)
 
 
   data_sum_ag <- lapply(data_sum_ag,
                         function(cutoff) data.frame(do.call(cbind,
                                                             lapply(cutoff,
-                                                                   function(antigen) antigen$x)), check.names = check.names))
+                                                                   function(antigen) antigen$x)),
+                                                    check.names = check.names))
   data_sum_ag <- lapply(data_sum_ag, function(i) {
     rownames(i) <- levels(samplegroups) ;
     colnames(i) <- colnames(data_sum_ag[[length(data_sum_ag)]]) ; i } )
 
-  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff), check.names = check.names))
+  data_freq_ag <- lapply(data_freq_ag, function(cutoff) data.frame(do.call(cbind, cutoff),
+                                                                   check.names = check.names))
   data_freq_ag <- lapply(data_freq_ag, function(i) {
     colnames(i) <- colnames(data_freq_ag[[length(data_freq_ag)]]) ; i } )
+
+  if(length(levels(samplegroups)) > 1){
+    comparisons <-  combn(levels(samplegroups), 2)
+    fisher_p <- rep(list(NULL), dim(comparisons)[2])
+
+    for(t in 1:dim(comparisons)[2]){
+      test_groups <- factor(ifelse(as.character(samplegroups) %in%
+                                     comparisons[,t], as.character(samplegroups), NA))
+
+      tmp_fisher <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
+      tmp_diff <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
+
+      # Binary based tests
+      for(b in 1:length(data_bin)){
+        testdata <- data_bin[[b]]
+
+        tmp_fisher[b,] <- apply(testdata,2,
+                                function(x) fisher.test(test_groups,
+                                                        factor(x,levels=0:1))$p.value)
+
+        tmp_diff[b,] <- unlist(data_freq_ag[[b]][comparisons[1,t],] - data_freq_ag[[b]][comparisons[2,t],])
+
+      }
+      colnames(tmp_fisher) <- colnames(data_freq_ag[[length(data_freq_ag)]])
+      fisher_p[[t]] <- tmp_fisher
+      rownames(fisher_p[[t]]) <- names(data_bin)
+
+      colnames(tmp_diff) <- colnames(data_freq_ag[[length(data_freq_ag)]])
+      freq_diff[[t]] <- tmp_diff
+      rownames(freq_diff[[t]]) <- names(data_bin)
+    }
+    names(fisher_p) <- paste0(casefold(comparisons[1,], upper=T), "vs",casefold(comparisons[2,], upper=T))
+
+    names(freq_diff) <- names(fisher_p)
+  }
 
   data_sum_ag <- do.call(rbind, data_sum_ag)
   data_freq_ag <- do.call(rbind, data_freq_ag)
@@ -1009,12 +1050,23 @@ ap_reactsummary2 <- function(x,
   data_freq_samp <- do.call(cbind, data_freq_samp)
 
   # Add to input
+  if(length(levels(samplegroups)) > 1){
   output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
                                          Grouping=samplegroups),
                  REACTSUM_AG=data_sum_ag,
                  REACTFREQ_AG=data_freq_ag,
                  REACTSUM_SAMP=data_sum_samp,
-                 REACTFREQ_SAMP=data_freq_samp)
+                 REACTFREQ_SAMP=data_freq_samp,
+                 FISHER_P=fisher_p,
+                 FREQ_DIFF=freq_diff)
+  } else {
+    output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
+                                           Grouping=samplegroups),
+                   REACTSUM_AG=data_sum_ag,
+                   REACTFREQ_AG=data_freq_ag,
+                   REACTSUM_SAMP=data_sum_samp,
+                   REACTFREQ_SAMP=data_freq_samp)
+  }
 
   return(output)
 }
