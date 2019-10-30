@@ -5,8 +5,8 @@
 \title{Reactivity result plots}
 \usage{
 ap_agresults(x, samplegroups = NULL, groupcolors = 1:6,
-  agtoplot = NULL, filename = "AntigenResults.pdf", height = 15,
-  useDingbats = F, check.names = FALSE)
+  agtoplot = NULL, cofisher = 0.05, filename = "AntigenResults.pdf",
+  height = 15, useDingbats = F, check.names = FALSE)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
@@ -16,10 +16,12 @@ If left as \code{NULL} (default), the all non-filtered if filtering has been don
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
-\item{groupcolors}{colors for each group in samplegroups.}
+\item{groupcolors}{A matrix with a color-column and a group-column, or a vector with colors.}
 
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
+
+\item{cofisher}{Cutoff in fisher plot.}
 
 \item{filename}{string with filename and desired path, end with .pdf}
 
