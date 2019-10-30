@@ -4,9 +4,9 @@
 \alias{ap_agresults}
 \title{Reactivity result plots}
 \usage{
-ap_agresults(x, samplegroups = NULL, groupcolors = 1:6,
+ap_agresults(x, samplegroups = NULL, groupcolors = 2:6,
   agtoplot = NULL, cofisher = 0.05, filename = "AntigenResults.pdf",
-  height = 15, useDingbats = F, check.names = FALSE)
+  useDingbats = F, check.names = FALSE)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
@@ -25,9 +25,7 @@ Character vector with column names of what to plot also ok.}
 
 \item{filename}{string with filename and desired path, end with .pdf}
 
-\item{height}{width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
-
-\item{useDingbats}{logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+\item{useDingbats}{logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }

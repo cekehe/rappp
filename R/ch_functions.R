@@ -1004,6 +1004,7 @@ ap_reactsummary2 <- function(x,
   if(length(levels(samplegroups)) > 1){
     comparisons <-  combn(levels(samplegroups), 2)
     fisher_p <- rep(list(NULL), dim(comparisons)[2])
+    freq_diff <- rep(list(NULL), dim(comparisons)[2])
 
     for(t in 1:dim(comparisons)[2]){
       test_groups <- factor(ifelse(as.character(samplegroups) %in%
@@ -1089,8 +1090,7 @@ ap_reactsummary2 <- function(x,
 #'     Character vector with column names of what to plot also ok.
 #' @param cofisher Cutoff in fisher plot.
 #' @param filename string with filename and desired path, end with .pdf
-#' @param height width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
-#' @param useDingbats logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param useDingbats logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.
 #' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details the x list needs to include at least the element
 #'
@@ -1133,11 +1133,10 @@ ap_reactsummary2 <- function(x,
 
 ap_agresults <- function(x,
                          samplegroups=NULL,
-                         groupcolors=1:6,
+                         groupcolors=2:6,
                          agtoplot=NULL,
                          cofisher=0.05,
                          filename="AntigenResults.pdf",
-                         height=15,
                          useDingbats=F,
                          check.names=FALSE) {
 
@@ -1148,6 +1147,9 @@ ap_agresults <- function(x,
   samplegroups <- react_summary$SAMPLEGROUPS$Grouping
   n_groups <- length(levels(samplegroups))
   data_size <- table(samplegroups)
+  if(n_groups > 1){
+    n_comparisons <- dim(react_summary$COMPARISONS)[2]
+  }
 
   if(!(class(groupcolors) %in% c("matrix","data.frame"))){
     groupcolors <- data.frame(group=levels(samplegroups),
@@ -1168,15 +1170,13 @@ ap_agresults <- function(x,
     }
 
     cokey <- x$CUTOFF_KEY
-    if_selected_co <- sum(grepl("if_selected_co", rownames(react_summary$REACTSUM_AG))) > 0
+    if_selected_co <- sum(grepl("Selected_co", rownames(react_summary$REACTSUM_AG))) > 0
 
     if(if_selected_co){
-      data_sum <- react_summary$REACTSUM_AG[grep("if_selected_co", rownames(react_summary$REACTSUM_AG)), ]
-      data_freq <- react_summary$REACTFREQ_AG[grep("if_selected_co", rownames(react_summary$REACTFREQ_AG)), ]
-      data_freq_all <- react_summary$REACTFREQ_AG[-grep("if_selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+      data_sum <- react_summary$REACTSUM_AG[grep("Selected_co", rownames(react_summary$REACTSUM_AG)), ]
+      data_freq <- react_summary$REACTFREQ_AG[grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+      data_freq_all <- react_summary$REACTFREQ_AG[-grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
     } else {
-      data_sum <- react_summary$REACTSUM_AG
-      data_freq <- react_summary$REACTFREQ_AG
       data_freq_all <- react_summary$REACTFREQ_AG
     }
 
@@ -1190,8 +1190,8 @@ ap_agresults <- function(x,
     print("initiate pdf")
       # Create PDF
       pdf(filename,
-          width=ifelse(n_groups > 1, 20+n_groups*0.9, 15), height=height, useDingbats=useDingbats)
-      par(mfrow=c(4,3), mgp=c(3,1,0))
+          width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=18, useDingbats=useDingbats)
+      par(mgp=c(3,1,0), mar=c(6,5,ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4),3))
 
       if(n_groups > 1){
         layout(matrix(1:16, nrow=4, byrow=T))
@@ -1202,8 +1202,6 @@ ap_agresults <- function(x,
 
       n=1
     for(a in agtoplot){
-      par(mar=c(6,5,5,3))
-
       tmp_ag <- colnames(data_cont)[a]
       print(paste("Plotting ag", n, "of", length(agtoplot),"(",tmp_ag,")"))
       n=n+1
@@ -1230,19 +1228,24 @@ ap_agresults <- function(x,
              title=expression(bold("MADs cutoff")),
              pch=16, cex=0.6, bty="n", xjust=0.2, title.adj=4,
              col=rev(paste(cokey$color)), xpd=NA)
-      mtext("Visualization of signals.", line=0.1, cex=0.65)
+      mtext("Visualization of signals.",
+            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+            cex=0.65)
 
       if(if_selected_co){
-      mtext(paste0("Above dashed line: "), adj=0.7,
-            side=1, at=par("usr")[1], line=0, cex=0.5)
+      mtext(paste0("Above dashed line:\n(",tmp_cutoff," MADs)"), adj=0.7,
+            side=1, at=par("usr")[1], line=0.6, cex=0.5)
       mtext(paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
                    " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))], 0), "%)\n",
                    levels(samplegroups)),
-            side=1, at=1:n_groups, line=1, cex=0.7)
+            side=1, at=1:n_groups, line=1.1, cex=0.7)
       } else {
         mtext(levels(samplegroups),
-              side=1, at=1:n_groups, line=1, cex=0.7)
+              side=1, at=1:n_groups, line=1.1, cex=0.7)
       }
+      mtext(tmp_ag,
+            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+            font=2)
 
       # Histrogram & Density
       h <- hist(data_score[,tmp_ag], breaks=seq(min(cokey$score)-0.1,max(cokey$score)+0.1, 0.1), prob=T, right=F,
@@ -1250,16 +1253,18 @@ ap_agresults <- function(x,
       axis(1, labels=c("<0",cokey$xmad[-1]), at=h$breaks[-c(1, length(h$breaks))], cex.axis=0.8)
 
       if(if_selected_co){
-        mtext("Distribution of binned values, \n algorithm assigned cutoff at dashed line.", line=0, cex=0.65)
+        mtext("Distribution of binned values, algorithm assigned cutoff at dashed line.",
+              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+              cex=0.65)
         abline(v=(tmp_which_co-1)/10, lty=2)
         lines(dens,
               col="maroon")
       } else {
-        mtext("Distribution of binned values", line=0, cex=0.65)
+        mtext("Distribution of binned values", line=0.1, cex=0.65)
       }
-
-      # Antigen title
-      mtext(tmp_ag, line=3, font=2, adj=ifelse(n_groups > 1, 1, NA))
+        mtext(tmp_ag,
+              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+              font=2)
 
       # Frequency
       plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
@@ -1281,15 +1286,18 @@ ap_agresults <- function(x,
               col=paste(groupcolors$color))
 
       if(n_groups > 1){
-        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=2.2, cex=0.65)
-        legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=4,
+        mtext("Percentage of reactive samples per group at each exemplified cutoff.",
+              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
+        legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=3,
                lty=1, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group)
+        mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
       } else {
         mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=0.1, cex=0.65)
+        mtext(tmp_ag, line=2, font=2)
       }
 
       # Fisher's exact test
-      par(mar=c(6,5,5,10))
+      if(n_groups > 1){
       plotdata <- melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
       if(sum(grepl("Selected", plotdata$Var1)) > 0){
@@ -1297,14 +1305,14 @@ ap_agresults <- function(x,
       }
       plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
 
-      ylim_max=ifelse(max(plotdata, na.rm=T) < -log10(cofisher),
-                      -log10(cofisher), max(plotdata, na.rm=T))
+      ylim_max=ifelse(max(plotdata, na.rm=T) < floor(4*-log10(cofisher)),
+                      floor(4*-log10(cofisher)), max(plotdata, na.rm=T))
       plot(NULL, xlim=c(0,dim(cokey)[1]),
            ylim=c(0, ylim_max),
            xaxt="n", yaxt="n",
            ylab="Fisher's exact test p-value (-log10)", xlab="MADs cutoff")
-      axis(2, at=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
-           labels=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)), las=1)
+      axis(2, at=seq(0, ylim_max, 0.5),
+           labels=seq(0, ylim_max, 0.5), las=1)
       axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
       abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
              col="lightgrey", lty=2)
@@ -1317,16 +1325,17 @@ ap_agresults <- function(x,
                         function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
               add=T)
 
-      if(n_groups > 1){
-        mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.", line=2.2, cex=0.65)
-        legend(par("usr")[1], par("usr")[4], ncol=4,
+        mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
+              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
+        legend(par("usr")[1], par("usr")[4], ncol=3,
                legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
                lty=c(rep(1:5, ceiling(dim(plotdata)[2]/5))[1:dim(plotdata)[2]],2),
                lwd=2,
                col=c(apply(react_summary$COMPARISONS, 2,
                            function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
                      "black"),
-               cex=0.55, xpd=NA, bty="n", yjust=0.1, seg.len=6)
+               cex=0.55, xpd=NA, bty="n", yjust=0.05, seg.len=6)
+        mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
       }
 
     }
