@@ -1168,12 +1168,12 @@ ap_agresults <- function(x,
     }
 
     cokey <- x$CUTOFF_KEY
-    selected_co <- sum(grepl("Selected_co", rownames(react_summary$REACTSUM_AG))) > 0
+    if_selected_co <- sum(grepl("if_selected_co", rownames(react_summary$REACTSUM_AG))) > 0
 
-    if(selected_co){
-      data_sum <- react_summary$REACTSUM_AG[grep("Selected_co", rownames(react_summary$REACTSUM_AG)), ]
-      data_freq <- react_summary$REACTFREQ_AG[grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
-      data_freq_all <- react_summary$REACTFREQ_AG[-grep("Selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+    if(if_selected_co){
+      data_sum <- react_summary$REACTSUM_AG[grep("if_selected_co", rownames(react_summary$REACTSUM_AG)), ]
+      data_freq <- react_summary$REACTFREQ_AG[grep("if_selected_co", rownames(react_summary$REACTFREQ_AG)), ]
+      data_freq_all <- react_summary$REACTFREQ_AG[-grep("if_selected_co", rownames(react_summary$REACTFREQ_AG)), ]
     } else {
       data_sum <- react_summary$REACTSUM_AG
       data_freq <- react_summary$REACTFREQ_AG
@@ -1208,7 +1208,7 @@ ap_agresults <- function(x,
       print(paste("Plotting ag", n, "of", length(agtoplot),"(",tmp_ag,")"))
       n=n+1
 
-      if(selected_co){
+      if(if_selected_co){
       dens <- x$DENS[[tmp_ag]]
       tmp_which_co <- cutoffs$score[which(cutoffs$bead == tmp_ag)]*10+1
       tmp_cutoff <- cokey$xmad[tmp_which_co]
@@ -1219,7 +1219,7 @@ ap_agresults <- function(x,
       boxplot(plotdata~samplegroups, col="lightgrey", outcol=0, las=2,
               ylab="MADs [AU]", xaxt="n", xlab=NA,
               ylim=c(min(plotdata, na.rm=T), ifelse(max(plotdata, na.rm=T) > 50, max(plotdata, na.rm=T), 50)))
-      if(selected_co){ abline(h=tmp_cutoff, lty=2) }
+      if(if_selected_co){ abline(h=tmp_cutoff, lty=2) }
 
       pwcols <- paste(cokey$color[data_score[,tmp_ag]*10+1])
       pwcols <- gsub("NA","#ffffff",pwcols)
@@ -1232,7 +1232,7 @@ ap_agresults <- function(x,
              col=rev(paste(cokey$color)), xpd=NA)
       mtext("Visualization of signals.", line=0.1, cex=0.65)
 
-      if(selected_co){
+      if(if_selected_co){
       mtext(paste0("Above dashed line: "), adj=0.7,
             side=1, at=par("usr")[1], line=0, cex=0.5)
       mtext(paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
@@ -1249,7 +1249,7 @@ ap_agresults <- function(x,
                 main=NA, xlim=c(-0.1, max(cokey$score)+0.1), xlab="MADs cutoff\nDensity bandwidth = 0.1", xaxt="n")
       axis(1, labels=c("<0",cokey$xmad[-1]), at=h$breaks[-c(1, length(h$breaks))], cex.axis=0.8)
 
-      if(selected_co){
+      if(if_selected_co){
         mtext("Distribution of binned values, \n algorithm assigned cutoff at dashed line.", line=0, cex=0.65)
         abline(v=(tmp_which_co-1)/10, lty=2)
         lines(dens,
@@ -1275,7 +1275,7 @@ ap_agresults <- function(x,
       axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
       abline(h=seq(0,100,10), col="lightgrey", lty=2)
       abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
-      if(selected_co){ abline(v=tmp_which_co, lty=2) }
+      if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
 
       matplot(plotdata, type="l", lty=1, lwd=2, add=T,
               col=paste(groupcolors$color))
@@ -1309,7 +1309,7 @@ ap_agresults <- function(x,
       abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
              col="lightgrey", lty=2)
       abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
-      if(selected_co){ abline(v=tmp_which_co, lty=2) }
+      if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
       abline(h=-log10(cofisher), lty=2)
 
       matplot(plotdata, type="l", lty=1:5, lwd=2,
