@@ -1190,7 +1190,7 @@ ap_agresults <- function(x,
     print("initiate pdf")
       # Create PDF
       pdf(filename,
-          width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=height, useDingbats=useDingbats)
+          width=ifelse(n_groups > 1, 20+n_groups*0.9, 15), height=height, useDingbats=useDingbats)
       par(mfrow=c(4,3), mgp=c(3,1,0))
 
       if(n_groups > 1){
@@ -1289,7 +1289,7 @@ ap_agresults <- function(x,
       }
 
       # Fisher's exact test
-      par(mar=c(6,5,5,8))
+      par(mar=c(6,5,5,10))
       plotdata <- melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
       if(sum(grepl("Selected", plotdata$Var1)) > 0){
