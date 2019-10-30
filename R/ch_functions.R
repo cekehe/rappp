@@ -962,28 +962,30 @@ ap_reactsummary2 <- function(x,
   }
 
   if(is.null(samplegroups)){
+
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA))
     } else {
       samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
     }
+
+  } else {
+
+    if("Filtered" %in% colnames(x$SAMPLES)){
+      samplegroups[which(!(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""))] <- NA
+    }
+
   }
+
   data_size <- table(samplegroups)
   n_ag <- lapply(data_bin, function(i) apply(i, 1, function(l) sum(!is.na(l))))
 
   # Calculate per antigen
   data_sum_ag <- lapply(data_bin, function(i) apply(i, 2, function(l) aggregate(l, by=list(samplegroups), FUN=sum)))
-  # names(data_sum_ag) <- names(data_bin)
 
   data_freq_ag <- lapply(data_sum_ag,
                          function(cutoff) lapply(cutoff,
                                                  function(antigen) round(antigen$x/data_size*100,1)))
-
-  # data_freq_ag <- lapply(1:length(data_sum_ag),
-  #                        function(cutoff) lapply(data_sum_ag[[cutoff]],
-  #                                                function(antigen) round(antigen$x/data_size*100,1)))
-  # names(data_freq_ag) <- names(data_sum_ag)
-
 
   data_sum_ag <- lapply(data_sum_ag,
                         function(cutoff) data.frame(do.call(cbind,
@@ -1057,6 +1059,7 @@ ap_reactsummary2 <- function(x,
                  REACTFREQ_AG=data_freq_ag,
                  REACTSUM_SAMP=data_sum_samp,
                  REACTFREQ_SAMP=data_freq_samp,
+                 COMPARISONS=comparisons,
                  FISHER_P=fisher_p,
                  FREQ_DIFF=freq_diff)
   } else {
