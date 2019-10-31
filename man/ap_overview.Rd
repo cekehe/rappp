@@ -23,5 +23,8 @@ Boxplots of signals per antigen and sample in different orders.
 }
 \details{
 The x list needs to include at least the element
-    MFI = assay mfi,
+    MFI = assay mfi.
+
+    Data points with the value NA or 0 will be set to 1 for the plotting to allow for l
+    ogarithmic scale without filtering any beads or samples.
 }

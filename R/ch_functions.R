@@ -537,7 +537,10 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
 #' @param ... Further arguments passed to \code{\link[graphics:boxplot]{boxplot()}}.
 #' @details The x list needs to include at least the element
-#'     MFI = assay mfi,
+#'     MFI = assay mfi.
+#'
+#'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for l
+#'     ogarithmic scale without filtering any beads or samples.
 #' @export
 
 ap_overview <- function(x,
@@ -548,10 +551,13 @@ ap_overview <- function(x,
       width=width, height=height, useDingbats=useDingbats)
   par(mfcol=c(3, 1), mar=c(10,5,4,2))
 
+  tmp_data <- x$MFI
+  tmp_data[which(is.na(tmp_data) | tmp_data == 0, arr.ind=T)] <- 1
+
     ## Antigens
-    plotdata <- list('Bead ID'=x$MFI,
-                     median=x$MFI[,order(apply(x$MFI, 2, median, na.rm=T))],
-                     max=x$MFI[,order(apply(x$MFI, 2, max, na.rm=T))])
+    plotdata <- list('Bead ID'=tmp_data,
+                     median=tmp_data[,order(apply(tmp_data, 2, median, na.rm=T))],
+                     max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
     boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, ...,
@@ -563,7 +569,7 @@ ap_overview <- function(x,
     }
 
     ## Samples
-    tmp <- data.frame(t(x$MFI), check.names=F)
+    tmp <- data.frame(t(tmp_data), check.names=F)
     plotdata <- list('analysis order'=tmp,
                      median=tmp[,order(apply(tmp, 2, median, na.rm=T))],
                      max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
