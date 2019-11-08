@@ -504,8 +504,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi.
 #'
-#'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for l
-#'     ogarithmic scale without filtering any beads or samples.
+#'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
+#'     logarithmic scale without filtering any beads or samples.
 #' @export
 
 ap_overview <- function(x,
