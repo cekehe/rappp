@@ -4,7 +4,8 @@
 #' It is the equivalent of 'print' except that the output is displayed as a plot.
 #'
 #' @details Based on \code{\link[gplots:textplot]{textplot()}} with slightly altered code.
-#' Altered code found onlne.
+#' Altered code found onlne (https://gist.github.com/johncolby/1482973).
+#' Additional alteration done by CH, see code.
 #'
 #' @export
 
@@ -114,7 +115,7 @@ ap_textplot.matrix <- function(object,
     lastloop <- TRUE
   }
 
-  for (i in 1:20)
+  for (i in 1:1000) # max 20 iteration in original, increased in ap_textplot to better fine tune char size. /CH
   {
     oldcex <- cex
 
@@ -130,17 +131,18 @@ ap_textplot.matrix <- function(object,
 
     cex <- cex / max(width,height)
 
-    if (abs(oldcex - cex) < 0.001)
-    {
-      lastloop <- TRUE
-    }
-  }
+    # Changed check for loop, now based on total column width below /CH
+  #   if (abs(oldcex - cex) < 0.001)
+  #   {
+  #     lastloop <- TRUE
+  #   }
+  # }
 
 
   # compute the individual row and column heights
-  rowheight<-strheight("W",cex=cex) * (1 + rmar)
+  rowheight<-strheight("M",cex=cex) * (1 + rmar)  # Changed from W to M /CH
   colwidth<- apply( object, 2, function(XX) max(strwidth(XX, cex=cex)) ) +
-    strwidth("W")*cmar
+    strwidth("M")*cmar # Changed from W to M /CH
 
 
   width  <- sum(colwidth)
@@ -153,6 +155,13 @@ ap_textplot.matrix <- function(object,
     xpos <- 0 + (1-width)/2
   else #if(halign=="right")
     xpos <- 0 + (1-width)
+
+  # Added instead of (abs(oldcex - cex) < 0.001) check /CH
+  if ((width + xpos) < 1)
+  {
+    lastloop <- TRUE
+  }
+  }
 
   # setup y alignment
   if(valign=="top")
