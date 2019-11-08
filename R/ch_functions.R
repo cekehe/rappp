@@ -514,7 +514,7 @@ ap_overview <- function(x,
 
   pdf(filename,
       width=width, height=height, useDingbats=useDingbats)
-  par(mfcol=c(3, 1), mar=c(10,5,4,2))
+  par(mfcol=c(3, 1), mar=c(15,5,4,2))
 
   tmp_data <- x$MFI
   tmp_data[which(is.na(tmp_data) | tmp_data == 0, arr.ind=T)] <- 1
@@ -525,13 +525,16 @@ ap_overview <- function(x,
                      max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, ...,
+          boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, xaxt="n", ...,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+            outcol=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                           ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("his6abp|hisabp|empty|bare", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+            col=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
-    }
+
+      cex_xaxis <- c(1,1,0.75, 0.5, 0.3, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+            axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
+      }
 
     ## Samples
     tmp <- data.frame(t(tmp_data), check.names=F)
@@ -540,13 +543,16 @@ ap_overview <- function(x,
                      max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
 
     for(i in 1:length(plotdata)){
-    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2,  ...,
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2,  xaxt="n", ...,
             main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
             outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                           ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))),
             col=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
-    }
+
+      cex_xaxis <- c(1,1,0.75, 0.5, 0.3, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+      axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
+      }
   dev.off()
 }
 
