@@ -171,63 +171,45 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                xpd=NA)
       }
       abline(h=cosIgG, lty=2)
-      textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), "Filter cutoff"),
+      textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), paste0("Filter cutoff (",IgX_cutoff,")")),
              offset=0.6, xpd=NA)
 
+      # Display samples outside boundaries
       par(mar=c(5,1,4,1))
-      frame()
-      frame()
-      # Display samples with high but still outliers
-      if(length(which(plotdata<cosIgG[2] & plotdata>cosIgG[3])) > 0) {
-        plottext <- data.frame(AssayWell=sampledata$AssayWell,
-                               InternalID=sampledata$sample_name,
-                               Subject=sampledata$tube_label,
-                               MFI=plotdata)[which(plotdata<cosIgG[2] & plotdata>cosIgG[3]),]
-        plottext <- plottext[order(plottext$MFI, decreasing=T),]
+      plottext_all <- data.frame(AssayWell=sampledata$AssayWell,
+                                 InternalID=sampledata$sample_name,
+                                 Subject=sampledata$tube_label,
+                                 MFI=plotdata)
+      plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
+                                      ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
+                                             ifelse(plottext_all$MFI < cosIgG[2], paste0("between ", cosIgG[3]," & ", cosIgG[2]), NA)))
+      mfi_groups <- c("above", "between", "below")
+      for(i in mfi_groups){
+        if(sum(grepl(i, plottext_all$MFIgroup)) > 0){
+          plottext <- plottext_all[grep(i, plottext_all$MFIgroup),]
+          tmp_name <- unique(plottext$MFIgroup)
+          plottext <- plottext[order(plottext$MFI, decreasing=T), -which(colnames(plottext) == "MFIgroup")]
 
-        if(dim(plottext)[1] > 20){
-          ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6, xpd=NA, at=-0.5)
+          if(dim(plottext)[1] > 20){
+            ap_textplot(plottext[1:20,],
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+            ap_textplot(plottext[21:dim(plottext)[1],],
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+            mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
+          } else {
+            ap_textplot(plottext,
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+            mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
+            frame()
+          }
+
         } else {
-          ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI between ",cosIgG[3]," & ", cosIgG[2]), font=2, cex=0.6)
+          frame()
           frame()
         }
 
-      } else {
-        frame()
-        frame()
       }
 
-      # Display and remove samples with low total IgG signal
-      if(length(which_lowIgG) > 0) {
-        plottext <- data.frame(AssayWell=sampledata$AssayWell,
-                               InternalID=sampledata$sample_name,
-                               Subject=sampledata$tube_label,
-                               MFI=plotdata)[which_lowIgG,]
-        plottext <- plottext[order(plottext$MFI, decreasing=T),]
-
-        if(dim(plottext)[1] > 20){
-          ap_textplot(plottext[1:20,],
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          ap_textplot(plottext[21:dim(plottext)[1],],
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6, xpd=NA, at=-0.5)
-        } else {
-          ap_textplot(plottext,
-                   halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
-          mtext(paste0("anti-hIg", IgType, " MFI below ",cosIgG[3]), font=2, cex=0.6)
-          frame()
-        }
-
-      } else {
-        frame()
-        frame()
-      }
       dev.off()
     }
 
