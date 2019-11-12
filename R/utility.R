@@ -9,4 +9,5 @@
 #' @importFrom tibble tibble
 #' @import ggplot2
 #' @importFrom WriteXLS WriteXLS
+#' @importFrom zoo rollapply
 NULL

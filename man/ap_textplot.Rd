@@ -12,5 +12,6 @@ It is the equivalent of 'print' except that the output is displayed as a plot.
 }
 \details{
 Based on \code{\link[gplots:textplot]{textplot()}} with slightly altered code.
-Altered code found onlne.
+Altered code found onlne (https://gist.github.com/johncolby/1482973).
+Additional alteration done by CH, see code.
 }

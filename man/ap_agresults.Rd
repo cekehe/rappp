@@ -4,9 +4,10 @@
 \alias{ap_agresults}
 \title{Reactivity result plots}
 \usage{
-ap_agresults(x, samplegroups = NULL, groupcolors = 1:6,
-  agtoplot = NULL, filename = "AntigenResults.pdf", height = 15,
-  useDingbats = F, check.names = FALSE)
+ap_agresults(x, samplegroups = NULL, groupcolors = 2:6,
+  agtoplot = NULL, cofisher = 0.05, shouldpdf = TRUE,
+  filename = "AntigenResults.pdf", useDingbats = FALSE,
+  check.names = FALSE)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
@@ -16,16 +17,18 @@ If left as \code{NULL} (default), the all non-filtered if filtering has been don
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
-\item{groupcolors}{colors for each group in samplegroups.}
+\item{groupcolors}{A matrix with a color-column and a group-column, or a vector with colors.}
 
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
 
+\item{cofisher}{Cutoff in fisher plot.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
+
 \item{filename}{string with filename and desired path, end with .pdf}
 
-\item{height}{width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
-
-\item{useDingbats}{logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+\item{useDingbats}{logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
@@ -65,10 +68,12 @@ the x list needs to include at least the element
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
     If any wells should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") in such column will be included.
+    Any beads with no text (ie. "" or NA) in such column will be included.
 
     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") will be included in the transformation.
+    Any beads with no text (ie. "" or NA) will be included in the transformation.
 
     DENS = Density output used for cutoff selection,
+
+Note: The function plots to a layout containing up to 16 areas.
 }

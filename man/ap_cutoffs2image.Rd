@@ -4,7 +4,8 @@
 \alias{ap_cutoffs2image}
 \title{Cutoff key image}
 \usage{
-ap_cutoffs2image(cutoffkey = NULL, MADlimits = NULL)
+ap_cutoffs2image(cutoffkey = NULL, MADlimits = NULL,
+  shouldpng = TRUE, filename = "CutoffColorKey.png")
 }
 \arguments{
 \item{cutoffkey}{table matching output from \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}},
@@ -12,6 +13,10 @@ recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.}
 
 \item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 Not used if cutoffkey is provided.}
+
+\item{filename}{string with filename and desired path, end with .png}
+
+\item{shouldpdf}{Logical, should it plot to png?}
 }
 \value{
 If MADlimits is provided a data.frame with three columns will be returned:

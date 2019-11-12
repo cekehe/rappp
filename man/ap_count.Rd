@@ -6,8 +6,9 @@
 \usage{
 ap_count(x, labels = "Gene_HPRR", protein = "GeneShort",
   agID = "PrEST", samp_co = 32, bead_flag = 32, bead_filter = 16,
-  N_filter = 0, shouldplot = T, filename = "bead_count.pdf",
-  width = 12, height = 10, useDingbats = F)
+  N_filter = 0, shouldplot = TRUE, shouldpdf = TRUE,
+  filename = "bead_count.pdf", width = 12, height = 10,
+  useDingbats = FALSE)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
@@ -28,6 +29,8 @@ ap_count(x, labels = "Gene_HPRR", protein = "GeneShort",
 
 \item{shouldplot}{Logical, should a plot be made?}
 
+\item{shouldpdf}{Logical, should it plot to pdf?}
+
 \item{filename}{String with filename and desired path, end with .pdf}
 
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
@@ -35,7 +38,8 @@ ap_count(x, labels = "Gene_HPRR", protein = "GeneShort",
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \value{
-Updated input x with relevant filtering and/or flagging info and a pdf with plots (if \code{shouldplot=T}).
+Updated input x with relevant filtering and/or flagging info and a pdf
+    with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 }
 \description{
 Filter and/or flag samples and beads with low bead count.
@@ -72,4 +76,6 @@ The SAMPLES element needs at least the columns:
     "WashCol", a numerical vector with groupings for during-run-washes in Luminex.
     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
     Colors boxes accordingly. There are 6 colors available.
+
+Note: The function plots to a layout containing up to four areas.
 }

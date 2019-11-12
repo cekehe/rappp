@@ -4,13 +4,15 @@
 \alias{ap_rep}
 \title{Check replicate samples}
 \usage{
-ap_rep(x, iter = 500, filename = "replicates.pdf", width = 12,
-  height = 12, useDingbats = F)
+ap_rep(x, iter = 500, shouldpdf = TRUE, filename = "replicates.pdf",
+  width = 12, height = 12, useDingbats = FALSE)
 }
 \arguments{
 \item{x}{List with at least two elements, see Deatils for naming and content.}
 
 \item{iter}{How many times  random samples should be iterated.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{String with filename and desired path, end with .pdf}
 
@@ -33,4 +35,7 @@ The SAMPLES element needs at least the columns:
     replicates (named with one of pool|rep|mix|commercial)
 
     "AssayNum" with assay number (vector with 1s if only one assay),
+
+Note: The function plots to a layout, number of areas depending on number
+    of different replicates and assays.
 }
