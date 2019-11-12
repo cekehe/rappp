@@ -5,8 +5,9 @@
 \title{Reactivity result plots}
 \usage{
 ap_agresults(x, samplegroups = NULL, groupcolors = 2:6,
-  agtoplot = NULL, cofisher = 0.05, filename = "AntigenResults.pdf",
-  useDingbats = F, check.names = FALSE)
+  agtoplot = NULL, cofisher = 0.05, shouldpdf = TRUE,
+  filename = "AntigenResults.pdf", useDingbats = FALSE,
+  check.names = FALSE)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
@@ -22,6 +23,8 @@ Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate 
 Character vector with column names of what to plot also ok.}
 
 \item{cofisher}{Cutoff in fisher plot.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{string with filename and desired path, end with .pdf}
 
@@ -71,4 +74,6 @@ the x list needs to include at least the element
     Any beads with no text (ie. "" or NA) will be included in the transformation.
 
     DENS = Density output used for cutoff selection,
+
+Note: The function plots to a layout containing up to 16 areas.
 }

@@ -4,11 +4,13 @@
 \alias{ap_negbeads}
 \title{Overview of signals in relation to neg control beads}
 \usage{
-ap_negbeads(x, filename = "neg-control-beads.pdf", width = 15,
-  height = 10, useDingbats = F)
+ap_negbeads(x, shouldpdf = TRUE, filename = "neg-control-beads.pdf",
+  width = 15, height = 10, useDingbats = FALSE)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{String with filename and desired path, end with .pdf}
 
@@ -31,4 +33,6 @@ The x list needs to include at least the element
 
     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
+
+Note: The function plots to a layout containing three areas.
 }

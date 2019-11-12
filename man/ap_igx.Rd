@@ -5,8 +5,9 @@
 \title{Loading control}
 \usage{
 ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
-  -3), shouldplot = T, filename = "anti-humanIgX.pdf", width = 12,
-  height = 6, useDingbats = F)
+  -3), shouldplot = TRUE, shouldpdf = TRUE,
+  filename = "anti-humanIgX.pdf", width = 12, height = 6,
+  useDingbats = FALSE)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
@@ -22,6 +23,8 @@ for drawing lines and detecting potential outliers.}
 
 \item{shouldplot}{Logical, should a plot be made?}
 
+\item{shouldpdf}{Logical, should it plot to pdf?}
+
 \item{filename}{String with filename and desired path, end with .pdf}
 
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
@@ -29,7 +32,8 @@ for drawing lines and detecting potential outliers.}
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \value{
-Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
+Updated input x with relevant filtering info and a pdf
+    with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 }
 \description{
 Filter samples with low MFI for the anti-human IgX bead.
@@ -54,4 +58,6 @@ The SAMPLES element needs at least the columns:
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 
     "tube_label" with alternative sample names, eg. from collaborator,
+
+Note: The function plots to a layout containing seven areas.
 }

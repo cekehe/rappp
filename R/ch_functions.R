@@ -7,6 +7,7 @@
 #' @param empty_bead Column index for empty bead.
 #' @param empty_co_multiple Number of sd above empty for cutoff.
 #' @param shouldplot Logical, should a plot be made?
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -24,18 +25,25 @@
 #'
 #'     "Plate" with numerical coupling plate number(s).
 #'
-#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
+#' Note: The function plots to a layout containing two areas.
+#'
+#' @return Updated input x with relevant filtering info and a pdf
+#'    with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
 ap_ct <- function(x, empty_bead, empty_co_multiple=3,
-                  shouldplot=T, filename="coupling_efficiency.pdf", width=25, height=6, useDingbats=F, ...) {
+                  shouldplot=TRUE, shouldpdf=TRUE, filename="coupling_efficiency.pdf",
+                  width=25, height=6, useDingbats=FALSE, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
 
     if(shouldplot){
+      if(shouldpdf){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
+      }
       par(mar=c(12,4,2,8), cex.axis=0.8)
       layout(matrix(c(1,1,1,1,2), nrow=1))
+
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
                   pwcol=rep(ifelse(grepl("empty|bare|blank", colnames(x$CT),ignore.case=T), "orange",
@@ -72,8 +80,9 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
         frame()
         mtext("No protein fragments displayed \n low coupling efficiency signal.", font=2, cex=0.7, line=-3)
       }
-
+      if(shouldpdf){
       dev.off()
+      }
     }
 
     # Annotate filtering in BEADS
@@ -104,6 +113,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
 #'     for drawing lines and detecting potential outliers.
 #' @param shouldplot Logical, should a plot be made?
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -127,11 +137,15 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 #'
 #'     "tube_label" with alternative sample names, eg. from collaborator,
 #'
-#' @return Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
+#' Note: The function plots to a layout containing seven areas.
+#'
+#' @return Updated input x with relevant filtering info and a pdf
+#'     with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
-                   shouldplot=T, filename="anti-humanIgX.pdf", width=12, height=6, useDingbats=F) {
+                   shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
+                   width=12, height=6, useDingbats=FALSE) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
@@ -145,7 +159,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
     which_lowIgG <- which(plotdata<cosIgG[3])
 
     if(shouldplot){
+      if(shouldpdf){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
+      }
       layout(matrix(c(1,1,1,2,3,
                       1,1,1,4,5,
                       1,1,1,6,7), nrow=3, byrow=T))
@@ -209,8 +225,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
         }
 
       }
-
+      if(shouldpdf){
       dev.off()
+      }
     }
 
     # Annotate filtering in SAMPLES
@@ -246,6 +263,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param bead_filter Cutoff for filtering beads with low counts.
 #' @param N_filter Accepted number of samples with low count per bead ID.
 #' @param shouldplot Logical, should a plot be made?
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -281,12 +299,16 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
 #'     Colors boxes accordingly. There are 6 colors available.
 #'
-#' @return Updated input x with relevant filtering and/or flagging info and a pdf with plots (if \code{shouldplot=T}).
+#' Note: The function plots to a layout containing up to four areas.
+#'
+#' @return Updated input x with relevant filtering and/or flagging info and a pdf
+#'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
 ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
-                     shouldplot=T, filename="bead_count.pdf", width=12, height=10, useDingbats=F) {
+                     shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
+                     width=12, height=10, useDingbats=FALSE) {
 
   plotdata <- t(x$COUNT)
   sampledata <- x$SAMPLES
@@ -294,9 +316,9 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
   which_lowSB <- which(apply(plotdata, 2, function(x) median(x, na.rm=T)) < samp_co) # Checks which samples have low count in general, e.g. due to faulty bead dispens in well
 
-  if(shouldplot){
+    if(shouldplot & shouldpdf){
     pdf(filename, width=width, height=height, useDingbats=useDingbats)
-  }
+    }
 
   for(state in c("before", "after")){
 
@@ -443,7 +465,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
   }
 
-  if(shouldplot){
+  if(shouldplot & shouldpdf){
     dev.off()
   }
 
@@ -497,6 +519,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #' Boxplots of signals per antigen and sample in different orders.
 #'
 #' @param x List with at least one elements, see Deatils for naming and content.
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -506,14 +529,19 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 #'
 #'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
 #'     logarithmic scale without filtering any beads or samples.
+#'
+#' Note: The function plots to a layout containing three areas.
+#'
 #' @export
 
-ap_overview <- function(x,
+ap_overview <- function(x, shouldpdf=TRUE,
                   filename="Signal_overview.pdf",
-                  width=20, height=15, useDingbats=F, ...){
+                  width=20, height=15, useDingbats=FALSE, ...){
 
+  if(shouldpdf){
   pdf(filename,
       width=width, height=height, useDingbats=useDingbats)
+  }
   par(mfcol=c(3, 1), mar=c(15,5,4,2))
 
   tmp_data <- x$MFI
@@ -552,8 +580,10 @@ ap_overview <- function(x,
 
       cex_xaxis <- c(1,1,0.75, 0.5, 0.3, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
       axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
-      }
+    }
+    if(shouldpdf){
   dev.off()
+    }
 }
 
 
@@ -563,6 +593,7 @@ ap_overview <- function(x,
 #'
 #' @param x List with at least two elements, see Deatils for naming and content.
 #' @param iter How many times  random samples should be iterated.
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -578,9 +609,13 @@ ap_overview <- function(x,
 #'
 #'     "AssayNum" with assay number (vector with 1s if only one assay),
 #'
+#' Note: The function plots to a layout, number of areas depending on number
+#'     of different replicates and assays.
+#'
 #' @export
 
-ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, useDingbats=F){
+ap_rep <- function(x, iter=500, shouldpdf=TRUE, filename="replicates.pdf",
+                   width=12, height=12, useDingbats=FALSE){
 
   ## INPUT
   if(sum(grepl("pool|rep|mix|commercial", x$SAMPLES$sample_name, ignore.case=T)) == 0){
@@ -670,8 +705,10 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
     assay_median <- lapply(data, function(y) apply(y, 2, function(x) median(x, na.rm=T)))
 
     ## PLOTS
+    if(shouldpdf){
     pdf(filename,
         width=12, height=12, useDingbats=F)
+    }
     par(mar=c(10,4,3,1))
 
     # CV boxplots
@@ -763,7 +800,9 @@ ap_rep <- function(x, iter=500, filename="replicates.pdf", width=12, height=12, 
     abline(h=10, lty=2, col="grey")
   }
 
+  if(shouldpdf){
   dev.off()
+  }
   }
 }
 
@@ -861,6 +900,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #' Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #'
 #' @param x List with at least four elements, see Deatils for naming and content.
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
@@ -875,12 +915,17 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
+#' Note: The function plots to a layout containing three areas.
+#'
 #' @export
 
-ap_negbeads <- function(x,
-                        filename="neg-control-beads.pdf", width=15, height=10, useDingbats=F){
+ap_negbeads <- function(x, shouldpdf=TRUE,
+                        filename="neg-control-beads.pdf",
+                        width=15, height=10, useDingbats=FALSE){
 
+  if(shouldpdf){
   pdf(filename, width=width, height=height, useDingbats=useDingbats)
+  }
 
   layout(matrix(c(1,1,2,3), ncol=2, byrow=T))
   par(mar=c(4,4,4,5))
@@ -919,7 +964,9 @@ ap_negbeads <- function(x,
        las=1, xlab="Median signal per sample", ylab="His6ABP bead signal", main="His6ABP bead",
        col=paste(plotcolor$color[plotdata_score[,grep("his6abp|hisabp", colnames(plotdata), ignore.case=T)]*10+1]))
 
+  if(shouldpdf){
   dev.off()
+  }
 }
 
 #' Calculate reactivity frequencies
@@ -1097,6 +1144,7 @@ ap_reactsummary2 <- function(x,
 #' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
 #' @param cofisher Cutoff in fisher plot.
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename string with filename and desired path, end with .pdf
 #' @param useDingbats logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.
 #' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
@@ -1125,6 +1173,8 @@ ap_reactsummary2 <- function(x,
 #'
 #'     DENS = Density output used for cutoff selection,
 #'
+#' Note: The function plots to a layout containing up to 16 areas.
+#'
 #' @return A list with the elements (output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}})
 #'
 #'     SAMPLEGROUPS = annnotation of which group each sample has been assigned,
@@ -1144,8 +1194,9 @@ ap_agresults <- function(x,
                          groupcolors=2:6,
                          agtoplot=NULL,
                          cofisher=0.05,
+                         shouldpdf=TRUE,
                          filename="AntigenResults.pdf",
-                         useDingbats=F,
+                         useDingbats=FALSE,
                          check.names=FALSE) {
 
   print("Calculating frequencies")
@@ -1197,8 +1248,10 @@ ap_agresults <- function(x,
 
     print("initiate pdf")
       # Create PDF
-    pdf(filename,
+    if(shouldpdf){
+     pdf(filename,
           width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=18, useDingbats=useDingbats)
+    }
       mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4)
       par(mgp=c(3,1,0))
 
@@ -1376,7 +1429,9 @@ ap_agresults <- function(x,
       }
 
     }
+      if(shouldpdf){
     dev.off()
+      }
     return(react_summary)
   }
 
@@ -1505,6 +1560,8 @@ ap_excel <- function(x,
 #'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 #'     Not used if cutoffkey is provided.
+#' @param shouldpdf Logical, should it plot to png?
+#' @param filename string with filename and desired path, end with .png
 #' @return If MADlimits is provided a data.frame with three columns will be returned:
 #'
 #'    [,1] MADs cutoff value
@@ -1515,7 +1572,9 @@ ap_excel <- function(x,
 #' @export
 
 ap_cutoffs2image <- function(cutoffkey = NULL,
-                             MADlimits = NULL) {
+                             MADlimits = NULL,
+                             shouldpng = TRUE,
+                             filename = "CutoffColorKey.png") {
 
   if(!is.null(cutoffkey)){
     xmad_score <- cutoffkey
@@ -1523,6 +1582,10 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
     xmad_score <- ap_cutoffs2(MADlimits = MADlimits)
   } else {
     warning("Either cutoffkey or MADlimits has to be provided.")
+  }
+
+  if(shouldpng){
+    png(filename=filename)
   }
 
   par(mar=c(4,6,4,1))
@@ -1548,6 +1611,10 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
          labs=c("<0", xmad_score$xmad[-1]), offset=0, cex=0.8)
   text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
        labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+
+  if(shouldpng){
+    dev.off()
+  }
 
   if(is.null(cutoffkey)){
     return(xmad_score)
@@ -1631,6 +1698,7 @@ make_peptides <- function(sequence,
 #' Visualize how sequences align to a full length protein (exact matches).
 #'
 #' @param inputfile file with sequence information, see Details for needed formatting and columns.
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param ouputfile filename for the output file.
 #' @param gene string with genename (or other name-identifier) for the alignment.
 #' @param uniprot string with Uniprot ID for the alignment.
@@ -1652,10 +1720,12 @@ make_peptides <- function(sequence,
 #' If printing table underneath extra columns may be needed in the input file
 #'     depending on what information you want to print.
 #'
+#' Note: The function plots to a layout containing up to two areas.
+#'
 #' @export
 
 align_sequences <- function(inputfile,
-                            ouputfile,
+                            ouputfile = "SequenceAlignment.pdf",
                             gene = NULL,
                             uniprot = NULL,
                             shouldtextplot = FALSE,
@@ -1678,14 +1748,18 @@ align_sequences <- function(inputfile,
   all <- all[which(sequences$Include == 1)]
   sequences <- sequences[which(sequences$Include == 1),]
 
-  pdf(ouputfile,
+  if(shouldpdf){
+  pdf(filename=ouputfile,
       height=ifelse(length(all)*0.5 < 3, 5, length(all)*0.5),
       width=25, useDingbats=F)
+  }
+
   if(shouldtextplot){
     layout(matrix(c(1,1,2), ncol=1))
   } else {
     layout(matrix(1, ncol=1))
   }
+
   par(lend="butt", mar=c(2,2,2,25))
   y_at <- seq(0, length(all)*0.5-0.5, 0.5)
   ylabs <- ifelse(sequences$Type == "Peptide", paste0(sequences$Sequence1), "")
@@ -1732,5 +1806,7 @@ align_sequences <- function(inputfile,
     ap_textplot(sequences[,textplotcolumns][-1,], show.rownames=F)
   }
 
-  dev.off()
+  if(shouldpdf){
+    dev.off()
+  }
 }

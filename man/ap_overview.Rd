@@ -4,11 +4,13 @@
 \alias{ap_overview}
 \title{Signal overview}
 \usage{
-ap_overview(x, filename = "Signal_overview.pdf", width = 20,
-  height = 15, useDingbats = F, ...)
+ap_overview(x, shouldpdf = TRUE, filename = "Signal_overview.pdf",
+  width = 20, height = 15, useDingbats = FALSE, ...)
 }
 \arguments{
 \item{x}{List with at least one elements, see Deatils for naming and content.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{String with filename and desired path, end with .pdf}
 
@@ -27,4 +29,6 @@ The x list needs to include at least the element
 
     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
     logarithmic scale without filtering any beads or samples.
+
+Note: The function plots to a layout containing three areas.
 }

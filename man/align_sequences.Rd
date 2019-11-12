@@ -4,8 +4,9 @@
 \alias{align_sequences}
 \title{Align sequences}
 \usage{
-align_sequences(inputfile, ouputfile, gene = NULL, uniprot = NULL,
-  shouldtextplot = FALSE, textplotcolumns = NULL)
+align_sequences(inputfile, ouputfile = "SequenceAlignment.pdf",
+  gene = NULL, uniprot = NULL, shouldtextplot = FALSE,
+  textplotcolumns = NULL)
 }
 \arguments{
 \item{inputfile}{file with sequence information, see Details for needed formatting and columns.}
@@ -19,6 +20,8 @@ align_sequences(inputfile, ouputfile, gene = NULL, uniprot = NULL,
 \item{shouldtextplot}{logical, should a table with sequence info be plotted below the alignment?}
 
 \item{textplotcolumns}{columns to include if printing a table below the alignment.}
+
+\item{shouldpdf}{Logical, should it plot to pdf?}
 }
 \description{
 Visualize how sequences align to a full length protein (exact matches).
@@ -39,4 +42,6 @@ NB! The sequences have to be identical matches to consequtive stretches
 
 If printing table underneath extra columns may be needed in the input file
     depending on what information you want to print.
+
+Note: The function plots to a layout containing up to two areas.
 }

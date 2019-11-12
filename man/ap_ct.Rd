@@ -4,9 +4,9 @@
 \alias{ap_ct}
 \title{Coupling efficency test}
 \usage{
-ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
-  filename = "coupling_efficiency.pdf", width = 25, height = 6,
-  useDingbats = F, ...)
+ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = TRUE,
+  shouldpdf = TRUE, filename = "coupling_efficiency.pdf", width = 25,
+  height = 6, useDingbats = FALSE, ...)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
@@ -17,6 +17,8 @@ ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
 
 \item{shouldplot}{Logical, should a plot be made?}
 
+\item{shouldpdf}{Logical, should it plot to pdf?}
+
 \item{filename}{String with filename and desired path, end with .pdf}
 
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
@@ -26,7 +28,8 @@ ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = T,
 \item{...}{Further arguments passed to \code{\link[base:mean]{mean()}} and \code{\link[stats:sd]{sd()}}.}
 }
 \value{
-Updated input x with relevant filtering info and a pdf with plot (if \code{shouldplot=T}).
+Updated input x with relevant filtering info and a pdf
+   with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 }
 \description{
 Flags beads with signal similar to empty bead in coupling test, produces plot if wanted.
@@ -44,4 +47,6 @@ The BEADS element needs at least the columns:
     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
 
     "Plate" with numerical coupling plate number(s).
+
+Note: The function plots to a layout containing two areas.
 }
