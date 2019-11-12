@@ -1197,9 +1197,10 @@ ap_agresults <- function(x,
 
     print("initiate pdf")
       # Create PDF
-      pdf(filename,
+    pdf(filename,
           width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=18, useDingbats=useDingbats)
-      par(mgp=c(3,1,0), mar=c(6,5,ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4),3))
+      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4)
+      par(mgp=c(3,1,0))
 
       if(n_groups > 1){
         layout(matrix(1:16, nrow=4, byrow=T))
@@ -1221,6 +1222,7 @@ ap_agresults <- function(x,
       }
 
       # MADs Beeswarm, antigen score coloring
+      par(mar=c(6,5,mar_top,3))
       plotdata <- data_cont[,tmp_ag]
       boxplot(plotdata~samplegroups, col="lightgrey", outcol=0, las=2,
               ylab="MADs [AU]", xaxt="n", xlab=NA,
@@ -1256,6 +1258,7 @@ ap_agresults <- function(x,
             font=2)
 
       # Histrogram & Density
+      par(mar=c(6,5,mar_top,1))
       h <- hist(data_score[,tmp_ag], breaks=seq(min(cokey$score)-0.1,max(cokey$score)+0.1, 0.1), prob=T, right=F,
                 main=NA, xlim=c(-0.1, max(cokey$score)+0.1), xlab="MADs cutoff\nDensity bandwidth = 0.1", xaxt="n")
       axis(1, labels=c("<0",cokey$xmad[-1]), at=h$breaks[-c(1, length(h$breaks))], cex.axis=0.8)
@@ -1275,6 +1278,7 @@ ap_agresults <- function(x,
               font=2)
 
       # Frequency
+        par(mar=c(6,5,mar_top,1))
       plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
       if(n_groups > 1){
         plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
@@ -1290,65 +1294,89 @@ ap_agresults <- function(x,
       abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
       if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
 
-      matplot(plotdata, type="l", lty=1, lwd=2, add=T,
+      matplot(plotdata, type="l", lty=1:5, lwd=2, add=T,
               col=paste(groupcolors$color))
 
       if(n_groups > 1){
         mtext("Percentage of reactive samples per group at each exemplified cutoff.",
               line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
         legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=3,
-               lty=1, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group)
+               lty=1:5, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group, seg.len=5)
         mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
       } else {
-        mtext("Percentage of reactive samples per group at each exemplified cutoff.", line=0.1, cex=0.65)
+        mtext("Percentage of reactive samples at each exemplified cutoff.", line=0.1, cex=0.65)
         mtext(tmp_ag, line=2, font=2)
       }
 
       # Fisher's exact test
       if(n_groups > 1){
+        par(mar=c(6,2,mar_top,20))
+
       plotdata <- melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
       if(sum(grepl("Selected", plotdata$Var1)) > 0){
         plotdata <- plotdata[-grep("Selected", plotdata$Var1), ]
       }
-      plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
 
-      ylim_max=ifelse(max(plotdata, na.rm=T) < floor(4*-log10(cofisher)),
-                      floor(4*-log10(cofisher)), max(plotdata, na.rm=T))
-      plot(NULL, xlim=c(0,dim(cokey)[1]),
-           ylim=c(0, ylim_max),
-           xaxt="n", yaxt="n",
-           ylab="Fisher's exact test p-value (-log10)", xlab="MADs cutoff")
-      axis(2, at=seq(0, ylim_max, 0.5),
-           labels=seq(0, ylim_max, 0.5), las=1)
-      axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
-      abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
-             col="lightgrey", lty=2)
-      abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
-      if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
-      abline(h=-log10(cofisher), lty=2)
+      plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
 
-      matplot(plotdata, type="l", lty=1:5, lwd=2,
-              col=apply(react_summary$COMPARISONS, 2,
-                        function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-              add=T)
+      plotdata <- plotdata[,dim(plotdata)[2]:1]
+      breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
+      break_col <- hcl.colors(length(breaks)-1, "BrwnYl", rev = F)
+      image(x=1:dim(plotdata)[1], y=1:dim(plotdata)[2], z=plotdata, xaxt="n", yaxt="n", bty="n",
+            col=break_col, ylab=NA, xlab="MADs cutoff", breaks=breaks)
+      axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8, tick=F)
+      axis(4, at=1:dim(plotdata)[2], colnames(plotdata), las=2, tick=F)
+      legend(par("usr")[1], par("usr")[4], fill=rev(break_col),
+             legend=paste0("<=",#expression("\u2264"),
+                           format(rev(breaks[-1]), scientific=F, drop0trailing=T)),
+             bty="n", yjust=0, xpd=NA, cex=1.2, ncol=3)
+      abline(h=c(0.5, (1:dim(plotdata)[1])+0.5), lty=2, col="lightgrey")
+      abline(v=c(0.5, (1:dim(plotdata)[2])+0.5), lty=2, col="lightgrey")
+      if(if_selected_co){ abline(v=tmp_which_co+c(0.5,-0.5), lty=2) }
 
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
-              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
-        legend(par("usr")[1], par("usr")[4], ncol=3,
-               legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
-               lty=c(rep(1:5, ceiling(dim(plotdata)[2]/5))[1:dim(plotdata)[2]],2),
-               lwd=2,
-               col=c(apply(react_summary$COMPARISONS, 2,
-                           function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-                     "black"),
-               cex=0.55, xpd=NA, bty="n", yjust=0.05, seg.len=6)
-        mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65, adj=0)
+          mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+
+          ## Below code is for a matplot visualization of Fisher
+          ## Becomes messy with more than 3 groups
+      # plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
+      # ylim_max=ifelse(max(plotdata, na.rm=T) < floor(4*-log10(cofisher)),
+      #                 floor(4*-log10(cofisher)), max(plotdata, na.rm=T))
+      # plot(NULL, xlim=c(0,dim(cokey)[1]),
+      #      ylim=c(0, ylim_max),
+      #      xaxt="n", yaxt="n",
+      #      ylab="Fisher's exact test p-value (-log10)", xlab="MADs cutoff")
+      # axis(2, at=seq(0, ylim_max, 0.5),
+      #      labels=seq(0, ylim_max, 0.5), las=1)
+      # axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
+      # abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
+      #        col="lightgrey", lty=2)
+      # abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
+      # if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
+      # abline(h=-log10(cofisher), lty=2)
+      #
+      # matplot(plotdata, type="l", lty=1:5, lwd=2,
+      #         col=apply(react_summary$COMPARISONS, 2,
+      #                   function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
+      #         add=T)
+      #
+      #   mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
+      #         line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
+      #   legend(par("usr")[1], par("usr")[4], ncol=3,
+      #          legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
+      #          lty=c(rep(1:5, ceiling(dim(plotdata)[2]/5))[1:dim(plotdata)[2]],2),
+      #          lwd=2,
+      #          col=c(apply(react_summary$COMPARISONS, 2,
+      #                      function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
+      #                "black"),
+      #          cex=0.55, xpd=NA, bty="n", yjust=0.05, seg.len=6)
+      #   mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
       }
 
     }
     dev.off()
-
     return(react_summary)
   }
 
