@@ -168,7 +168,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       par(mar=c(5,5,4,4))
 
       plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum],
-           xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Total hIg", IgType, ""),
+           xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
            col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
                       ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
       if(length(unique(AssayNum)) > 1){
