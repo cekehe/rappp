@@ -1505,11 +1505,16 @@ ap_summary <- function(x) {
 #'   Exceptions for input element names:\cr
 #'   - If an element is named BEADS in the input data, its name will be changed to ANTIGENS.
 #'   Therefore, ANTIGENS is a default element to export while BEADS is not.\cr
-#'   - Sums and frequencies at the cutoffs from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
+#'   - Sums and frequencies at the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
 #'   will be combined into a new element called REACTIVITIES
 #'  if the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
 #'  \code{\link[rappp:ap_agresults]{ap_agresults()}} is included in the output
-#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.
+#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.\cr
+#'  - If samplegorups were provided in \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} the
+#'  resulting Fisher's exact test p-values and frequency differences will be extracted for the
+#'  the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}} and formatted
+#'  into the new elements FISHER and DIFFERENCES.
+#'  Therefore, FISHER and DIFFERENCES are default elements to export although they are not present in the input data.\cr
 #'
 #'   If other list structures are used, it is most likely more convenient to just use
 #'   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.
@@ -1518,7 +1523,8 @@ ap_summary <- function(x) {
 
 ap_excel <- function(x,
                      elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
-                                "REACTIVITIES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+                                "REACTIVITIES", "FISHER", "DIFFERENCES",
+                                "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
                                 "ANTIGENS", "SAMPLES", "COUNT"),
                      filename = "DataOutput.xlsx",
                      row.names = TRUE,
@@ -1538,9 +1544,31 @@ ap_excel <- function(x,
   rownames(tmp_freq) <- gsub("Selected_co","Frequency", rownames(tmp_freq))
   }
 
+  if("FISHER_P" %in% names(excel)){
+    tmp_fisher <- melt(excel$FISHER_P)
+    tmp_fisher <- tmp_fisher[grep("Selected", tmp_fisher$Var1),]
+    tmp_fisher <- matrix(tmp_fisher$value, ncol=length(levels(tmp_fisher$Var2)), byrow=T,
+                         dimnames=list(paste(unique(tmp_fisher$L1)), paste(unique(tmp_fisher$Var2))))
+    rownames(tmp_fisher) <- gsub("Selected_co","", rownames(tmp_fisher))
+  }
+
+  if("FREQ_DIFF" %in% names(excel)){
+    tmp_diff <- melt(excel$FREQ_DIFF)
+    tmp_diff <- tmp_diff[grep("Selected", tmp_diff$Var1),]
+    tmp_diff <- matrix(tmp_diff$value, ncol=length(levels(tmp_diff$Var2)), byrow=T,
+                         dimnames=list(paste(unique(tmp_diff$L1)), paste(unique(tmp_diff$Var2))))
+    rownames(tmp_diff) <- gsub("Selected_co","", rownames(tmp_diff))
+  }
+
   if(exists("tmp_sum") & exists("tmp_freq")){
   excel <- append(excel,
                   list(REACTIVITIES=data.frame(t(tmp_sum),t(tmp_freq))))
+  }
+
+  if(exists("tmp_fisher") & exists("tmp_diff")){
+    excel <- append(excel,
+                    list(FISHER=data.frame(tmp_fisher, check.names=F),
+                         DIFFERENCES=data.frame(tmp_diff, check.names=F)))
   }
 
   excel <- excel[match(elements,
