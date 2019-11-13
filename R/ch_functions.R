@@ -208,13 +208,13 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
           if(dim(plottext)[1] > 20){
             ap_textplot(plottext[1:20,],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             ap_textplot(plottext[21:dim(plottext)[1],],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
           } else {
             ap_textplot(plottext,
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
             frame()
           }
@@ -327,11 +327,11 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
       if(state == "before"){
         layout(matrix(c(1,1,1,2,
                         3,3,3,4), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 6))
+        par(mar=c(4, 4, 3, 10))
       } else {
         layout(matrix(c(1,
                         2), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 8))
+        par(mar=c(4, 4, 3, 10))
       }
 
       # Per sample ALL DATA
@@ -377,7 +377,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
-          cex=0.4, cmar=1.5, show.rownames=F, valign="top")
+          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.4)
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
 
       } else {
@@ -445,7 +445,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
         lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
         if(shouldplot){
-          tp <- ap_textplot(lowAB, cex=0.3, cmar=1.5, show.rownames=F, valign="top", xpd=NA)
+          tp <- ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
+                            hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.3)
           title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
         }
       } else {
