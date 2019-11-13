@@ -115,9 +115,11 @@ ap_textplot.matrix <- function(object,
     lastloop <- TRUE
   }
 
-  for (i in 1:1000) # max 20 iteration in original, increased in ap_textplot to better fine tune char size. /CH
+  iterations <- 10000
+  for (i in 1:iterations) # max 20 iteration in original, increased in ap_textplot to better fine tune char size. /CH
   {
-    oldcex <- cex
+    if(!lastloop){ #added to let xpos part be run even if cex is predefined. /CH
+     # oldcex <- cex # Not necessary with changed loop break check. /CH
 
     width  <- sum(
       apply( object, 2,
@@ -127,49 +129,50 @@ ap_textplot.matrix <- function(object,
 
     height <- strheight('M', cex=cex) * nrow(object) * (1 + rmar)
 
-    if(lastloop) break
+    # if(lastloop) break # Moved to below xpos etc /CH
 
     cex <- cex / max(width,height)
+    }
 
     # Changed check for loop, now based on total column width below /CH
-  #   if (abs(oldcex - cex) < 0.001)
-  #   {
-  #     lastloop <- TRUE
-  #   }
-  # }
+    #   if (abs(oldcex - cex) < 0.001)
+    #   {
+    #     lastloop <- TRUE
+    #   }
+    # }
 
+    # compute the individual row and column heights
+    rowheight<-strheight("M",cex=cex) * (1 + rmar)  # Changed from W to M /CH
+    colwidth<- apply( object, 2, function(XX) max(strwidth(XX, cex=cex)) ) +
+      strwidth("M")*cmar # Changed from W to M /CH
 
-  # compute the individual row and column heights
-  rowheight<-strheight("M",cex=cex) * (1 + rmar)  # Changed from W to M /CH
-  colwidth<- apply( object, 2, function(XX) max(strwidth(XX, cex=cex)) ) +
-    strwidth("M")*cmar # Changed from W to M /CH
+    width  <- sum(colwidth)
+    height <- rowheight*nrow(object)
 
+    # setup x alignment
+    if(halign=="left")
+      xpos <- 0
+    else if(halign=="center")
+      xpos <- 0 + (1-width)/2
+    else #if(halign=="right")
+      xpos <- 0 + (1-width)
 
-  width  <- sum(colwidth)
-  height <- rowheight*nrow(object)
+    # setup y alignment
+    if(valign=="top")
+      ypos <- 1
+    else if (valign=="center")
+      ypos <- 1 - (1-height)/2
+    else #if (valign=="bottom")
+      ypos <- 0 + height
 
-  # setup x alignment
-  if(halign=="left")
-    xpos <- 0
-  else if(halign=="center")
-    xpos <- 0 + (1-width)/2
-  else #if(halign=="right")
-    xpos <- 0 + (1-width)
+    # Added instead of (abs(oldcex - cex) < 0.001) check /CH
+    if ((xpos + width) <= 1 & (ypos - height) >= 0)
+    {
+      lastloop <- TRUE
+    }
 
-  # Added instead of (abs(oldcex - cex) < 0.001) check /CH
-  if ((width + xpos) < 1)
-  {
-    lastloop <- TRUE
+    if(lastloop) break # moved from above /CH
   }
-  }
-
-  # setup y alignment
-  if(valign=="top")
-    ypos <- 1
-  else if (valign=="center")
-    ypos <- 1 - (1-height)/2
-  else #if (valign=="bottom")
-    ypos <- 0 + height
 
   x <- xpos
   y <- ypos
