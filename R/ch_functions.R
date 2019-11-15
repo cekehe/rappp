@@ -917,6 +917,9 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any samples with no text (ie. "" or NA) in such column will be included.
+#'
 #' Note: The function plots to a layout containing three areas.
 #'
 #' @export
@@ -932,17 +935,28 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   layout(matrix(c(1,1,2,3), ncol=2, byrow=T))
   par(mar=c(4,4,4,5))
 
-  if("Filtered" %in% colnames(x$BEADS)){
-    plotdata <- x$MFI[, which(is.na(x$BEADS$Filtered) |
-                                x$BEADS$Filtered == "" |
-                                grepl("NegControl", x$BEADS$Filtered))]
-    plotdata_score <- x$SCORE[, which(is.na(x$BEADS$Filtered) |
-                                        x$BEADS$Filtered == "" |
-                                        grepl("NegControl", x$BEADS$Filtered))]
-  } else {
     plotdata <- x$MFI
     plotdata_score <- x$SCORE
+
+  if("Filtered" %in% colnames(x$BEADS)){
+    plotdata <- plotdata[, which(is.na(x$BEADS$Filtered) |
+                                x$BEADS$Filtered == "" |
+                                grepl("NegControl", x$BEADS$Filtered))]
+    plotdata_score <- plotdata_score[, which(is.na(x$BEADS$Filtered) |
+                                        x$BEADS$Filtered == "" |
+                                        grepl("NegControl", x$BEADS$Filtered))]
   }
+
+  if("Filtered" %in% colnames(x$SAMPLES)){
+    plotdata <- plotdata[which(is.na(x$SAMPLES$Filtered) |
+                                x$SAMPLES$Filtered == "" |
+                                grepl("NegControl", x$SAMPLES$Filtered)),]
+    plotdata_score <- plotdata_score[which(is.na(x$SAMPLES$Filtered) |
+                                        x$SAMPLES$Filtered == "" |
+                                        grepl("NegControl", x$SAMPLES$Filtered)),]
+  }
+
+
 
   plotcolor <- x$CUTOFF_KEY
 
