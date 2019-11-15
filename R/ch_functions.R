@@ -53,11 +53,12 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
                                                         ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
-      axis(1, at=bs$x[seq(1, dim(bs)[1], 3)], labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
-
-      vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
+          vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
       abline(v=vert_lines, lty=2,
              col=ifelse(c(duplicated(x$BEADS$Plate),F), "lightgrey", "black"))
+
+      axis(1, at=rollmean(vert_lines, 2), labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
+
       tmp <- vert_lines[which(!c(duplicated(x$BEADS$Plate),F))]
       mtext(text=paste("Plate ",unique(x$BEADS$Plate)), at=diff(tmp)/2+tmp[-length(tmp)],
             side=1, line=0, cex=0.7, font=2)

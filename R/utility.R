@@ -10,4 +10,5 @@
 #' @import ggplot2
 #' @importFrom WriteXLS WriteXLS
 #' @importFrom zoo rollapply
+#' @importFrom zoo rollmean
 NULL
