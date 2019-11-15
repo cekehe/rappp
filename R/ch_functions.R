@@ -1373,6 +1373,7 @@ ap_agresults <- function(x,
       }
 
       plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
+      plotdata[which(plotdata > 1, arr.ind=T)] <- 1 # Fix bug with floating aritmetics, some 1s will not be recognized as 1s in image (white field).
 
       plotdata <- plotdata[,dim(plotdata)[2]:1]
       breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
@@ -1381,12 +1382,12 @@ ap_agresults <- function(x,
             col=break_col, ylab=NA, xlab="MADs cutoff", breaks=breaks)
       axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8, tick=F)
       axis(4, at=1:dim(plotdata)[2], colnames(plotdata), las=2, tick=F)
-      legend(par("usr")[1], par("usr")[4], fill=rev(break_col),
+      legend(par("usr")[1], par("usr")[4], pt.bg=rev(break_col), pch=22, horiz=T, pt.cex=2.5,
              legend=paste0("<=",#expression("\u2264"),
                            format(rev(breaks[-1]), scientific=F, drop0trailing=T)),
-             bty="n", yjust=0, xpd=NA, cex=1.2, ncol=3)
-      abline(h=c(0.5, (1:dim(plotdata)[1])+0.5), lty=2, col="lightgrey")
-      abline(v=c(0.5, (1:dim(plotdata)[2])+0.5), lty=2, col="lightgrey")
+             bty="n", yjust=0.2, xpd=NA, cex=1)
+      abline(h=c(0.5, (1:dim(plotdata)[2])+0.5), lty=2, col="lightgrey")
+      abline(v=c(0.5, (1:dim(plotdata)[1])+0.5), lty=2, col="lightgrey")
       if(if_selected_co){ abline(v=tmp_which_co+c(0.5,-0.5), lty=2) }
 
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
