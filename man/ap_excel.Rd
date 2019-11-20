@@ -5,8 +5,9 @@
 \title{Export data from Autoimmunity Profiling analysis to excel}
 \usage{
 ap_excel(x, elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
-  "REACTIVITIES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY", "ANTIGENS", "SAMPLES",
-  "COUNT"), filename = "DataOutput.xlsx", row.names = TRUE, ...)
+  "REACTIVITIES", "FISHER", "DIFFERENCES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+  "ANTIGENS", "SAMPLES", "COUNT"), filename = "DataOutput.xlsx",
+  row.names = TRUE, ...)
 }
 \arguments{
 \item{x}{list with at least the elements to export, see Deatils for more information and exceptions to the rule.}
@@ -35,11 +36,16 @@ The x list needs to include at least the elements specified under \code{elements
   Exceptions for input element names:\cr
   - If an element is named BEADS in the input data, its name will be changed to ANTIGENS.
   Therefore, ANTIGENS is a default element to export while BEADS is not.\cr
-  - Sums and frequencies at the cutoffs from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
+  - Sums and frequencies at the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
   will be combined into a new element called REACTIVITIES
  if the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
  \code{\link[rappp:ap_agresults]{ap_agresults()}} is included in the output
- Therefore, REACTIVITIES is a default element to export although it is not present in the input data.
+ Therefore, REACTIVITIES is a default element to export although it is not present in the input data.\cr
+ - If samplegorups were provided in \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} the
+ resulting Fisher's exact test p-values and frequency differences will be extracted for the
+ the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}} and formatted
+ into the new elements FISHER and DIFFERENCES.
+ Therefore, FISHER and DIFFERENCES are default elements to export although they are not present in the input data.\cr
 
   If other list structures are used, it is most likely more convenient to just use
   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.

@@ -37,7 +37,11 @@ https://kbroman.org/pkg_primer/pages/depends.html - Good info on dependencies.
 
 https://www.w3schools.com/cssref/default.asp - Good reference list for css-syntax (eg useful in Rmarkdown).
 
-Create .tar.gz-file - In RStudio terminal, write 'cd..', press ENTER (goes one folder upp), write 'R CMD build rappp', press ENTER (creates the file in the folder above package folder).
+Create .tar.gz-file - In RStudio terminal (go one folder up and create the file there):<br/>
+```
+cd..
+R CMD build rappp
+```
 
 This is how you should name versions: 
 -------------------------------------
@@ -58,8 +62,9 @@ Dev: Only used while under development. Always starts at 9000
 
 Install current master-version from GitHub: 
 -------------------------------------------
+```
 install.packages("devtools")<br/>
 library(devtools)<br/>
 install_github("cekehe/rappp")<br/>
 library(rappp)
-
+```

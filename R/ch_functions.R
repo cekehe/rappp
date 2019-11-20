@@ -53,11 +53,12 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
                                                         ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
-      axis(1, at=bs$x[seq(1, dim(bs)[1], 3)], labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
-
-      vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
+          vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
       abline(v=vert_lines, lty=2,
              col=ifelse(c(duplicated(x$BEADS$Plate),F), "lightgrey", "black"))
+
+      axis(1, at=rollmean(vert_lines, 2), labels=unique(bs$x.orig), cex.axis=0.5, las=2, tick=F)
+
       tmp <- vert_lines[which(!c(duplicated(x$BEADS$Plate),F))]
       mtext(text=paste("Plate ",unique(x$BEADS$Plate)), at=diff(tmp)/2+tmp[-length(tmp)],
             side=1, line=0, cex=0.7, font=2)
@@ -208,13 +209,13 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
           if(dim(plottext)[1] > 20){
             ap_textplot(plottext[1:20,],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             ap_textplot(plottext[21:dim(plottext)[1],],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
           } else {
             ap_textplot(plottext,
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top")
+                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
             mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
             frame()
           }
@@ -327,11 +328,11 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
       if(state == "before"){
         layout(matrix(c(1,1,1,2,
                         3,3,3,4), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 6))
+        par(mar=c(4, 4, 3, 10))
       } else {
         layout(matrix(c(1,
                         2), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 8))
+        par(mar=c(4, 4, 3, 10))
       }
 
       # Per sample ALL DATA
@@ -377,7 +378,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
-          cex=0.4, cmar=1.5, show.rownames=F, valign="top")
+          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.4)
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
 
       } else {
@@ -445,7 +446,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
         lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
         if(shouldplot){
-          tp <- ap_textplot(lowAB, cex=0.3, cmar=1.5, show.rownames=F, valign="top", xpd=NA)
+          tp <- ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
+                            hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.3)
           title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
         }
       } else {
@@ -915,6 +917,9 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
+#'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
+#'     Any samples with no text (ie. "" or NA) in such column will be included.
+#'
 #' Note: The function plots to a layout containing three areas.
 #'
 #' @export
@@ -930,17 +935,28 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   layout(matrix(c(1,1,2,3), ncol=2, byrow=T))
   par(mar=c(4,4,4,5))
 
-  if("Filtered" %in% colnames(x$BEADS)){
-    plotdata <- x$MFI[, which(is.na(x$BEADS$Filtered) |
-                                x$BEADS$Filtered == "" |
-                                grepl("NegControl", x$BEADS$Filtered))]
-    plotdata_score <- x$SCORE[, which(is.na(x$BEADS$Filtered) |
-                                        x$BEADS$Filtered == "" |
-                                        grepl("NegControl", x$BEADS$Filtered))]
-  } else {
     plotdata <- x$MFI
     plotdata_score <- x$SCORE
+
+  if("Filtered" %in% colnames(x$BEADS)){
+    plotdata <- plotdata[, which(is.na(x$BEADS$Filtered) |
+                                x$BEADS$Filtered == "" |
+                                grepl("NegControl", x$BEADS$Filtered))]
+    plotdata_score <- plotdata_score[, which(is.na(x$BEADS$Filtered) |
+                                        x$BEADS$Filtered == "" |
+                                        grepl("NegControl", x$BEADS$Filtered))]
   }
+
+  if("Filtered" %in% colnames(x$SAMPLES)){
+    plotdata <- plotdata[which(is.na(x$SAMPLES$Filtered) |
+                                x$SAMPLES$Filtered == "" |
+                                grepl("NegControl", x$SAMPLES$Filtered)),]
+    plotdata_score <- plotdata_score[which(is.na(x$SAMPLES$Filtered) |
+                                        x$SAMPLES$Filtered == "" |
+                                        grepl("NegControl", x$SAMPLES$Filtered)),]
+  }
+
+
 
   plotcolor <- x$CUTOFF_KEY
 
@@ -1372,6 +1388,7 @@ ap_agresults <- function(x,
       }
 
       plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
+      plotdata[which(plotdata > 1, arr.ind=T)] <- 1 # Fix bug with floating aritmetics, some 1s will not be recognized as 1s in image (white field).
 
       plotdata <- plotdata[,dim(plotdata)[2]:1]
       breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
@@ -1380,12 +1397,12 @@ ap_agresults <- function(x,
             col=break_col, ylab=NA, xlab="MADs cutoff", breaks=breaks)
       axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8, tick=F)
       axis(4, at=1:dim(plotdata)[2], colnames(plotdata), las=2, tick=F)
-      legend(par("usr")[1], par("usr")[4], fill=rev(break_col),
+      legend(par("usr")[1], par("usr")[4], pt.bg=rev(break_col), pch=22, horiz=T, pt.cex=2.5,
              legend=paste0("<=",#expression("\u2264"),
                            format(rev(breaks[-1]), scientific=F, drop0trailing=T)),
-             bty="n", yjust=0, xpd=NA, cex=1.2, ncol=3)
-      abline(h=c(0.5, (1:dim(plotdata)[1])+0.5), lty=2, col="lightgrey")
-      abline(v=c(0.5, (1:dim(plotdata)[2])+0.5), lty=2, col="lightgrey")
+             bty="n", yjust=0.2, xpd=NA, cex=1)
+      abline(h=c(0.5, (1:dim(plotdata)[2])+0.5), lty=2, col="lightgrey")
+      abline(v=c(0.5, (1:dim(plotdata)[1])+0.5), lty=2, col="lightgrey")
       if(if_selected_co){ abline(v=tmp_which_co+c(0.5,-0.5), lty=2) }
 
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
@@ -1504,11 +1521,16 @@ ap_summary <- function(x) {
 #'   Exceptions for input element names:\cr
 #'   - If an element is named BEADS in the input data, its name will be changed to ANTIGENS.
 #'   Therefore, ANTIGENS is a default element to export while BEADS is not.\cr
-#'   - Sums and frequencies at the cutoffs from \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
+#'   - Sums and frequencies at the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}}
 #'   will be combined into a new element called REACTIVITIES
 #'  if the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
 #'  \code{\link[rappp:ap_agresults]{ap_agresults()}} is included in the output
-#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.
+#'  Therefore, REACTIVITIES is a default element to export although it is not present in the input data.\cr
+#'  - If samplegorups were provided in \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} the
+#'  resulting Fisher's exact test p-values and frequency differences will be extracted for the
+#'  the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}} and formatted
+#'  into the new elements FISHER and DIFFERENCES.
+#'  Therefore, FISHER and DIFFERENCES are default elements to export although they are not present in the input data.\cr
 #'
 #'   If other list structures are used, it is most likely more convenient to just use
 #'   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.
@@ -1517,7 +1539,8 @@ ap_summary <- function(x) {
 
 ap_excel <- function(x,
                      elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
-                                "REACTIVITIES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+                                "REACTIVITIES", "FISHER", "DIFFERENCES",
+                                "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
                                 "ANTIGENS", "SAMPLES", "COUNT"),
                      filename = "DataOutput.xlsx",
                      row.names = TRUE,
@@ -1537,9 +1560,31 @@ ap_excel <- function(x,
   rownames(tmp_freq) <- gsub("Selected_co","Frequency", rownames(tmp_freq))
   }
 
+  if("FISHER_P" %in% names(excel)){
+    tmp_fisher <- melt(excel$FISHER_P)
+    tmp_fisher <- tmp_fisher[grep("Selected", tmp_fisher$Var1),]
+    tmp_fisher <- matrix(tmp_fisher$value, ncol=length(levels(tmp_fisher$Var2)), byrow=T,
+                         dimnames=list(paste(unique(tmp_fisher$L1)), paste(unique(tmp_fisher$Var2))))
+    rownames(tmp_fisher) <- gsub("Selected_co","", rownames(tmp_fisher))
+  }
+
+  if("FREQ_DIFF" %in% names(excel)){
+    tmp_diff <- melt(excel$FREQ_DIFF)
+    tmp_diff <- tmp_diff[grep("Selected", tmp_diff$Var1),]
+    tmp_diff <- matrix(tmp_diff$value, ncol=length(levels(tmp_diff$Var2)), byrow=T,
+                         dimnames=list(paste(unique(tmp_diff$L1)), paste(unique(tmp_diff$Var2))))
+    rownames(tmp_diff) <- gsub("Selected_co","", rownames(tmp_diff))
+  }
+
   if(exists("tmp_sum") & exists("tmp_freq")){
   excel <- append(excel,
                   list(REACTIVITIES=data.frame(t(tmp_sum),t(tmp_freq))))
+  }
+
+  if(exists("tmp_fisher") & exists("tmp_diff")){
+    excel <- append(excel,
+                    list(FISHER=data.frame(tmp_fisher, check.names=F),
+                         DIFFERENCES=data.frame(tmp_diff, check.names=F)))
   }
 
   excel <- excel[match(elements,
