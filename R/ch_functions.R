@@ -1744,7 +1744,7 @@ make_peptides <- function(sequence,
 #'
 #' @param inputfile file with sequence information, see Details for needed formatting and columns.
 #' @param shouldpdf Logical, should it plot to pdf?
-#' @param ouputfile filename for the output file.
+#' @param outputfile filename for the output file.
 #' @param gene string with genename (or other name-identifier) for the alignment.
 #' @param uniprot string with Uniprot ID for the alignment.
 #' @param shouldtextplot logical, should a table with sequence info be plotted below the alignment?
@@ -1770,7 +1770,7 @@ make_peptides <- function(sequence,
 #' @export
 
 align_sequences <- function(inputfile,
-                            ouputfile = "SequenceAlignment.pdf",
+                            outputfile = "SequenceAlignment.pdf",
                             gene = NULL,
                             uniprot = NULL,
                             shouldtextplot = FALSE,
@@ -1794,7 +1794,7 @@ align_sequences <- function(inputfile,
   sequences <- sequences[which(sequences$Include == 1),]
 
   if(shouldpdf){
-  pdf(filename=ouputfile,
+  pdf(file=outputfile,
       height=ifelse(length(all)*0.5 < 3, 5, length(all)*0.5),
       width=25, useDingbats=F)
   }

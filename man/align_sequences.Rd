@@ -4,14 +4,14 @@
 \alias{align_sequences}
 \title{Align sequences}
 \usage{
-align_sequences(inputfile, ouputfile = "SequenceAlignment.pdf",
+align_sequences(inputfile, outputfile = "SequenceAlignment.pdf",
   gene = NULL, uniprot = NULL, shouldtextplot = FALSE,
   textplotcolumns = NULL)
 }
 \arguments{
 \item{inputfile}{file with sequence information, see Details for needed formatting and columns.}
 
-\item{ouputfile}{filename for the output file.}
+\item{outputfile}{filename for the output file.}
 
 \item{gene}{string with genename (or other name-identifier) for the alignment.}
 
