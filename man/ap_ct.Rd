@@ -4,9 +4,10 @@
 \alias{ap_ct}
 \title{Coupling efficency test}
 \usage{
-ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = TRUE,
-  shouldpdf = TRUE, filename = "coupling_efficiency.pdf", width = 25,
-  height = 6, useDingbats = FALSE, ...)
+ap_ct(x, empty_bead, empty_co_multiple = 3, types = "PrEST",
+  shouldplot = TRUE, shouldpdf = TRUE,
+  filename = "coupling_efficiency.pdf", width = 25, height = 6,
+  useDingbats = FALSE, ...)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
@@ -14,6 +15,8 @@ ap_ct(x, empty_bead, empty_co_multiple = 3, shouldplot = TRUE,
 \item{empty_bead}{Column index for empty bead.}
 
 \item{empty_co_multiple}{Number of sd above empty for cutoff.}
+
+\item{types}{Which types of beads should be included in flagging? See details.}
 
 \item{shouldplot}{Logical, should a plot be made?}
 
@@ -44,7 +47,9 @@ The x list needs to include at least the elements
 
 The BEADS element needs at least the columns:
 
-    "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+    "Type" with info about type of content on bead,
+    should include at least what is set in argument types (exact match).
+    Eg. "PrEST" for PrESTs, or Full_length for full length representations,
 
     "Plate" with numerical coupling plate number(s).
 

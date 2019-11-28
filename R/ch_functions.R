@@ -6,6 +6,7 @@
 #' @param x List with at least three elements, see Deatils for naming and content.
 #' @param empty_bead Column index for empty bead.
 #' @param empty_co_multiple Number of sd above empty for cutoff.
+#' @param types Which types of beads should be included in flagging? See details.
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
@@ -21,7 +22,9 @@
 #'
 #' The BEADS element needs at least the columns:
 #'
-#'     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+#'     "Type" with info about type of content on bead,
+#'     should include at least what is set in argument types (exact match).
+#'     Eg. "PrEST" for PrESTs, or Full_length for full length representations,
 #'
 #'     "Plate" with numerical coupling plate number(s).
 #'
@@ -31,11 +34,13 @@
 #'    with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_ct <- function(x, empty_bead, empty_co_multiple=3,
+ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
                   shouldplot=TRUE, shouldpdf=TRUE, filename="coupling_efficiency.pdf",
                   width=25, height=6, useDingbats=FALSE, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
+
+    types <- paste0("^", paste0(types, collapse="$|^"), "$")
 
     if(shouldplot){
       if(shouldpdf){
@@ -46,11 +51,11 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
-                  pwcol=rep(ifelse(grepl("empty|bare|blank", colnames(x$CT),ignore.case=T), "orange",
+                  pwcol=rep(ifelse(grepl("empty|bare|blank|neutravidin", colnames(x$CT),ignore.case=T), "orange",
                                    ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
                                           ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
-                                                        ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
+                                                        ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
           vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
@@ -71,15 +76,17 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
       textxy(X=par("usr")[2], Y=empty_co, offset=0.55, cex=1,
              labs=paste0("mean(empty)+", empty_co_multiple,"*sd(empty)=", round(empty_co, 0)), xpd=NA)
 
-      tmp_text <- matrix(colnames(x$CT)[which(apply(x$CT, 2, mean) < empty_co)], ncol=1)
-      if(length(grep("HPRR", tmp_text, ignore.case=T)) > 0){
-        tmp_text <- matrix(tmp_text[grep("HPRR", tmp_text, ignore.case=T)], ncol=1)
+      tmp_text <- data.frame(Name=colnames(x$CT), Type=x$BEADS$Type)
+      if(length(which(apply(x$CT, 2, median, na.rm=T) < empty_co &
+                      grepl(types, tmp_text$Type))) > 0){
+        tmp_text <- matrix(tmp_text$Name[which(apply(x$CT, 2, min) < empty_co &
+                                          grepl(types, tmp_text$Type))], ncol=1)
         ap_textplot(tmp_text, mar=c(2,2,1,2),
                  show.rownames=F, show.colnames=F, hadj=0, valign="top", cex=0.8)
-        mtext("Protein fragments with low coupling efficiency signal", font=2, cex=0.9, xpd=NA)
+        mtext("Beads with low coupling efficiency signal", font=2, cex=0.9, xpd=NA)
       } else {
         frame()
-        mtext("No protein fragments displayed \n low coupling efficiency signal.", font=2, cex=0.7, line=-3)
+        mtext("No beads displayed \n low coupling efficiency signal.", font=2, cex=0.7, line=-3)
       }
       if(shouldpdf){
       dev.off()
@@ -92,7 +99,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
     }
 
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
-                                grepl("PrEST", x$BEADS$Type, ignore.case=T),
+                                grepl(types, x$BEADS$Type, ignore.case=T),
                               paste0(x$BEADS$Flagged,", Coupling"),
                               paste(x$BEADS$Flagged))
     x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
