@@ -4,10 +4,12 @@
 \alias{ap_summary}
 \title{Analysis summary}
 \usage{
-ap_summary(x)
+ap_summary(x, filter = TRUE)
 }
 \arguments{
 \item{x}{List with at least two elements, see Deatils for naming and content.}
+
+\item{filter}{Logical, should samples and beads be filtered away before summary?}
 }
 \description{
 Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.
@@ -15,7 +17,7 @@ Summarizes number of filtered/flagged beads/samples, amino acid lenghts and prot
 \details{
 The x list needs to include at least the elements
 
-    SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs.
+    SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs, and "Filtered" if argument filter is TRUE.
 
     BEADS = Beads info. Including columns:
 
@@ -23,7 +25,7 @@ The x list needs to include at least the elements
 
     "PrEST.seq..aa." with amino acid sequences,
 
-    "Filtered" with filtering annotation, e.g. from other ap_-functions
+    "Filtered" with filtering annotation, e.g. from other ap_-functions,
 
-    "Flagged" with filtering annotation, e.g. from other ap_-functions
+    "Flagged" with filtering annotation, e.g. from other ap_-functions.
 }

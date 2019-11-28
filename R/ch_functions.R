@@ -1464,9 +1464,10 @@ ap_agresults <- function(x,
 #' Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.
 #'
 #' @param x List with at least two elements, see Deatils for naming and content.
+#' @param filter Logical, should samples and beads be filtered away before summary?
 #' @details The x list needs to include at least the elements
 #'
-#'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs.
+#'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs, and "Filtered" if argument filter is TRUE.
 #'
 #'     BEADS = Beads info. Including columns:
 #'
@@ -1474,37 +1475,59 @@ ap_agresults <- function(x,
 #'
 #'     "PrEST.seq..aa." with amino acid sequences,
 #'
-#'     "Filtered" with filtering annotation, e.g. from other ap_-functions
+#'     "Filtered" with filtering annotation, e.g. from other ap_-functions,
 #'
-#'     "Flagged" with filtering annotation, e.g. from other ap_-functions
+#'     "Flagged" with filtering annotation, e.g. from other ap_-functions.
 #'
 #' @export
 
-ap_summary <- function(x) {
-  # Cohorts
-  print("Samples per cohort")
-  print(table(matrix(unlist(strsplit(as.character(x$SAMPLES$sample_name),"-")), ncol=2, byrow=T)[,1]))
-  # Uniprot IDs
-  print("Table of Uniprot IDs")
-  print(sort(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
-  print("Unique Uniprot IDs")
-  print(length(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
-  # Aminoacids
-  print("Table of sequence lenghts")
-  print(sort(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("min sequence lenghts")
-  print(min(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("max sequence lenghts")
-  print(max(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("median sequence lenghts")
-  print(median(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence median length
-  # Filtered & Flagged summary
-  print("Filtered antigens")
-  print(table(x$BEADS$Filtered))
-  print("Flagged antigens")
-  print(table(x$BEADS$Flagged))
-  print("Filtered samples")
-  print(table(x$SAMPLES$Filtered))
+ap_summary <- function(x, filter=TRUE) {
+
+  if(filter & "Filtered" %in% colnames(x$SAMPLES) & "Filtered" %in% colnames(x$BEADS)){
+    samples <- x$SAMPLES[which(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""),]
+    beads <- x$BEADS[which(is.na(x$BEADS$Filtered) | x$BEADS$Filtered == ""),]
+  } else {
+    beads <- x$BEADS
+    samples <- x$SAMPLES
+  }
+
+  summarylist <- list(
+    # Cohorts
+    "Samples per cohort" = table(matrix(unlist(strsplit(as.character(samples$sample_name),"-")),
+                                        ncol=2, byrow=T)[,1]),
+    # Uniprot IDs
+    "Table of Uniprot IDs" = sort(table(unlist(strsplit(as.character(beads$Uniprot[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    "Unique Uniprot IDs" = length(table(unlist(strsplit(as.character(beads$Uniprot[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    # Ensembl IDs
+    "Table of Ensembl IDs" = sort(table(unlist(strsplit(as.character(beads$ENSG.ID[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    "Unique Ensembl IDs" = length(table(unlist(strsplit(as.character(beads$ENSG.ID[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    # Gene names
+    "Table of Genes" = sort(table(unlist(strsplit(as.character(beads$Gene.name[which(beads$Type == "PrEST")]),
+                                                  ";|,")))),
+    "Unique Genes" = length(table(unlist(strsplit(as.character(beads$Gene.name[which(beads$Type == "PrEST")]),
+                                                  ";|,")))),
+    # Aminoacids
+    "Table of sequence lenghts" = sort(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "min sequence lenghts" = min(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "max sequence lenghts" = max(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "median sequence lenghts" = median(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)) # Check aa-sequence median length
+  )
+
+    # Filtered & Flagged summary
+  if("Filtered" %in% colnames(beads) & "Flagged" %in% colnames(beads) & "Filtered" %in% colnames(samples)){
+    summarylist <- append(summarylist,
+                          list("Filtered antigens" = table(beads$Filtered),
+                               "Flagged antigens" = table(beads$Flagged),
+                               "Filtered samples" = table(samples$Filtered)))
+  }
 }
 
 #' Export data from Autoimmunity Profiling analysis to excel
