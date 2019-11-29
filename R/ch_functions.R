@@ -545,7 +545,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
 ap_overview <- function(x, shouldpdf=TRUE,
                   filename="Signal_overview.pdf",
-                  width=20, height=15, useDingbats=FALSE, ...){
+                  width=25, height=15, useDingbats=FALSE, ...){
 
   if(shouldpdf){
   pdf(filename,
@@ -569,7 +569,7 @@ ap_overview <- function(x, shouldpdf=TRUE,
             col=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
 
-      cex_xaxis <- c(1,1,0.75, 0.4, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
             axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
       }
 
@@ -587,7 +587,7 @@ ap_overview <- function(x, shouldpdf=TRUE,
             col=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
 
-      cex_xaxis <- c(1,1,0.75, 0.4, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
       axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
     }
     if(shouldpdf){
