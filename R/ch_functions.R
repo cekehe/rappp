@@ -480,7 +480,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
   # Annotate filtering in SAMPLES and BEADS
   # SAMPLES
-  if(length(which(colnames(x$SAMPLES) == "Filtered")) == 0){
+  if(!("Filtered" %in% colnames(x$SAMPLES))){
     x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
   }
   if(length(which_lowSB) > 0){
@@ -491,13 +491,13 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
   }
 
   # BEADS filtered
-  if(length(which(colnames(x$BEADS) == "Filtered")) == 0){
+  if(!("Filtered" %in% colnames(x$BEADS))){
     x$BEADS <- data.frame(Filtered="", x$BEADS, stringsAsFactors=F)
   }
 
   if(length(which_lowAB) > 0){
     if(length(which(lowAB$Action == "Filtered")) > 0){
-      x$BEADS$Filtered <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Filtered")],
+      x$BEADS$Filtered <- ifelse(rownames(x$BEADS) %in% rownames(lowAB)[which(lowAB$Action == "Filtered")],
                                  paste0(x$BEADS$Filtered,", Count"),
                                  paste(x$BEADS$Filtered))
       x$BEADS$Filtered <- gsub("^, ", "", x$BEADS$Filtered)
@@ -505,13 +505,13 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
   }
 
   # BEADS flagged
-  if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
+  if(!("Flagged" %in% colnames(x$BEADS))){
     x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
   }
 
   if(length(which_lowAB) > 0){
     if(length(which(lowAB$Action == "Flagged")) > 0){
-      x$BEADS$Flagged <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Flagged")],
+      x$BEADS$Flagged <- ifelse(rownames(x$BEADS) %in% rownames(lowAB)[which(lowAB$Action == "Flagged")],
                                 paste0(x$BEADS$Flagged,", Count"),
                                 paste(x$BEADS$Flagged))
       x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
