@@ -378,14 +378,14 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     if(state == "before"){
       if(length(which_lowSB) > 0){
         lowSB <- sampledata[which_lowSB, ]
-        tp <- ap_textplot(data.frame(
+        ap_textplot(data.frame(
           AssayWell=lowSB$AssayWell,
           InternalID=lowSB$sample_name,
           Subject=lowSB$tube_label,
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
-          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.4)
+          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.4)
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
 
       } else {
@@ -453,8 +453,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
         lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
         if(shouldplot){
-          tp <- ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
-                            hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.3)
+          ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
+                            hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.3)
           title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
         }
       } else {
