@@ -313,7 +313,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
+ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
                      width=12, height=10, useDingbats=FALSE) {
