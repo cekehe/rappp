@@ -943,7 +943,7 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   pdf(filename, width=width, height=height, useDingbats=useDingbats)
   }
 
-  layout(matrix(c(1,1,1,2,3,4), ncol=2, byrow=T))
+  layout(matrix(c(1,1,1,2,3,4), ncol=3, byrow=T))
   par(mar=c(4,4,4,5))
 
     plotdata <- x$MFI
