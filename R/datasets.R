@@ -17,7 +17,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(SBA)
+#' @usage data(MockSBA)
 #'
 #' @format An object of class \code{\link[base:list]{"list"}} with 6 elements:
 #' \describe{
@@ -29,4 +29,4 @@
 #'   \item{FILTERINFO}{A string vector, starting will NULL but is expanded depending on performed filtering steps.}
 #' }
 #' @keywords datasets
-"SBA"
+"MockSBA"
