@@ -1242,7 +1242,7 @@ ap_agresults <- function(x,
 
   if(!(class(groupcolors) %in% c("matrix","data.frame"))){
     groupcolors <- data.frame(group=levels(samplegroups),
-                              color=groupcolors[seq_along(samplegroups)])
+                              color=groupcolors[seq_along(levels(samplegroups))])
   } else {
     groupcolors <- groupcolors[match(levels(samplegroups), groupcolors$group), ]
   }
