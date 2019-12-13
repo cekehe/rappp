@@ -25,14 +25,14 @@ Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:a
 \details{
 The x list needs to include at least the element
 
-    MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+    MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp|neutravidin,
 
-    SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+    SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp|neutravidin,
 
     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 
-    BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
+    BEADS = Beads info, including a column called "Filtered" with the value "NegControl" for the negative control beads.
+    Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included.
 
     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any samples with no text (ie. "" or NA) in such column will be included.
