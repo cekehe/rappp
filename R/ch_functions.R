@@ -1536,6 +1536,8 @@ ap_summary <- function(x, filter=TRUE) {
   )
 
     # Filtered & Flagged summary
+  beads <- x$BEADS
+  samples <- x$SAMPLES
   if("Filtered" %in% colnames(beads) & "Flagged" %in% colnames(beads) & "Filtered" %in% colnames(samples)){
     summarylist <- append(summarylist,
                           list("Filtered antigens" = table(beads$Filtered),
