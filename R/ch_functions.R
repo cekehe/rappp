@@ -1535,6 +1535,8 @@ ap_summary <- function(x, filter=TRUE) {
                                "Flagged antigens" = table(beads$Flagged),
                                "Filtered samples" = table(samples$Filtered)))
   }
+
+  return(summarylist)
 }
 
 #' Export data from Autoimmunity Profiling analysis to excel
