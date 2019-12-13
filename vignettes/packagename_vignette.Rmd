@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message=F}
 library(rappp)
 ```
 
@@ -30,7 +30,7 @@ This vignette will demonstrate a basic workflow using the included functions.
 
 Most functions are based on the below input structure, which is then built upon by the different functions.
 
-```{r}
+```{r, echo=T, eval=F}
         SBA <- list(MFI=mfi,
                     COUNT=count,
                     SAMPLES=sampleinfo,
@@ -39,25 +39,205 @@ Most functions are based on the below input structure, which is then built upon 
                     FILTERINFO=NULL)
 ```
 
+```{r, echo=F, eval=T}
+SBA <- MockSBA
+```
+
 The list elements are described in more detail below.
 
-```{r}
-head(mfi)
-```
+## MFI
+The MFI element contains the raw MFI in a data frame with samples as rows and beads as columns.
+It is recommended to use the bead name structure Gene_Identifier. 
+For antigens mapping to more than one gene, it is recommended to only display the first gene followed by an asterix.
 
 ```{r}
-head(count)
+SBA$MFI[1:10, 1:8]
 ```
 
-```{r}
-head(sampleinfo)
-```
+## COUNT
+The COUNT element contains the bead count in a data frame with samples as rows and beads as columns.
+Use same naming and structure as the MFI element.
 
 ```{r}
-head(beads)
+SBA$COUNT[1:10, 1:8]
 ```
 
+## SAMPLES
+The SAMPLES element contains all sample information you wish to use in a data frame, with samples as rows.
+Make sure the rows are sorted in the same order as the rows in the MFI and COUNT elements.
+
 ```{r}
-head(mfi_ct)
+SBA$SAMPLES[1:10,]
+```
+
+## BEADS
+The BEADS element contains all bead information you wish to use in a data frame, with beads as rows.
+Make sure the rows are sorted in the same order as the columns in the MFI, COUNT and CT elements.
+
+```{r}
+SBA$BEADS[1:8, 1:4]
+```
+
+## CT
+The CT element contains the raw MFI values for the coupling efficiency test in a data frame with replicates as rows and beads as columns.
+Use same column naming as in the MFI element.
+
+```{r}
+SBA$CT[, 1:8]
+```
+
+# Quality control plot/filtering/flagging functions
+
+## Flagging based on coupling test
+The function ap_ct() produces a plot (if you want) in a pdf (if you want), and flags all antigens of the specified types which have a signal lower than the empty bead (or other bead you want to base the flagging threshold on).
+The element BEADS in the input list is updated with the flagging annotation and the element FILTERINFO is updated to state that ct-flagging has been performed.
+
+```{r ct, fig.width=13}
+SBA <- ap_ct(SBA, empty_bead=grep("Bare", colnames(SBA$MFI)), 
+             empty_co_multiple = 3, types = "PrEST",
+  shouldplot = TRUE, shouldpdf = FALSE,useDingbats = FALSE)
+
+# Updated BEADS
+SBA$BEADS[which(SBA$BEADS$Flagged != ""), 1:4]
+
+# Updated FILTERINFO
+SBA$FILTERINFO
+```
+
+## Anti human-IgG, loading control
+The function ap_igx() produces a plot (if you want) in a pdf (if you want), and filters all samples with low signal.
+You decide if the filtering cutoff should be a fixed value or for example based on the empty wells.
+The element SAMPLES in the input list is updated with the filtering annotation and the element FILTERINFO is updated.
+
+```{r ahIgG, fig.width=13, fig.height=8}
+SBA <- ap_igx(SBA, IgX_bead=grep("IgG", colnames(SBA$MFI)), IgType = "G", 
+              IgX_cutoff = 5000, cosfac = c(3,-3), 
+              shouldplot = TRUE, shouldpdf = FALSE, useDingbats = FALSE)
+
+# Updated SAMPLES
+SBA$SAMPLES[which(SBA$SAMPLES$Filtered != ""),]
+
+# Updated FILTERINFO
+SBA$FILTERINFO
+```
+
+## Bead count
+The function ap_count() produces a plot (if you want) in a pdf (if you want), and filters or flags samples and beads based on their bead count.
+You decide which filtering/flagging cutoffs to use, and how many samples with low bead count that are needed to filter a bead.
+The elements SAMPLES and BEADS in the input list are updated with the filtering and falgging annotation and the element FILTERINFO is updated.
+In the first plot (samples) nothing is filtered, for the second plot (beads) samples filtered based on bead count are not included, 
+and for the last two plots (samples and beads) both samples and beads filtered based on bead count are excluded.
+
+```{r count, fig.width=13, fig.height=8}
+SBA <- ap_count(SBA, labels = "Gene_AgID", protein = "GeneShort",
+  agID = "PrEST.ID", samp_co = 32, bead_flag = 32, bead_filter = 16,
+  N_filter = 0, shouldplot = TRUE, shouldpdf = FALSE, useDingbats = FALSE)
+
+# Updated SAMPLES
+SBA$SAMPLES[which(SBA$SAMPLES$Filtered != ""),]
+
+# Updated BEADS
+SBA$BEADS[which(SBA$BEADS$Flagged != "" | SBA$BEADS$Filtered != ""), 1:4]
+
+# Updated FILTERINFO
+SBA$FILTERINFO
+```
+
+## Manual flagging/filtering annotation
+
+You may also want to add some flagging or filtering annotations manually, for example for control beads and wells:
+```{r manual}
+        SBA$SAMPLES$Filtered[grep("rep|pool|commercial|mix|blank|empty|buffer", SBA$SAMPLES$sample_name, ignore.case=T)] <- "Control"
+        SBA$BEADS$Filtered[grep("ebna|ahig|human", SBA$BEADS$Gene_AgID, ignore.case=T)] <- "PosControl"
+        SBA$BEADS$Filtered[grep("bare|empty|his6abp|hisabp", SBA$BEADS$Gene_AgID, ignore.case=T)] <- "NegControl"
+        SBA$FILTERINFO <- c(SBA$FILTERINFO, "TechControls")
+```
+
+
+# Data transformation (MADs, scores, binary)
+
+The package includes functions that do MAD-transformation, binning (scoring), cutoff selection based on the scoring and create binary tables.
+These functions are combined into the wrapper function ap_norm2().
+You select which MAD-values you want to use for the binning (scoring).
+Since the transformation etc. are done per sample, no samples are excluded.
+Antigens without any filtering annotations and with the annotation "NegControl" are included in the transformation etc. 
+Several new elements will be added to the input list: MADS, CUTOFF_KEY, SCORE, BINARY, DENS, ANTIGEN_CUTOFFS, and ANTIGEN_CUTOFFS_CONT.
+
+```{r norm}
+SBA <- ap_norm2(SBA, MADlimits = seq(0, 70, 5), na.rm = TRUE,
+  check.names = FALSE, mad_constant = 1, mad_low = FALSE,
+  mad_high = FALSE, score_rightmost.closed = FALSE,
+  score_left.open = FALSE, score_all.inside = FALSE,
+  coselect_slope_cutoff = -0.5, coselect_offset = 0.1,
+  coselect_bw = 0.1)
+
+# Updated SBA
+lapply(SBA, class)
+
+```
+
+# General data overview and evaluation functions
+
+## Signal overview
+
+ap_overview() plots boxplots per sample and bead, in assay order, sorted by median and sorted by max.
+All wells and beads in the input list are included, even if filtering/flagging has been annotated.
+
+```{r overview, fig.width=13, fig.height=13}
+ap_overview(SBA, shouldpdf = FALSE, useDingbats = FALSE)
+```
+
+## Negative control beads
+It is good to see how the negative control beads relate to the rest of the signals.
+The function ap_negbeads() plots beeswarms for all samples (without filtering annotation) and 
+coloring the points based on the scores. The negative control beads are colored separately, and below the beeswarms 
+there are correlation plots between the median sample signal and the negative control signals, colored by the score of the control bead.
+
+It's not really true for this mock data set, but in general there is a good correlation between the control beads and the medians, 
+and the MAD-transformation and scoring adjusts for the different sample background levels.
+
+```{r negbeads, fig.width=13, fig.height=10}
+ap_negbeads(SBA, shouldpdf = FALSE, useDingbats = FALSE)
+```
+
+# Results
+The function ap_reactsummary2() calculates number of reactivities and the corresponding reactivity frequencies 
+per sample and antigen for each cutoff used in the data transformation. It will also calculate per group, 
+either all if no grouping is defined or for a grouping of your choice. 
+If more than one group it will also do Fisher's exact test and calculate the frequency difference between each pair of groups. 
+This function does not build upon the input list, but has a separate output list, one per grouping.
+
+The function ap_reactsummary2() is incorporated in the function ap_agresults(), which also visualizes the data and reactivities per bead.
+The heatmap for Fisher's exact test p-values is only included if there is more than one sample group.
+
+In the below example I've only selected one bead to plot, but if agtoplot is left empty all beads will be plotted, 4 per page.
+```{r results, fig.width=12, fig.height=5}
+react_summary <- ap_agresults(SBA, samplegroups = factor(SBA$SAMPLES$Diagnosis), groupcolors = 2:6,
+  agtoplot = "PPL_HPRR3160218", cofisher = 0.05, shouldpdf = FALSE, useDingbats = FALSE,
+  check.names = FALSE)
+
+# Reactivity summary
+lapply(react_summary, class)
+```
+
+# Assay and analysis summary
+The function ap_summary() gives you a summary of number of proteins represented, sequence lengths etc.
+
+```{r summary}
+ap_summary(SBA, filter = TRUE)
+```
+
+## Cutoff key
+The function ap_cutoffs2image() makes an image of cutoff key, with the corresponding colors.
+
+```{r key, fig.width=10, fig.height=5}
+ap_cutoffs2image(cutoffkey = SBA$CUTOFF_KEY, shouldpng = FALSE)
+```
+
+
+## R session
+It's always good to save the R session info, which includes R and package version numbers.
+```{r session}
+capture.output(sessionInfo())
 ```
 
