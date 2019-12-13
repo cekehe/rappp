@@ -1,0 +1,63 @@
+---
+title: "Functions for basic QC and visualization of autoimmunity data (rappp)"
+author: "Cecilia Hellström"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Functions for basic QC and visualization of autoimmunity data (rappp)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rappp)
+```
+
+This package includes functions to enable a standardized workflow for quality control and 
+some basic analysis and visualizations of autoimmunity data.
+It also includes some functions related to peptide design, see the end.
+
+This vignette will demonstrate a basic workflow using the included functions.
+
+# Input data structure
+
+Most functions are based on the below input structure, which is then built upon by the different functions.
+
+```{r}
+        SBA <- list(MFI=mfi,
+                    COUNT=count,
+                    SAMPLES=sampleinfo,
+                    BEADS=beads,
+                    CT=mfi_ct,
+                    FILTERINFO=NULL)
+```
+
+The list elements are described in more detail below.
+
+```{r}
+head(mfi)
+```
+
+```{r}
+head(count)
+```
+
+```{r}
+head(sampleinfo)
+```
+
+```{r}
+head(beads)
+```
+
+```{r}
+head(mfi_ct)
+```
+
