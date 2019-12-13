@@ -1280,16 +1280,21 @@ ap_agresults <- function(x,
       # Create PDF
     if(shouldpdf){
      pdf(filename,
-          width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=18, useDingbats=useDingbats)
+          width=ifelse(n_groups > 1, 20+n_groups*0.9, 15), height=18, useDingbats=useDingbats)
     }
-      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4)
+      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)+3, 4)
+      mtext_sub_line <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3), 2)
       par(mgp=c(3,1,0))
 
       if(n_groups > 1){
-        layout(matrix(1:16, nrow=4, byrow=T))
+        layout(matrix(1:ifelse(length(agtoplot) > 4, 16, length(agtoplot)*4),
+                      nrow=ifelse(length(agtoplot) > 4, 4, length(agtoplot)),
+                      byrow=T))
       } else {
         layout(rbind(c(1,2,2,3,3),
-                     t(sapply(seq(3,9,3), function(x) c(1,2,2,3,3)+x))))
+                     t(sapply(seq(3,9,3), function(x)
+                       c(1,2,2,3,3)+x)))[1:ifelse(length(agtoplot) > 4, 4, length(agtoplot)),])
+
       }
 
       n=1
@@ -1322,7 +1327,7 @@ ap_agresults <- function(x,
              pch=16, cex=0.6, bty="n", xjust=0.2, title.adj=4,
              col=rev(paste(cokey$color)), xpd=NA)
       mtext("Visualization of signals.",
-            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+            line=mtext_sub_line,
             cex=0.65)
 
       if(if_selected_co){
@@ -1337,7 +1342,7 @@ ap_agresults <- function(x,
               side=1, at=1:n_groups, line=1.1, cex=0.7)
       }
       mtext(tmp_ag,
-            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+            line=mtext_sub_line+1,
             font=2)
 
       # Histrogram & Density
@@ -1348,7 +1353,7 @@ ap_agresults <- function(x,
 
       if(if_selected_co){
         mtext("Distribution of binned values, algorithm assigned cutoff at dashed line.",
-              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+              line=mtext_sub_line,
               cex=0.65)
         abline(v=(tmp_which_co-1)/10, lty=2)
         lines(dens,
@@ -1357,7 +1362,7 @@ ap_agresults <- function(x,
         mtext("Distribution of binned values", line=0.1, cex=0.65)
       }
         mtext(tmp_ag,
-              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+              line=mtext_sub_line+1,
               font=2)
 
       # Frequency
@@ -1382,18 +1387,20 @@ ap_agresults <- function(x,
 
       if(n_groups > 1){
         mtext("Percentage of reactive samples per group at each exemplified cutoff.",
-              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
+              line=mtext_sub_line, cex=0.65)
         legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=3,
                lty=1:5, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group, seg.len=5)
-        mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+        mtext(tmp_ag, line=mtext_sub_line+1, font=2)
       } else {
         mtext("Percentage of reactive samples at each exemplified cutoff.", line=0.1, cex=0.65)
-        mtext(tmp_ag, line=2, font=2)
+        mtext(tmp_ag, line=2, font=mtext_sub_line)
       }
 
       # Fisher's exact test
       if(n_groups > 1){
-        par(mar=c(6,2,mar_top,20))
+        par(mar=c(6,2,
+                  mar_top,
+                  ceiling(0.03572519*max(unlist(lapply(names(react_summary$FISHER_P), nchar)), na.rm=T)*19.3) )) # strwidth("M") = 0.03572519
 
       plotdata <- melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
@@ -1403,8 +1410,8 @@ ap_agresults <- function(x,
 
       plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
       plotdata[which(plotdata > 1, arr.ind=T)] <- 1 # Fix bug with floating aritmetics, some 1s will not be recognized as 1s in image (white field).
+      plotdata <- plotdata[,dim(plotdata)[2]:1, drop=F]
 
-      plotdata <- plotdata[,dim(plotdata)[2]:1]
       breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
       break_col <- hcl.colors(length(breaks)-1, "BrwnYl", rev = F)
       image(x=1:dim(plotdata)[1], y=1:dim(plotdata)[2], z=plotdata, xaxt="n", yaxt="n", bty="n",
@@ -1420,8 +1427,8 @@ ap_agresults <- function(x,
       if(if_selected_co){ abline(v=tmp_which_co+c(0.5,-0.5), lty=2) }
 
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
-              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65, adj=0)
-          mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+              line=mtext_sub_line, cex=0.65, adj=0)
+          mtext(tmp_ag, line=mtext_sub_line+1, font=2)
 
           ## Below code is for a matplot visualization of Fisher
           ## Becomes messy with more than 3 groups
