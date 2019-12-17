@@ -1011,7 +1011,7 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
 #' The x list needs to include at least the elements:
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
+#'     Any samples with no text (ie. "") in such column will be included.
 #'     Column "sample_name" with sample names needed.
 #'
 #'     BINARY = list with one data.frame per cutoff
@@ -1057,7 +1057,7 @@ ap_reactsummary2 <- function(x,
 
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups[which(!(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""))] <- NA
-    }
+    } # else: samplegroups is already defined, so no need for an else action.
 
   }
 
@@ -1091,8 +1091,8 @@ ap_reactsummary2 <- function(x,
     freq_diff <- rep(list(NULL), dim(comparisons)[2])
 
     for(t in 1:dim(comparisons)[2]){
-      test_groups <- factor(ifelse(as.character(samplegroups) %in%
-                                     comparisons[,t], as.character(samplegroups), NA))
+      test_groups <- factor(ifelse(paste(samplegroups) %in%
+                                     comparisons[,t], paste(samplegroups), NA))
 
       tmp_fisher <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
       tmp_diff <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
@@ -1136,10 +1136,10 @@ ap_reactsummary2 <- function(x,
   data_sum_samp <- do.call(cbind, data_sum_samp)
   data_freq_samp <- do.call(cbind, data_freq_samp)
 
-  # Add to input
+  # Output
   if(length(levels(samplegroups)) > 1){
   output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
-                                         Grouping=samplegroups),
+                                         Grouping=paste(samplegroups)),
                  REACTSUM_AG=data_sum_ag,
                  REACTFREQ_AG=data_freq_ag,
                  REACTSUM_SAMP=data_sum_samp,
@@ -1149,7 +1149,7 @@ ap_reactsummary2 <- function(x,
                  FREQ_DIFF=freq_diff)
   } else {
     output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
-                                           Grouping=samplegroups),
+                                           Grouping=paste(samplegroups)),
                    REACTSUM_AG=data_sum_ag,
                    REACTFREQ_AG=data_freq_ag,
                    REACTSUM_SAMP=data_sum_samp,
@@ -1195,7 +1195,7 @@ ap_reactsummary2 <- function(x,
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'     If any wells should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "" or NA) in such column will be included.
+#'     Any samples with no text (ie. "" or NA) in such column will be included.
 #'
 #'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) will be included in the transformation.
@@ -1232,7 +1232,7 @@ ap_agresults <- function(x,
   react_summary <- ap_reactsummary2(x,
                                     samplegroups = samplegroups,
                                     check.names = check.names)
-  samplegroups <- react_summary$SAMPLEGROUPS$Grouping
+  samplegroups <- factor(react_summary$SAMPLEGROUPS$Grouping)
   n_groups <- length(levels(samplegroups))
   data_size <- table(samplegroups)
   if(n_groups > 1){
