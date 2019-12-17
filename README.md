@@ -43,6 +43,13 @@ cd..
 R CMD build rappp
 ```
 
+Load RData-file and save loaded variable as .rda instead:<br/>
+```
+load("data/Scrambled_data_for_rappp.RData")
+usethis::use_data(MockSBA, overwrite=T)
+```
+
+
 This is how you should name versions: 
 -------------------------------------
 
