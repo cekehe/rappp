@@ -1048,7 +1048,7 @@ ap_reactsummary2 <- function(x,
   if(is.null(samplegroups)){
 
     if("Filtered" %in% colnames(x$SAMPLES)){
-      samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA))
+      samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA), exclude=c(paste(NA), NA))
     } else {
       samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
     }
@@ -1234,7 +1234,7 @@ ap_agresults <- function(x,
   react_summary <- ap_reactsummary2(x,
                                     samplegroups = samplegroups,
                                     check.names = check.names)
-  samplegroups <- factor(react_summary$SAMPLEGROUPS$Grouping)
+  samplegroups <- factor(react_summary$SAMPLEGROUPS$Grouping, exclude=c(paste(NA), NA))
   n_groups <- length(levels(samplegroups))
   data_size <- table(samplegroups)
   if(n_groups > 1){
