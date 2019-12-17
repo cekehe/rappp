@@ -376,7 +376,7 @@ ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
     }
 
     if(state == "before"){
-      if(length(which_lowSB) > 0){
+      if(length(which_lowSB) > 0 & shouldplot){
         lowSB <- sampledata[which_lowSB, ]
         ap_textplot(data.frame(
           AssayWell=lowSB$AssayWell,
@@ -387,8 +387,7 @@ ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
           cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.4)
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
-
-      } else {
+      } else if(shouldplot){
         ap_textplot(matrix("No samples filtered based on bead count."), show.rownames=F, show.colnames=F)
       }
 
