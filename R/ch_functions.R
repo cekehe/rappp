@@ -1428,41 +1428,6 @@ ap_agresults <- function(x,
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
               line=mtext_sub_line, cex=0.65, adj=0)
           mtext(tmp_ag, line=mtext_sub_line+1, font=2)
-
-          ## Below code is for a matplot visualization of Fisher
-          ## Becomes messy with more than 3 groups
-      # plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
-      # ylim_max=ifelse(max(plotdata, na.rm=T) < floor(4*-log10(cofisher)),
-      #                 floor(4*-log10(cofisher)), max(plotdata, na.rm=T))
-      # plot(NULL, xlim=c(0,dim(cokey)[1]),
-      #      ylim=c(0, ylim_max),
-      #      xaxt="n", yaxt="n",
-      #      ylab="Fisher's exact test p-value (-log10)", xlab="MADs cutoff")
-      # axis(2, at=seq(0, ylim_max, 0.5),
-      #      labels=seq(0, ylim_max, 0.5), las=1)
-      # axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
-      # abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
-      #        col="lightgrey", lty=2)
-      # abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
-      # if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
-      # abline(h=-log10(cofisher), lty=2)
-      #
-      # matplot(plotdata, type="l", lty=1:5, lwd=2,
-      #         col=apply(react_summary$COMPARISONS, 2,
-      #                   function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-      #         add=T)
-      #
-      #   mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
-      #         line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
-      #   legend(par("usr")[1], par("usr")[4], ncol=3,
-      #          legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
-      #          lty=c(rep(1:5, ceiling(dim(plotdata)[2]/5))[1:dim(plotdata)[2]],2),
-      #          lwd=2,
-      #          col=c(apply(react_summary$COMPARISONS, 2,
-      #                      function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-      #                "black"),
-      #          cex=0.55, xpd=NA, bty="n", yjust=0.05, seg.len=6)
-      #   mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
       }
 
     }
