@@ -17,7 +17,9 @@ If left as \code{NULL} (default), the all non-filtered if filtering has been don
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
-\item{groupcolors}{A matrix with a color-column and a group-column, or a vector with colors.}
+\item{groupcolors}{A matrix or data.frame with a column named "group" with group names and
+a column named "color" with a color for each group (one row per group, ie. factor level).
+Alternatively, a vector with colors (will be assigned to the factor levels in order).}
 
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}

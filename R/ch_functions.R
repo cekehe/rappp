@@ -1169,7 +1169,9 @@ ap_reactsummary2 <- function(x,
 #'     If left as \code{NULL} (default), the all non-filtered if filtering has been done,
 #'     otherwise all, will be assigned "Sample".
 #'     Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.
-#' @param groupcolors A matrix with a color-column and a group-column, or a vector with colors.
+#' @param groupcolors A matrix or data.frame with a column named "group" with group names and
+#'     a column named "color" with a color for each group (one row per group, ie. factor level).
+#'     Alternatively, a vector with colors (will be assigned to the factor levels in order).
 #' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
 #' @param cofisher Cutoff in fisher plot.
@@ -1243,7 +1245,8 @@ ap_agresults <- function(x,
     groupcolors <- data.frame(group=levels(samplegroups),
                               color=groupcolors[seq_along(levels(samplegroups))])
   } else {
-    groupcolors <- groupcolors[match(levels(samplegroups), groupcolors$group), ]
+    groupcolors <- data.frame(groupcolors, check.names=F)
+    groupcolors <- groupcolors[match(paste(levels(samplegroups)), paste(groupcolors$group)), ]
   }
 
     print("Extract data")
