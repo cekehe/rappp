@@ -2,7 +2,9 @@
 title: "Functions for basic QC and visualization of autoimmunity data (rappp)"
 author: "Cecilia Hellström"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: TRUE
 vignette: >
   %\VignetteIndexEntry{Functions for basic QC and visualization of autoimmunity data (rappp)}
   %\VignetteEngine{knitr::rmarkdown}
@@ -22,20 +24,23 @@ library(rappp)
 
 This package includes functions to enable a standardized workflow for quality control and 
 some basic analysis and visualizations of autoimmunity data.
-It also includes some functions related to peptide design, see the end.
+It also includes some functions related to peptide design and other handy functions (documentation will be created later).
 
-This vignette will demonstrate a basic workflow using the included functions.
+This vignette will demonstrate a basic workflow using some of the included functions.
+Please see the individual function help documentation for more information on arguments etc.
 
 # Input data structure
 
-Most functions are based on the below input structure, which is then built upon by the different functions.
+Most functions are based on the below input structure, which is then built upon by the different functions. 
+The list elements are described in more detail below.
+The package includes a mock dataset (MockSBA) which is used for the below examples.
 
 ```{r, echo=T, eval=F}
-        SBA <- list(MFI=mfi,
-                    COUNT=count,
+        SBA <- list(MFI=assay_mfi,
+                    COUNT=bead_count,
                     SAMPLES=sampleinfo,
-                    BEADS=beads,
-                    CT=mfi_ct,
+                    BEADS=beadinfo,
+                    CT=test_mfi,
                     FILTERINFO=NULL)
 ```
 
@@ -43,19 +48,18 @@ Most functions are based on the below input structure, which is then built upon 
 SBA <- MockSBA
 ```
 
-The list elements are described in more detail below.
-
 ## MFI
-The MFI element contains the raw MFI in a data frame with samples as rows and beads as columns.
-It is recommended to use the bead name structure Gene_Identifier. 
+The MFI element contains the raw MFI in a data frame, with samples as rows and beads as columns.
+It is recommended to use the bead name structure Gene_Identifier as column names. 
 For antigens mapping to more than one gene, it is recommended to only display the first gene followed by an asterix.
+Make sure the columns match the rows in the BEADs element, and the rows match the rows in the SAMPLES element.
 
 ```{r}
 SBA$MFI[1:10, 1:8]
 ```
 
 ## COUNT
-The COUNT element contains the bead count in a data frame with samples as rows and beads as columns.
+The COUNT element contains the bead count in a data frame, with samples as rows and beads as columns.
 Use same naming and structure as the MFI element.
 
 ```{r}
@@ -79,8 +83,9 @@ SBA$BEADS[1:8, 1:4]
 ```
 
 ## CT
-The CT element contains the raw MFI values for the coupling efficiency test in a data frame with replicates as rows and beads as columns.
-Use same column naming as in the MFI element.
+The CT element contains the raw MFI values for the coupling efficiency test in a data frame, 
+with replicates meassuring the His6ABP-tag (or other tag) as rows and beads as columns.
+Use same column naming and structure as in the MFI and BEADS elements.
 
 ```{r}
 SBA$CT[, 1:8]
@@ -92,7 +97,7 @@ SBA$CT[, 1:8]
 The function ap_ct() produces a plot (if you want) in a pdf (if you want), and flags all antigens of the specified types which have a signal lower than the empty bead (or other bead you want to base the flagging threshold on).
 The element BEADS in the input list is updated with the flagging annotation and the element FILTERINFO is updated to state that ct-flagging has been performed.
 
-```{r ct, fig.width=13}
+```{r ct, fig.width=13, fig.height=6}
 SBA <- ap_ct(SBA, empty_bead=grep("Bare", colnames(SBA$MFI)), 
              empty_co_multiple = 3, types = "PrEST",
   shouldplot = TRUE, shouldpdf = FALSE,useDingbats = FALSE)
@@ -176,6 +181,26 @@ lapply(SBA, class)
 
 ```
 
+# Results
+The function ap_reactsummary2() calculates number of reactivities and the corresponding reactivity frequencies 
+per sample and antigen for each cutoff used in the data transformation. It will also calculate per group, 
+either all if no grouping is defined or for a grouping of your choice. 
+If more than one group it will also do Fisher's exact test and calculate the frequency difference between each pair of groups. 
+This function does not build upon the input list, but has a separate output list, one per grouping.
+
+The function ap_reactsummary2() is incorporated in the function ap_agresults(), which also visualizes the data and reactivities per bead.
+The heatmap for Fisher's exact test p-values is only included if there is more than one sample group.
+
+In the below example I've only selected one bead to plot, but if agtoplot is left empty all beads will be plotted, 4 per page.
+```{r results, fig.width=13, fig.height=5}
+react_summary <- ap_agresults(SBA, samplegroups = factor(SBA$SAMPLES$Diagnosis), groupcolors = 2:6,
+  agtoplot = "PPL_HPRR3160218", cofisher = 0.05, shouldpdf = FALSE, useDingbats = FALSE,
+  check.names = FALSE)
+
+# Reactivity summary
+lapply(react_summary, class)
+```
+
 # General data overview and evaluation functions
 
 ## Signal overview
@@ -193,31 +218,11 @@ The function ap_negbeads() plots beeswarms for all samples (without filtering an
 coloring the points based on the scores. The negative control beads are colored separately, and below the beeswarms 
 there are correlation plots between the median sample signal and the negative control signals, colored by the score of the control bead.
 
-It's not really true for this mock data set, but in general there is a good correlation between the control beads and the medians, 
+In general there is usually a good correlation between the control beads and the medians, 
 and the MAD-transformation and scoring adjusts for the different sample background levels.
 
 ```{r negbeads, fig.width=13, fig.height=10}
 ap_negbeads(SBA, shouldpdf = FALSE, useDingbats = FALSE)
-```
-
-# Results
-The function ap_reactsummary2() calculates number of reactivities and the corresponding reactivity frequencies 
-per sample and antigen for each cutoff used in the data transformation. It will also calculate per group, 
-either all if no grouping is defined or for a grouping of your choice. 
-If more than one group it will also do Fisher's exact test and calculate the frequency difference between each pair of groups. 
-This function does not build upon the input list, but has a separate output list, one per grouping.
-
-The function ap_reactsummary2() is incorporated in the function ap_agresults(), which also visualizes the data and reactivities per bead.
-The heatmap for Fisher's exact test p-values is only included if there is more than one sample group.
-
-In the below example I've only selected one bead to plot, but if agtoplot is left empty all beads will be plotted, 4 per page.
-```{r results, fig.width=12, fig.height=5}
-react_summary <- ap_agresults(SBA, samplegroups = factor(SBA$SAMPLES$Diagnosis), groupcolors = 2:6,
-  agtoplot = "PPL_HPRR3160218", cofisher = 0.05, shouldpdf = FALSE, useDingbats = FALSE,
-  check.names = FALSE)
-
-# Reactivity summary
-lapply(react_summary, class)
 ```
 
 # Assay and analysis summary
@@ -227,10 +232,25 @@ The function ap_summary() gives you a summary of number of proteins represented,
 ap_summary(SBA, filter = TRUE)
 ```
 
+## Excel output 
+The function ap_excel() writes the data and results to an excel file, where each element corresponds to one sheet.
+You select which elements you want to save. 
+NB! The function renames and creates some elements, so read the function help documentation for information on how certain sheets are named.
+
+```{r excel, eval=F}
+SBA_results <- append(SBA, react_summary)
+
+ap_excel(SBA_results, elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
+  "REACTIVITIES", "FISHER", "DIFFERENCES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
+  "ANTIGENS", "SAMPLES", "COUNT"), filename = "DataOutput.xlsx",
+  row.names = TRUE)
+```
+
+
 ## Cutoff key
 The function ap_cutoffs2image() makes an image of cutoff key, with the corresponding colors.
 
-```{r key, fig.width=10, fig.height=5}
+```{r key, fig.width=10, fig.height=6}
 ap_cutoffs2image(cutoffkey = SBA$CUTOFF_KEY, shouldpng = FALSE)
 ```
 
@@ -238,6 +258,6 @@ ap_cutoffs2image(cutoffkey = SBA$CUTOFF_KEY, shouldpng = FALSE)
 ## R session
 It's always good to save the R session info, which includes R and package version numbers.
 ```{r session}
-capture.output(sessionInfo())
+sessionInfo()
 ```
 
