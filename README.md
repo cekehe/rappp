@@ -49,6 +49,14 @@ load("data/Scrambled_data_for_rappp.RData")
 usethis::use_data(MockSBA, overwrite=T)
 ```
 
+Console commands useful when updating package locally:<br/>
+```
+devtools::build_vignettes() # Create vignette so it will be included in package.
+devtools::document() # Update any documentation, like help or vignette.
+# Cmd/Ctrl + Shift + B  - bulid, ie. install current package content.
+browseVignettes("packagename") # Read a package vignette.
+```
+
 
 This is how you should name versions: 
 -------------------------------------
