@@ -26,7 +26,7 @@
 #'
 #' @return Updated input x with the new list element
 #'
-#'     MADs = assay MADs.
+#'     MADS = assay MADs.
 #' @export
 
 ap_mads2 <- function(x,
@@ -98,7 +98,7 @@ ap_cutoffs2 <- function(MADlimits = seq(0,70,5)){
 #'
 #' The x list needs to include at least the element:
 #'
-#'     MADs = assay MADs,
+#'     MADS = assay MADs,
 #'
 #' @return Updated input x with the new list elements
 #'
@@ -340,7 +340,7 @@ ap_cutoff_selection2 <- function(x,
 #'
 #' @return Updated input x with the new list elements
 #'
-#'     MADs = assay MADs,
+#'     MADS = assay MADs,
 #'
 #'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors,
 #'

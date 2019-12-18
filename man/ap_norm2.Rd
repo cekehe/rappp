@@ -44,7 +44,7 @@ Defaults result in scores for MADS ≥ cutoff, and any value below the lowest cu
 \value{
 Updated input x with the new list elements
 
-    MADs = assay MADs,
+    MADS = assay MADs,
 
     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors,
 
