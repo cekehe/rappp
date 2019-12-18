@@ -5,7 +5,7 @@
 \title{Signal overview}
 \usage{
 ap_overview(x, shouldpdf = TRUE, filename = "Signal_overview.pdf",
-  width = 20, height = 15, useDingbats = FALSE, ...)
+  width = 25, height = 15, useDingbats = FALSE, ...)
 }
 \arguments{
 \item{x}{List with at least one elements, see Deatils for naming and content.}

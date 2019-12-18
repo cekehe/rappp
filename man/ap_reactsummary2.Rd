@@ -34,7 +34,7 @@ Calculate number of reactivities and the corresponding frequencies in Autoimmuni
 The x list needs to include at least the elements:
 
     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "") in such column will be included.
+    Any samples with no text (ie. "") in such column will be included.
     Column "sample_name" with sample names needed.
 
     BINARY = list with one data.frame per cutoff

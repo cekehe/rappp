@@ -6,6 +6,7 @@
 #' @param x List with at least three elements, see Deatils for naming and content.
 #' @param empty_bead Column index for empty bead.
 #' @param empty_co_multiple Number of sd above empty for cutoff.
+#' @param types Which types of beads should be included in flagging? See details.
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
@@ -21,7 +22,9 @@
 #'
 #' The BEADS element needs at least the columns:
 #'
-#'     "Type" with info about type of content on bead, at least including "PrEST" for PrESTs,
+#'     "Type" with info about type of content on bead,
+#'     should include at least what is set in argument types (exact match).
+#'     Eg. "PrEST" for PrESTs, or Full_length for full length representations,
 #'
 #'     "Plate" with numerical coupling plate number(s).
 #'
@@ -31,11 +34,13 @@
 #'    with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_ct <- function(x, empty_bead, empty_co_multiple=3,
+ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
                   shouldplot=TRUE, shouldpdf=TRUE, filename="coupling_efficiency.pdf",
                   width=25, height=6, useDingbats=FALSE, ...) {
 
     empty_co <- mean(x$CT[,empty_bead], ...) + empty_co_multiple*sd(x$CT[,empty_bead], ...)
+
+    types <- paste0("^", paste0(types, collapse="$|^"), "$")
 
     if(shouldplot){
       if(shouldpdf){
@@ -46,11 +51,11 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
 
       bs=beeswarm(x$CT, pch=16, las=2, corral="gutter", xaxt="n",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
-                  pwcol=rep(ifelse(grepl("empty|bare|blank", colnames(x$CT),ignore.case=T), "orange",
+                  pwcol=rep(ifelse(grepl("empty|bare|blank|neutravidin", colnames(x$CT),ignore.case=T), "orange",
                                    ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
                                           ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
-                                                        ifelse(apply(x$CT, 2, mean) < empty_co, "red", "darkgrey"))))),
+                                                        ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red", "darkgrey"))))),
                             each=dim(x$CT)[1]))
 
           vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
@@ -71,15 +76,17 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
       textxy(X=par("usr")[2], Y=empty_co, offset=0.55, cex=1,
              labs=paste0("mean(empty)+", empty_co_multiple,"*sd(empty)=", round(empty_co, 0)), xpd=NA)
 
-      tmp_text <- matrix(colnames(x$CT)[which(apply(x$CT, 2, mean) < empty_co)], ncol=1)
-      if(length(grep("HPRR", tmp_text, ignore.case=T)) > 0){
-        tmp_text <- matrix(tmp_text[grep("HPRR", tmp_text, ignore.case=T)], ncol=1)
+      tmp_text <- data.frame(Name=colnames(x$CT), Type=x$BEADS$Type)
+      if(length(which(apply(x$CT, 2, median, na.rm=T) < empty_co &
+                      grepl(types, tmp_text$Type))) > 0){
+        tmp_text <- matrix(tmp_text$Name[which(apply(x$CT, 2, min) < empty_co &
+                                          grepl(types, tmp_text$Type))], ncol=1)
         ap_textplot(tmp_text, mar=c(2,2,1,2),
                  show.rownames=F, show.colnames=F, hadj=0, valign="top", cex=0.8)
-        mtext("Protein fragments with low coupling efficiency signal", font=2, cex=0.9, xpd=NA)
+        mtext("Beads with low coupling efficiency signal", font=2, cex=0.9, xpd=NA)
       } else {
         frame()
-        mtext("No protein fragments displayed \n low coupling efficiency signal.", font=2, cex=0.7, line=-3)
+        mtext("No beads displayed \n low coupling efficiency signal.", font=2, cex=0.7, line=-3)
       }
       if(shouldpdf){
       dev.off()
@@ -92,7 +99,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3,
     }
 
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
-                                grepl("PrEST", x$BEADS$Type, ignore.case=T),
+                                grepl(types, x$BEADS$Type, ignore.case=T),
                               paste0(x$BEADS$Flagged,", Coupling"),
                               paste(x$BEADS$Flagged))
     x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
@@ -232,12 +239,12 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
     }
 
     # Annotate filtering in SAMPLES
-    if(length(which(colnames(x$SAMPLES) == "Filtered")) == 0){
+    if(!("Filtered" %in% colnames(x$SAMPLES))){
       x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
     }
     if(length(which_lowIgG) > 0) {
       tmp_remove <- rownames(sampledata)[which_lowIgG]
-      tmp_remove <- tmp_remove[-grep("empty", tmp_remove, ignore.case=T)]
+      tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove, ignore.case=T)]
       if(length(tmp_remove) > 0){
         x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
                                      paste0(x$SAMPLES$Filtered, ", hIg", IgType),
@@ -306,7 +313,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
+ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
                      width=12, height=10, useDingbats=FALSE) {
@@ -369,19 +376,18 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
     }
 
     if(state == "before"){
-      if(length(which_lowSB) > 0){
+      if(length(which_lowSB) > 0 & shouldplot){
         lowSB <- sampledata[which_lowSB, ]
-        tp <- ap_textplot(data.frame(
+        ap_textplot(data.frame(
           AssayWell=lowSB$AssayWell,
           InternalID=lowSB$sample_name,
           Subject=lowSB$tube_label,
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
-          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.4)
+          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.4)
         title(paste0("Samples with median bead count < ,", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
-
-      } else {
+      } else if(shouldplot){
         ap_textplot(matrix("No samples filtered based on bead count."), show.rownames=F, show.colnames=F)
       }
 
@@ -446,8 +452,8 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
         lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
         if(shouldplot){
-          tp <- ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
-                            hadj=0, vadj=0, mar=c(1, 2, 3, 6), xpd=NA)#, cex=0.3)
+          ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
+                            hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.3)
           title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
         }
       } else {
@@ -473,7 +479,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
   # Annotate filtering in SAMPLES and BEADS
   # SAMPLES
-  if(length(which(colnames(x$SAMPLES) == "Filtered")) == 0){
+  if(!("Filtered" %in% colnames(x$SAMPLES))){
     x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
   }
   if(length(which_lowSB) > 0){
@@ -484,13 +490,13 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
   }
 
   # BEADS filtered
-  if(length(which(colnames(x$BEADS) == "Filtered")) == 0){
+  if(!("Filtered" %in% colnames(x$BEADS))){
     x$BEADS <- data.frame(Filtered="", x$BEADS, stringsAsFactors=F)
   }
 
   if(length(which_lowAB) > 0){
     if(length(which(lowAB$Action == "Filtered")) > 0){
-      x$BEADS$Filtered <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Filtered")],
+      x$BEADS$Filtered <- ifelse(rownames(x$BEADS) %in% rownames(lowAB)[which(lowAB$Action == "Filtered")],
                                  paste0(x$BEADS$Filtered,", Count"),
                                  paste(x$BEADS$Filtered))
       x$BEADS$Filtered <- gsub("^, ", "", x$BEADS$Filtered)
@@ -498,13 +504,13 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
   }
 
   # BEADS flagged
-  if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
+  if(!("Flagged" %in% colnames(x$BEADS))){
     x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
   }
 
   if(length(which_lowAB) > 0){
     if(length(which(lowAB$Action == "Flagged")) > 0){
-      x$BEADS$Flagged <- ifelse(x$BEADS$Gene_HPRR %in% rownames(lowAB)[which(lowAB$Action == "Flagged")],
+      x$BEADS$Flagged <- ifelse(rownames(x$BEADS) %in% rownames(lowAB)[which(lowAB$Action == "Flagged")],
                                 paste0(x$BEADS$Flagged,", Count"),
                                 paste(x$BEADS$Flagged))
       x$BEADS$Flagged <- gsub("^, ", "", x$BEADS$Flagged)
@@ -538,7 +544,7 @@ ap_count <- function(x, labels="Gene_HPRR", protein="GeneShort", agID="PrEST",
 
 ap_overview <- function(x, shouldpdf=TRUE,
                   filename="Signal_overview.pdf",
-                  width=20, height=15, useDingbats=FALSE, ...){
+                  width=25, height=15, useDingbats=FALSE, ...){
 
   if(shouldpdf){
   pdf(filename,
@@ -562,7 +568,7 @@ ap_overview <- function(x, shouldpdf=TRUE,
             col=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
 
-      cex_xaxis <- c(1,1,0.75, 0.4, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
             axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
       }
 
@@ -580,7 +586,7 @@ ap_overview <- function(x, shouldpdf=TRUE,
             col=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
 
-      cex_xaxis <- c(1,1,0.75, 0.4, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
       axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
     }
     if(shouldpdf){
@@ -908,14 +914,14 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
 #' @details The x list needs to include at least the element
 #'
-#'     MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+#'     MFI = assay mfi, column names of negative control columns should include empty|bare|blank|his6abp|hisabp|neutravidin,
 #'
-#'     SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp,
+#'     SCORE = scored data, column names of negative control columns should include empty|bare|blank|his6abp|hisabp|neutravidin,
 #'
 #'     CUTOFF_KEY = Cutoff key as data.frame with cutoff values, scores and colors.
 #'
-#'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
+#'     BEADS = Beads info, including a column called "Filtered" with the value "NegControl" for the negative control beads.
+#'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included.
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any samples with no text (ie. "" or NA) in such column will be included.
@@ -928,11 +934,15 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
                         filename="neg-control-beads.pdf",
                         width=15, height=10, useDingbats=FALSE){
 
+  negctrl <- list(Empty="empty|bare|blank",
+                  His6ABP="his6abp|hisabp",
+                  Neutravidin="neutravidin")
+
   if(shouldpdf){
   pdf(filename, width=width, height=height, useDingbats=useDingbats)
   }
 
-  layout(matrix(c(1,1,2,3), ncol=2, byrow=T))
+  layout(matrix(c(1,1,1,2,3,4), ncol=3, byrow=T))
   par(mar=c(4,4,4,5))
 
     plotdata <- x$MFI
@@ -956,29 +966,32 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
                                         grepl("NegControl", x$SAMPLES$Filtered)),]
   }
 
-
-
   plotcolor <- x$CUTOFF_KEY
+  legend_col <- c(Empty="magenta", His6ABP="chartreuse1", Neutravidin="cyan")
 
   beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
-           pwcol=ifelse(grepl("empty|bare|blank", rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T),"magenta",
-                        ifelse(grepl("his6abp|hisabp",rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), "chartreuse1",
-                               as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4))),
-           pwpch=rep(ifelse(grepl("empty|bare|blank|his6abp|hisabp", colnames(plotdata), ignore.case=T), 16, 1), dim(plotdata)[1]),
+           pwcol=ifelse(grepl(negctrl$Empty, rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Empty"],
+                        ifelse(grepl(negctrl$His6ABP,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["His6ABP"],
+                               ifelse(grepl(negctrl$Neutravidin,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Neutravidin"],
+                               as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4)))),
+           pwpch=rep(ifelse(grepl(paste0(unlist(negctrl), collapse="|"), colnames(plotdata), ignore.case=T), 16, 1), dim(plotdata)[1]),
            ylab="Signal intensity [AU]", cex.axis=0.5)
+
+  legend_text <- names(negctrl)[which(unlist(lapply(negctrl, function(i) sum(grepl(i, colnames(plotdata), ignore.case=T)))) > 0)]
+
   legend(par("usr")[2], 10^par("usr")[4], xpd=T, cex=0.7,
-         legend=c("empty", "his6abp", rev(rownames(plotcolor))),
-         col=c("magenta", "chartreuse1", paste(rev(plotcolor$color))),
-         pch=c(rep(16, 2), rep(1, length(plotcolor$color))))
+         legend=c(legend_text, rev(rownames(plotcolor))),
+         col=c(legend_col[legend_text], paste(rev(plotcolor$color))),
+         pch=c(rep(16, length(legend_text)), rep(1, length(plotcolor$color))))
 
   par(pty="s")
-  plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep("empty|bare|blank", colnames(plotdata), ignore.case=T)],
-       las=1, xlab="Median signal per sample", ylab="Empty bead signal", main="Empty bead",
-       col=paste(plotcolor$color[plotdata_score[,grep("empty|bare|blank", colnames(plotdata), ignore.case=T)]*10+1]))
-
-  plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep("his6abp|hisabp", colnames(plotdata), ignore.case=T)],
-       las=1, xlab="Median signal per sample", ylab="His6ABP bead signal", main="His6ABP bead",
-       col=paste(plotcolor$color[plotdata_score[,grep("his6abp|hisabp", colnames(plotdata), ignore.case=T)]*10+1]))
+  for(i in seq_along(negctrl)){
+    if(sum(grepl(negctrl[[i]], colnames(plotdata), ignore.case=T)) > 0){
+      plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep(negctrl[[i]], colnames(plotdata), ignore.case=T)],
+           las=1, xlab="Median signal per sample", ylab=paste0(names(negctrl)[[i]]," bead signal"), main=paste0(names(negctrl)[i], " bead"),
+           col=paste(plotcolor$color[plotdata_score[,grep(negctrl[[i]], colnames(plotdata), ignore.case=T)]*10+1]))
+    }
+  }
 
   if(shouldpdf){
   dev.off()
@@ -998,7 +1011,7 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
 #' The x list needs to include at least the elements:
 #'
 #'     SAMPLES = Sample info, if any should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "") in such column will be included.
+#'     Any samples with no text (ie. "") in such column will be included.
 #'     Column "sample_name" with sample names needed.
 #'
 #'     BINARY = list with one data.frame per cutoff
@@ -1035,7 +1048,7 @@ ap_reactsummary2 <- function(x,
   if(is.null(samplegroups)){
 
     if("Filtered" %in% colnames(x$SAMPLES)){
-      samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA))
+      samplegroups <- factor(ifelse(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == "", "Sample", NA), exclude=c(paste(NA), NA))
     } else {
       samplegroups <- factor(rep("Sample", dim(x$SAMPLES)[1]))
     }
@@ -1044,7 +1057,7 @@ ap_reactsummary2 <- function(x,
 
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups[which(!(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""))] <- NA
-    }
+    } # else: samplegroups is already defined, so no need for an else action.
 
   }
 
@@ -1078,8 +1091,8 @@ ap_reactsummary2 <- function(x,
     freq_diff <- rep(list(NULL), dim(comparisons)[2])
 
     for(t in 1:dim(comparisons)[2]){
-      test_groups <- factor(ifelse(as.character(samplegroups) %in%
-                                     comparisons[,t], as.character(samplegroups), NA))
+      test_groups <- factor(ifelse(paste(samplegroups) %in%
+                                     comparisons[,t], paste(samplegroups), NA))
 
       tmp_fisher <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
       tmp_diff <- matrix(NA, nrow=length(data_bin), ncol=dim(data_bin[[1]])[2])
@@ -1123,10 +1136,10 @@ ap_reactsummary2 <- function(x,
   data_sum_samp <- do.call(cbind, data_sum_samp)
   data_freq_samp <- do.call(cbind, data_freq_samp)
 
-  # Add to input
+  # Output
   if(length(levels(samplegroups)) > 1){
   output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
-                                         Grouping=samplegroups),
+                                         Grouping=paste(samplegroups)),
                  REACTSUM_AG=data_sum_ag,
                  REACTFREQ_AG=data_freq_ag,
                  REACTSUM_SAMP=data_sum_samp,
@@ -1136,7 +1149,7 @@ ap_reactsummary2 <- function(x,
                  FREQ_DIFF=freq_diff)
   } else {
     output <- list(SAMPLEGROUPS=data.frame(Sample=x$SAMPLES$sample_name,
-                                           Grouping=samplegroups),
+                                           Grouping=paste(samplegroups)),
                    REACTSUM_AG=data_sum_ag,
                    REACTFREQ_AG=data_freq_ag,
                    REACTSUM_SAMP=data_sum_samp,
@@ -1156,7 +1169,9 @@ ap_reactsummary2 <- function(x,
 #'     If left as \code{NULL} (default), the all non-filtered if filtering has been done,
 #'     otherwise all, will be assigned "Sample".
 #'     Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.
-#' @param groupcolors A matrix with a color-column and a group-column, or a vector with colors.
+#' @param groupcolors A matrix or data.frame with a column named "group" with group names and
+#'     a column named "color" with a color for each group (one row per group, ie. factor level).
+#'     Alternatively, a vector with colors (will be assigned to the factor levels in order).
 #' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
 #' @param cofisher Cutoff in fisher plot.
@@ -1182,7 +1197,7 @@ ap_reactsummary2 <- function(x,
 #'     replicates (named with one of pool|rep|mix|commercial)
 #'     and blanks (named with one of empty|blank|buffer) are also stated,
 #'     If any wells should be excluded then these should be annotated in a column called "Filtered".
-#'     Any beads with no text (ie. "" or NA) in such column will be included.
+#'     Any samples with no text (ie. "" or NA) in such column will be included.
 #'
 #'     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) will be included in the transformation.
@@ -1219,7 +1234,7 @@ ap_agresults <- function(x,
   react_summary <- ap_reactsummary2(x,
                                     samplegroups = samplegroups,
                                     check.names = check.names)
-  samplegroups <- react_summary$SAMPLEGROUPS$Grouping
+  samplegroups <- factor(react_summary$SAMPLEGROUPS$Grouping, exclude=c(paste(NA), NA))
   n_groups <- length(levels(samplegroups))
   data_size <- table(samplegroups)
   if(n_groups > 1){
@@ -1228,9 +1243,10 @@ ap_agresults <- function(x,
 
   if(!(class(groupcolors) %in% c("matrix","data.frame"))){
     groupcolors <- data.frame(group=levels(samplegroups),
-                              color=groupcolors[seq_along(samplegroups)])
+                              color=groupcolors[seq_along(levels(samplegroups))])
   } else {
-    groupcolors <- groupcolors[match(levels(samplegroups), groupcolors$group), ]
+    groupcolors <- data.frame(groupcolors, check.names=F)
+    groupcolors <- groupcolors[match(paste(levels(samplegroups)), paste(groupcolors$group)), ]
   }
 
     print("Extract data")
@@ -1266,16 +1282,21 @@ ap_agresults <- function(x,
       # Create PDF
     if(shouldpdf){
      pdf(filename,
-          width=ifelse(n_groups > 1, 20+n_groups*0.8, 15), height=18, useDingbats=useDingbats)
+          width=ifelse(n_groups > 1, 20+n_groups*0.9, 15), height=18, useDingbats=useDingbats)
     }
-      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+3, 4)
+      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)+3, 4)
+      mtext_sub_line <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3), 2)
       par(mgp=c(3,1,0))
 
       if(n_groups > 1){
-        layout(matrix(1:16, nrow=4, byrow=T))
+        layout(matrix(1:ifelse(length(agtoplot) > 4, 16, length(agtoplot)*4),
+                      nrow=ifelse(length(agtoplot) > 4, 4, length(agtoplot)),
+                      byrow=T))
       } else {
         layout(rbind(c(1,2,2,3,3),
-                     t(sapply(seq(3,9,3), function(x) c(1,2,2,3,3)+x))))
+                     t(sapply(seq(3,9,3), function(x)
+                       c(1,2,2,3,3)+x)))[1:ifelse(length(agtoplot) > 4, 4, length(agtoplot)),])
+
       }
 
       n=1
@@ -1308,7 +1329,7 @@ ap_agresults <- function(x,
              pch=16, cex=0.6, bty="n", xjust=0.2, title.adj=4,
              col=rev(paste(cokey$color)), xpd=NA)
       mtext("Visualization of signals.",
-            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+            line=mtext_sub_line,
             cex=0.65)
 
       if(if_selected_co){
@@ -1323,7 +1344,7 @@ ap_agresults <- function(x,
               side=1, at=1:n_groups, line=1.1, cex=0.7)
       }
       mtext(tmp_ag,
-            line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+            line=mtext_sub_line+1,
             font=2)
 
       # Histrogram & Density
@@ -1334,7 +1355,7 @@ ap_agresults <- function(x,
 
       if(if_selected_co){
         mtext("Distribution of binned values, algorithm assigned cutoff at dashed line.",
-              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7, 0.1),
+              line=mtext_sub_line,
               cex=0.65)
         abline(v=(tmp_which_co-1)/10, lty=2)
         lines(dens,
@@ -1343,7 +1364,7 @@ ap_agresults <- function(x,
         mtext("Distribution of binned values", line=0.1, cex=0.65)
       }
         mtext(tmp_ag,
-              line=ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)/1.7+1, 2),
+              line=mtext_sub_line+1,
               font=2)
 
       # Frequency
@@ -1368,18 +1389,20 @@ ap_agresults <- function(x,
 
       if(n_groups > 1){
         mtext("Percentage of reactive samples per group at each exemplified cutoff.",
-              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
+              line=mtext_sub_line, cex=0.65)
         legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=3,
                lty=1:5, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group, seg.len=5)
-        mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+        mtext(tmp_ag, line=mtext_sub_line+1, font=2)
       } else {
         mtext("Percentage of reactive samples at each exemplified cutoff.", line=0.1, cex=0.65)
-        mtext(tmp_ag, line=2, font=2)
+        mtext(tmp_ag, line=2, font=mtext_sub_line)
       }
 
       # Fisher's exact test
       if(n_groups > 1){
-        par(mar=c(6,2,mar_top,20))
+        par(mar=c(6,2,
+                  mar_top,
+                  ceiling(0.03572519*max(unlist(lapply(names(react_summary$FISHER_P), nchar)), na.rm=T)*19.3) )) # strwidth("M") = 0.03572519
 
       plotdata <- melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
@@ -1389,8 +1412,8 @@ ap_agresults <- function(x,
 
       plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
       plotdata[which(plotdata > 1, arr.ind=T)] <- 1 # Fix bug with floating aritmetics, some 1s will not be recognized as 1s in image (white field).
+      plotdata <- plotdata[,dim(plotdata)[2]:1, drop=F]
 
-      plotdata <- plotdata[,dim(plotdata)[2]:1]
       breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
       break_col <- hcl.colors(length(breaks)-1, "BrwnYl", rev = F)
       image(x=1:dim(plotdata)[1], y=1:dim(plotdata)[2], z=plotdata, xaxt="n", yaxt="n", bty="n",
@@ -1406,43 +1429,8 @@ ap_agresults <- function(x,
       if(if_selected_co){ abline(v=tmp_which_co+c(0.5,-0.5), lty=2) }
 
         mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
-              line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65, adj=0)
-          mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
-
-          ## Below code is for a matplot visualization of Fisher
-          ## Becomes messy with more than 3 groups
-      # plotdata <- -log10(do.call(cbind,split(plotdata$value, plotdata$L1)))
-      # ylim_max=ifelse(max(plotdata, na.rm=T) < floor(4*-log10(cofisher)),
-      #                 floor(4*-log10(cofisher)), max(plotdata, na.rm=T))
-      # plot(NULL, xlim=c(0,dim(cokey)[1]),
-      #      ylim=c(0, ylim_max),
-      #      xaxt="n", yaxt="n",
-      #      ylab="Fisher's exact test p-value (-log10)", xlab="MADs cutoff")
-      # axis(2, at=seq(0, ylim_max, 0.5),
-      #      labels=seq(0, ylim_max, 0.5), las=1)
-      # axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8)
-      # abline(h=seq(0, ylim_max, ifelse(ylim_max > -log10(cofisher)*2, 0.5, 0.1)),
-      #        col="lightgrey", lty=2)
-      # abline(v=1:dim(cokey)[1], col="lightgrey", lty=2)
-      # if(if_selected_co){ abline(v=tmp_which_co, lty=2) }
-      # abline(h=-log10(cofisher), lty=2)
-      #
-      # matplot(plotdata, type="l", lty=1:5, lwd=2,
-      #         col=apply(react_summary$COMPARISONS, 2,
-      #                   function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-      #         add=T)
-      #
-      #   mtext("Fisher's exact test p-values per pariwise group comparison at each exemplified cutoff.",
-      #         line=ceiling((n_comparisons+1)/3)/1.7, cex=0.65)
-      #   legend(par("usr")[1], par("usr")[4], ncol=3,
-      #          legend=c(colnames(plotdata), paste0("-log10(",cofisher,")")),
-      #          lty=c(rep(1:5, ceiling(dim(plotdata)[2]/5))[1:dim(plotdata)[2]],2),
-      #          lwd=2,
-      #          col=c(apply(react_summary$COMPARISONS, 2,
-      #                      function(x) colorRampPalette(paste(groupcolors$color[match(x, groupcolors$group)]))(3)[2]),
-      #                "black"),
-      #          cex=0.55, xpd=NA, bty="n", yjust=0.05, seg.len=6)
-      #   mtext(tmp_ag, line=ceiling((n_comparisons+1)/3)/1.7+1, font=2)
+              line=mtext_sub_line, cex=0.65, adj=0)
+          mtext(tmp_ag, line=mtext_sub_line+1, font=2)
       }
 
     }
@@ -1457,9 +1445,10 @@ ap_agresults <- function(x,
 #' Summarizes number of filtered/flagged beads/samples, amino acid lenghts and protein representation.
 #'
 #' @param x List with at least two elements, see Deatils for naming and content.
+#' @param filter Logical, should samples and beads be filtered away before summary?
 #' @details The x list needs to include at least the elements
 #'
-#'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs.
+#'     SAMPLES = Sample info. Including column "sample_name" with LIMS-IDs, and "Filtered" if argument filter is TRUE.
 #'
 #'     BEADS = Beads info. Including columns:
 #'
@@ -1467,37 +1456,63 @@ ap_agresults <- function(x,
 #'
 #'     "PrEST.seq..aa." with amino acid sequences,
 #'
-#'     "Filtered" with filtering annotation, e.g. from other ap_-functions
+#'     "Filtered" with filtering annotation, e.g. from other ap_-functions,
 #'
-#'     "Flagged" with filtering annotation, e.g. from other ap_-functions
+#'     "Flagged" with filtering annotation, e.g. from other ap_-functions.
 #'
 #' @export
 
-ap_summary <- function(x) {
-  # Cohorts
-  print("Samples per cohort")
-  print(table(matrix(unlist(strsplit(as.character(x$SAMPLES$sample_name),"-")), ncol=2, byrow=T)[,1]))
-  # Uniprot IDs
-  print("Table of Uniprot IDs")
-  print(sort(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
-  print("Unique Uniprot IDs")
-  print(length(table(unlist(strsplit(as.character(x$BEADS$Uniprot[which(x$BEADS$Type == "PrEST")]), ";")))))
-  # Aminoacids
-  print("Table of sequence lenghts")
-  print(sort(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("min sequence lenghts")
-  print(min(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("max sequence lenghts")
-  print(max(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence length range
-  print("median sequence lenghts")
-  print(median(apply(as.matrix(x$BEADS$PrEST.seq..aa.[grep("PrEST",x$BEADS$Type, ignore.case=T)],ncol=1), 1, nchar))) # Check aa-sequence median length
-  # Filtered & Flagged summary
-  print("Filtered antigens")
-  print(table(x$BEADS$Filtered))
-  print("Flagged antigens")
-  print(table(x$BEADS$Flagged))
-  print("Filtered samples")
-  print(table(x$SAMPLES$Filtered))
+ap_summary <- function(x, filter=TRUE) {
+
+  if(filter & "Filtered" %in% colnames(x$SAMPLES) & "Filtered" %in% colnames(x$BEADS)){
+    samples <- x$SAMPLES[which(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""),]
+    beads <- x$BEADS[which(is.na(x$BEADS$Filtered) | x$BEADS$Filtered == ""),]
+  } else {
+    beads <- x$BEADS
+    samples <- x$SAMPLES
+  }
+
+  summarylist <- list(
+    # Cohorts
+    "Samples per cohort" = table(matrix(unlist(strsplit(as.character(samples$sample_name),"-")),
+                                        ncol=2, byrow=T)[,1]),
+    # Uniprot IDs
+    "Table of Uniprot IDs" = sort(table(unlist(strsplit(as.character(beads$Uniprot[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    "Unique Uniprot IDs" = length(table(unlist(strsplit(as.character(beads$Uniprot[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    # Ensembl IDs
+    "Table of Ensembl IDs" = sort(table(unlist(strsplit(as.character(beads$ENSG.ID[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    "Unique Ensembl IDs" = length(table(unlist(strsplit(as.character(beads$ENSG.ID[which(beads$Type == "PrEST")]),
+                                                        ";|,")))),
+    # Gene names
+    "Table of Genes" = sort(table(unlist(strsplit(as.character(beads$Gene.name[which(beads$Type == "PrEST")]),
+                                                  ";|,")))),
+    "Unique Genes" = length(table(unlist(strsplit(as.character(beads$Gene.name[which(beads$Type == "PrEST")]),
+                                                  ";|,")))),
+    # Aminoacids
+    "Table of sequence lenghts" = sort(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "min sequence lenghts" = min(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "max sequence lenghts" = max(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)), # Check aa-sequence length range
+    "median sequence lenghts" = median(apply(as.matrix(beads$PrEST.seq..aa.[
+      grep("PrEST",beads$Type, ignore.case=T)],ncol=1), 1, nchar)) # Check aa-sequence median length
+  )
+
+    # Filtered & Flagged summary
+  beads <- x$BEADS
+  samples <- x$SAMPLES
+  if("Filtered" %in% colnames(beads) & "Flagged" %in% colnames(beads) & "Filtered" %in% colnames(samples)){
+    summarylist <- append(summarylist,
+                          list("Filtered antigens" = table(beads$Filtered),
+                               "Flagged antigens" = table(beads$Flagged),
+                               "Filtered samples" = table(samples$Filtered)))
+  }
+
+  return(summarylist)
 }
 
 #' Export data from Autoimmunity Profiling analysis to excel
@@ -1744,7 +1759,7 @@ make_peptides <- function(sequence,
 #'
 #' @param inputfile file with sequence information, see Details for needed formatting and columns.
 #' @param shouldpdf Logical, should it plot to pdf?
-#' @param ouputfile filename for the output file.
+#' @param outputfile filename for the output file.
 #' @param gene string with genename (or other name-identifier) for the alignment.
 #' @param uniprot string with Uniprot ID for the alignment.
 #' @param shouldtextplot logical, should a table with sequence info be plotted below the alignment?
@@ -1770,7 +1785,7 @@ make_peptides <- function(sequence,
 #' @export
 
 align_sequences <- function(inputfile,
-                            ouputfile = "SequenceAlignment.pdf",
+                            outputfile = "SequenceAlignment.pdf",
                             gene = NULL,
                             uniprot = NULL,
                             shouldtextplot = FALSE,
@@ -1794,7 +1809,7 @@ align_sequences <- function(inputfile,
   sequences <- sequences[which(sequences$Include == 1),]
 
   if(shouldpdf){
-  pdf(filename=ouputfile,
+  pdf(file=outputfile,
       height=ifelse(length(all)*0.5 < 3, 5, length(all)*0.5),
       width=25, useDingbats=F)
   }

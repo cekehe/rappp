@@ -28,7 +28,7 @@ for even sample size.(From \code{\link[stats:mad]{mad()}}).}
 \value{
 Updated input x with the new list element
 
-    MADs = assay MADs.
+    MADS = assay MADs.
 }
 \description{
 Sample based normalization to number of Median Absolute Deviations (MADs)

@@ -33,5 +33,5 @@ The input values will be binned into discrete bins (scores).
 
 The x list needs to include at least the element:
 
-    MADs = assay MADs,
+    MADS = assay MADs,
 }

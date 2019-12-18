@@ -17,7 +17,9 @@ If left as \code{NULL} (default), the all non-filtered if filtering has been don
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
-\item{groupcolors}{A matrix with a color-column and a group-column, or a vector with colors.}
+\item{groupcolors}{A matrix or data.frame with a column named "group" with group names and
+a column named "color" with a color for each group (one row per group, ie. factor level).
+Alternatively, a vector with colors (will be assigned to the factor levels in order).}
 
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
@@ -68,7 +70,7 @@ the x list needs to include at least the element
     replicates (named with one of pool|rep|mix|commercial)
     and blanks (named with one of empty|blank|buffer) are also stated,
     If any wells should be excluded then these should be annotated in a column called "Filtered".
-    Any beads with no text (ie. "" or NA) in such column will be included.
+    Any samples with no text (ie. "" or NA) in such column will be included.
 
     BEADS = beads info, if any should be excluded then these should be annotated in a column called "Filtered".
     Any beads with no text (ie. "" or NA) will be included in the transformation.
