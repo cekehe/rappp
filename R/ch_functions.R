@@ -1728,7 +1728,7 @@ make_peptides <- function(sequence,
         aa_overlap <- o
 
         start_aas <- seq(1, length(sequence), aa_length-aa_overlap)
-        if(start_aas[which.max(start_aas)-1] > (length(sequence)-aa_length+1)){
+        if(start_aas[which.max(start_aas)-1] >= (length(sequence)-aa_length+1)){
           start_aas <- start_aas[-which(start_aas %in% (length(sequence)-aa_length+1):length(sequence))[-1]]
         }
 
