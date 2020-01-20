@@ -4,10 +4,17 @@
 \alias{ap_agresults}
 \title{Reactivity result plots}
 \usage{
-ap_agresults(x, samplegroups = NULL, groupcolors = 2:6,
-  agtoplot = NULL, cofisher = 0.05, shouldpdf = TRUE,
-  filename = "AntigenResults.pdf", useDingbats = FALSE,
-  check.names = FALSE)
+ap_agresults(
+  x,
+  samplegroups = NULL,
+  groupcolors = 2:6,
+  agtoplot = NULL,
+  cofisher = 0.05,
+  shouldpdf = TRUE,
+  filename = "AntigenResults.pdf",
+  useDingbats = FALSE,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}

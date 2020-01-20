@@ -4,8 +4,13 @@
 \alias{bead_count_ggplot}
 \title{Bead count with ggplot}
 \usage{
-bead_count_ggplot(bead_count_df, bead_count_limit = 32,
-  path_for_output = "./", date_in_file_name = T, ...)
+bead_count_ggplot(
+  bead_count_df,
+  bead_count_limit = 32,
+  path_for_output = "./",
+  date_in_file_name = T,
+  ...
+)
 }
 \arguments{
 \item{bead_count_df}{A dataframe with bead count. Each row is a well, each column is a bead.}

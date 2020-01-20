@@ -4,8 +4,13 @@
 \alias{ap_cutoff_selection2}
 \title{Cutoff selection}
 \usage{
-ap_cutoff_selection2(x, slope_cutoff = -0.5, offset = 0.1, bw = 0.1,
-  check.names = FALSE)
+ap_cutoff_selection2(
+  x,
+  slope_cutoff = -0.5,
+  offset = 0.1,
+  bw = 0.1,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least two elements, see Details for naming and content.

@@ -4,10 +4,14 @@
 \alias{ap_excel}
 \title{Export data from Autoimmunity Profiling analysis to excel}
 \usage{
-ap_excel(x, elements = c("MFI", "MADS", "SCORE", "BINARY_CO",
-  "REACTIVITIES", "FISHER", "DIFFERENCES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
-  "ANTIGENS", "SAMPLES", "COUNT"), filename = "DataOutput.xlsx",
-  row.names = TRUE, ...)
+ap_excel(
+  x,
+  elements = c("MFI", "MADS", "SCORE", "BINARY_CO", "REACTIVITIES", "FISHER",
+    "DIFFERENCES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY", "ANTIGENS", "SAMPLES", "COUNT"),
+  filename = "DataOutput.xlsx",
+  row.names = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{list with at least the elements to export, see Deatils for more information and exceptions to the rule.}

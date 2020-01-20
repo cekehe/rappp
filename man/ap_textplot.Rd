@@ -16,5 +16,5 @@ Altered code found onlne (https://gist.github.com/johncolby/1482973).
 Additional alteration done by CH, including making working methods, see code.
 
 The input should be one of classes \code{matrix}, \code{data.frame}, \code{vectors} longer than 1,
-single \code{character} strings, single \code{integers} or single \code{numeric} values.
+single \code{character} string, single \code{integer} or single \code{numeric} value.
 }

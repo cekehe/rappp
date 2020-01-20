@@ -4,11 +4,22 @@
 \alias{ap_count}
 \title{Bead count}
 \usage{
-ap_count(x, labels = "Gene_agID", protein = "GeneShort",
-  agID = "PrEST", samp_co = 32, bead_flag = 32, bead_filter = 16,
-  N_filter = 0, shouldplot = TRUE, shouldpdf = TRUE,
-  filename = "bead_count.pdf", width = 12, height = 10,
-  useDingbats = FALSE)
+ap_count(
+  x,
+  labels = "Gene_agID",
+  protein = "GeneShort",
+  agID = "PrEST",
+  samp_co = 32,
+  bead_flag = 32,
+  bead_filter = 16,
+  N_filter = 0,
+  shouldplot = TRUE,
+  shouldpdf = TRUE,
+  filename = "bead_count.pdf",
+  width = 12,
+  height = 10,
+  useDingbats = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}

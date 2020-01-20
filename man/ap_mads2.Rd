@@ -4,8 +4,14 @@
 \alias{ap_mads2}
 \title{MAD normalization}
 \usage{
-ap_mads2(x, constant = 1, na.rm = TRUE, low = FALSE, high = FALSE,
-  check.names = FALSE)
+ap_mads2(
+  x,
+  constant = 1,
+  na.rm = TRUE,
+  low = FALSE,
+  high = FALSE,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{list with at least two elements, see Details for naming and content.}

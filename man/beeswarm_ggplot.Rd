@@ -4,8 +4,15 @@
 \alias{beeswarm_ggplot}
 \title{Beeswarm plots for SBA data using ggplot}
 \usage{
-beeswarm_ggplot(data, filename, sample_info, bead_info, grouping_var,
-  sample_name_var, xlab)
+beeswarm_ggplot(
+  data,
+  filename,
+  sample_info,
+  bead_info,
+  grouping_var,
+  sample_name_var,
+  xlab
+)
 }
 \arguments{
 \item{data}{A df with data from an SBA experiment. May be transformed or not.}

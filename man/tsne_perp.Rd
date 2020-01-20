@@ -4,9 +4,20 @@
 \alias{tsne_perp}
 \title{tSNE plots with different perplexities}
 \usage{
-tsne_perp(z, perp = c(2, 5, 10, 50), sqrt = TRUE, iterations = 1000,
-  groups, names, legend = T, legendname = NULL, main = NULL,
-  filename = "t-SNE_perplexities.pdf", height = 16, useDingbats = F)
+tsne_perp(
+  z,
+  perp = c(2, 5, 10, 50),
+  sqrt = TRUE,
+  iterations = 1000,
+  groups,
+  names,
+  legend = T,
+  legendname = NULL,
+  main = NULL,
+  filename = "t-SNE_perplexities.pdf",
+  height = 16,
+  useDingbats = F
+)
 }
 \arguments{
 \item{z}{the data as a data.frame}

@@ -4,8 +4,14 @@
 \alias{ap_negbeads}
 \title{Overview of signals in relation to neg control beads}
 \usage{
-ap_negbeads(x, shouldpdf = TRUE, filename = "neg-control-beads.pdf",
-  width = 15, height = 10, useDingbats = FALSE)
+ap_negbeads(
+  x,
+  shouldpdf = TRUE,
+  filename = "neg-control-beads.pdf",
+  width = 15,
+  height = 10,
+  useDingbats = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}

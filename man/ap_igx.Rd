@@ -4,10 +4,19 @@
 \alias{ap_igx}
 \title{Loading control}
 \usage{
-ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
-  -3), shouldplot = TRUE, shouldpdf = TRUE,
-  filename = "anti-humanIgX.pdf", width = 12, height = 6,
-  useDingbats = FALSE)
+ap_igx(
+  x,
+  IgX_bead,
+  IgType = "G",
+  IgX_cutoff = 5000,
+  cosfac = c(3, -3),
+  shouldplot = TRUE,
+  shouldpdf = TRUE,
+  filename = "anti-humanIgX.pdf",
+  width = 12,
+  height = 6,
+  useDingbats = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}

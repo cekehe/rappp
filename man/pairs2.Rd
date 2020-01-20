@@ -4,11 +4,25 @@
 \alias{pairs2}
 \title{Scatterplot Matrices}
 \usage{
-pairs2(x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc,
-  lower.panel = panel, upper.panel = panel, diag.panel = NULL,
-  text.panel = textPanel, label.pos = 0.5 + has.diag/3,
-  line.main = 3, cex.labels = NULL, font.labels = 1,
-  row1attop = TRUE, gap = 1, log = "")
+pairs2(
+  x,
+  labels,
+  panel = points,
+  ...,
+  horInd = 1:nc,
+  verInd = 1:nc,
+  lower.panel = panel,
+  upper.panel = panel,
+  diag.panel = NULL,
+  text.panel = textPanel,
+  label.pos = 0.5 + has.diag/3,
+  line.main = 3,
+  cex.labels = NULL,
+  font.labels = 1,
+  row1attop = TRUE,
+  gap = 1,
+  log = ""
+)
 }
 \arguments{
 \item{x}{the coordinates of points given as numeric columns of a matrix or data frame.

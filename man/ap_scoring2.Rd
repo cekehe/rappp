@@ -4,8 +4,14 @@
 \alias{ap_scoring2}
 \title{Scoring}
 \usage{
-ap_scoring2(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
-  left.open = FALSE, all.inside = FALSE, check.names = FALSE)
+ap_scoring2(
+  x,
+  MADlimits = seq(0, 70, 5),
+  rightmost.closed = FALSE,
+  left.open = FALSE,
+  all.inside = FALSE,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least one element, see Details for naming and content.
