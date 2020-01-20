@@ -1811,16 +1811,11 @@ make_peptides <- function(sequence,
 #' @export
 
 check_peptides <- function(to_check, map_to=NULL){
+
   to_check_list <- lapply(as.character(to_check), function(x)
     substring(x, seq(1,nchar(x),1), seq(1,nchar(x),1)))
 
   length_aa <- as.vector(sapply(to_check, nchar))
-
-  if(!is.null(map_to)){
-    aa_index <- unlist(lapply(to_check_list, function(x)
-      paste0("aa",which(rollapply(map_to, length(x), identical, x)), "-",
-             (which(rollapply(map_to, length(x), identical, x))+length(x)-1))))
-  }
 
   N_terminal <- unlist(lapply(to_check_list, function(x) ifelse(x[1] %in% c("Q","N"), "Yes", "No")))
 
@@ -1832,34 +1827,38 @@ check_peptides <- function(to_check, map_to=NULL){
 
   hydrophobic <- unlist(lapply(to_check_list, function(x) sum(x %in% c("A", "I", "L", "M", "F", "W", "V"))))
 
+  acidic <- unlist(lapply(to_check_list, function(x) sum(x %in% c("D", "E"))))
+
+  charged <- unlist(lapply(to_check_list, function(x) sum(x %in% c("D", "E","L","R"))))
+
+  check_summary <- data.frame(Sequences=to_check,
+                              Length=length_aa,
+                              Risky_N_terminal=N_terminal,
+                              Hydrophobic_sum=hydrophobic,
+                              Hydrophobic_perc=round(hydrophobic/length_aa*100),
+                              # Hydrophobic_risky=ifelse(hydrophobic/length_aa > 0.45, "Yes", "No"),
+                              Acidic_sum=acidic,
+                              Acidic_perc=round(acidic/length_aa*100),
+                              # Acidic_risky=ifelse(acidic/length_aa > 0.5, "Yes", "No"),
+                              Charged_sum=charged,
+                              Charged_perc=round(charged/length_aa*100),
+                              Beta_sheet_aa_sum=beta_sheet,
+                              Beta_sheet_aa_perc=round(beta_sheet/length_aa*100),
+                              P_and_S_sum=P_and_S,
+                              P_and_S_perc=round(P_and_S/length_aa*100),
+                              Ox_risk_sum=oxidation_risk,
+                              Ox_risk_perc=round(oxidation_risk/length_aa*100))
+
   if(!is.null(map_to)){
-    data.frame(Sequences=to_check,
-               Length=length_aa,
-               Mapping=aa_index,
-               Risky_N_terminal=N_terminal,
-               Hydrophobic_sum=hydrophobic,
-               Hydrophobic_perc=round(hydrophobic/length_aa*100),
-               Hydrophobic_risky=ifelse(hydrophobic/length_aa > 0.5, "Yes", "No"),
-               Beta_sheet_aa_sum=beta_sheet,
-               Beta_sheet_aa_perc=round(beta_sheet/length_aa*100),
-               P_and_S_sum=P_and_S,
-               P_and_S_perc=round(P_and_S/length_aa*100),
-               Ox_risk_sum=oxidation_risk,
-               Ox_risk_perc=round(oxidation_risk/length_aa*100))
-  } else {
-    data.frame(Sequences=to_check,
-               Length=length_aa,
-               Risky_N_terminal=N_terminal,
-               Hydrophobic_sum=hydrophobic,
-               Hydrophobic_perc=round(hydrophobic/length_aa*100),
-               Hydrophobic_risky=ifelse(hydrophobic/length_aa > 0.5, "Yes", "No"),
-               Beta_sheet_aa_sum=beta_sheet,
-               Beta_sheet_aa_perc=round(beta_sheet/length_aa*100),
-               P_and_S_sum=P_and_S,
-               P_and_S_perc=round(P_and_S/length_aa*100),
-               Ox_risk_sum=oxidation_risk,
-               Ox_risk_perc=round(oxidation_risk/length_aa*100))
+    aa_index <- unlist(lapply(to_check_list, function(x)
+      paste0("aa",which(rollapply(map_to, length(x), identical, x)), "-",
+             (which(rollapply(map_to, length(x), identical, x))+length(x)-1))))
+
+    check_summary <- add_column(check_summary, Mapping = aa_index, .after = 2)
   }
+
+  return(check_summary)
+
 }
 
 
