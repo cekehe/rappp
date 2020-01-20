@@ -7,6 +7,7 @@
 #' @importFrom scales hue_pal
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tibble tibble
+#' @importFrom tibble add_column
 #' @import ggplot2
 #' @importFrom WriteXLS WriteXLS
 #' @importFrom zoo rollapply
