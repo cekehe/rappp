@@ -47,6 +47,9 @@ Load RData-file and save loaded variable as .rda instead:<br/>
 ```
 load("data/Scrambled_data_for_rappp.RData")
 usethis::use_data(MockSBA, overwrite=T)
+
+load("data/Scrambled_data_for_rappp_processed.RData")
+usethis::use_data(MockSBA_processed, overwrite=T)
 ```
 
 Console commands useful when updating package locally:<br/>
