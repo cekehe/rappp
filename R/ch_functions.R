@@ -1752,6 +1752,113 @@ make_peptides <- function(sequence,
   return(peptides_collapsed_noNA)
 }
 
+#' Check peptides
+#'
+#' Get a summary of risk factors for reduced peptide synthesis yield.
+#'
+#' @param to_check a vector of sequences to check.
+#' @param map_to an optional sequence used to extract amino acid indices of peptides.
+#' @return A data.frame with various summaries.
+#' @details Information from Sigma Aldrich (Merck) about peptide design:\cr
+#' https://www.sigmaaldrich.com/technical-documents/articles/biology/designing-peptides.html
+#'
+#' Amino Acid Classifications:\cr
+#' Hydrophobic (non-polar): Ala, Ile, Leu, Met, Phe, Trp, Val\cr
+#' Uncharged (polar): Asn, Cys, Gly, Gln, Pro, Ser, Thr, Tyr\cr
+#' Acidic (polar): Asp, Glu\cr
+#' Basic (polar): His, Lys, Arg\cr
+#' TIP – Keep hydrophobic amino acid content below 50% of the total sequence length and
+#' to include at least one charged amino acid for every five amino acids.
+#' At a physiological pH, Asp, Glu, Lys and Arg will contain charged side chains.
+#' A single conservative replacement, such as replacing Ala with Gly or adding polar amino acids
+#' to the N- or C-terminus may improve solubility.
+#'
+#' There are several strategies for improving peptide stability, which will lead to higher
+#' purity and optimal solubility. Amino acid composition of the peptide sequence impacts the
+#' overall stability and considerations should be made for the following scenarios:
+#'
+#' 1. Multiple Cys, Met or Trp amino acids may be difficult to obtain in high purity partly
+#' due to the susceptibility of oxidation and/or side reactions.\cr
+#' TIP – Choose sequences which minimize these residues or choose conservative replacements
+#' for these amino acids.  Norleucine can substitute for Met and Ser can  be  a less reactive
+#' replacement for Cys.  If overlapping peptides from a protein sequence are being designed,
+#' shifting the starting point of each peptide may also create a better balance between
+#' hydrophobic and hydrophilic amino acid residues.
+#'
+#' 2. N-terminal Gln (Q) is unstable and may cyclize to pyroglutamate when exposed to the
+#' acidic conditions of cleavage.\cr
+#' TIP – Amidate the N-terminus of the sequence or substitute this amino acid.
+#'
+#' 3. Asparagine (N) has a protecting group that is difficult to remove when placed at the
+#' N-terminus of a peptide sequence.\cr
+#' TIP – Remove the Asn at this location, substitute with another amino acid or lengthen the
+#' peptide by one amino acid residue.
+#'
+#' 4. Multiple prolines (P) or adjacent serines (S)  in a sequence can result in a product that
+#' is lower in purity or contains many
+#' deletion products. Multiple prolines can also undergo a cis/trans isomerization, resulting in
+#' an apparent lower purity product.
+#'
+#' 5. Beta sheet formation is a concern as it causes incomplete solvation of the growing peptide
+#' chain and will result in a higher incidence of deletion sequences in the final product. \cr
+#' TIP – Avoid sequences that contain multiple or adjacent Val, Ile, Tyr, Phe, Trp, Leu, Gln and Thr.
+#' Break the pattern by making conservative replacements, for example, inserting a Gly or Pro at every
+#' third residue, replacing Gln with Asn, or replacing Thr with Ser.
+#'
+#' @export
+
+check_peptides <- function(to_check, map_to=NULL){
+  to_check_list <- lapply(as.character(to_check), function(x)
+    substring(x, seq(1,nchar(x),1), seq(1,nchar(x),1)))
+
+  length_aa <- as.vector(sapply(to_check, nchar))
+
+  if(!is.null(map_to)){
+    aa_index <- unlist(lapply(to_check_list, function(x)
+      paste0("aa",which(rollapply(map_to, length(x), identical, x)), "-",
+             (which(rollapply(map_to, length(x), identical, x))+length(x)-1))))
+  }
+
+  N_terminal <- unlist(lapply(to_check_list, function(x) ifelse(x[1] %in% c("Q","N"), "Yes", "No")))
+
+  beta_sheet <- unlist(lapply(to_check_list, function(x) sum(x %in% c("V","I","Y","F","W","L","Q","T"))))
+
+  P_and_S <- unlist(lapply(to_check_list, function(x) sum(x %in% c("P","S"))))
+
+  oxidation_risk <- unlist(lapply(to_check_list, function(x) sum(x %in% c("M","C","W"))))
+
+  hydrophobic <- unlist(lapply(to_check_list, function(x) sum(x %in% c("A", "I", "L", "M", "F", "W", "V"))))
+
+  if(!is.null(map_to)){
+    data.frame(Sequences=to_check,
+               Length=length_aa,
+               Mapping=aa_index,
+               Risky_N_terminal=N_terminal,
+               Hydrophobic_sum=hydrophobic,
+               Hydrophobic_perc=round(hydrophobic/length_aa*100),
+               Hydrophobic_risky=ifelse(hydrophobic/length_aa > 0.5, "Yes", "No"),
+               Beta_sheet_aa_sum=beta_sheet,
+               Beta_sheet_aa_perc=round(beta_sheet/length_aa*100),
+               P_and_S_sum=P_and_S,
+               P_and_S_perc=round(P_and_S/length_aa*100),
+               Ox_risk_sum=oxidation_risk,
+               Ox_risk_perc=round(oxidation_risk/length_aa*100))
+  } else {
+    data.frame(Sequences=to_check,
+               Length=length_aa,
+               Risky_N_terminal=N_terminal,
+               Hydrophobic_sum=hydrophobic,
+               Hydrophobic_perc=round(hydrophobic/length_aa*100),
+               Hydrophobic_risky=ifelse(hydrophobic/length_aa > 0.5, "Yes", "No"),
+               Beta_sheet_aa_sum=beta_sheet,
+               Beta_sheet_aa_perc=round(beta_sheet/length_aa*100),
+               P_and_S_sum=P_and_S,
+               P_and_S_perc=round(P_and_S/length_aa*100),
+               Ox_risk_sum=oxidation_risk,
+               Ox_risk_perc=round(oxidation_risk/length_aa*100))
+  }
+}
+
 
 #' Align sequences
 #'
