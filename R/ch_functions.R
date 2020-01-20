@@ -1057,6 +1057,7 @@ ap_reactsummary2 <- function(x,
 
     if("Filtered" %in% colnames(x$SAMPLES)){
       samplegroups[which(!(is.na(x$SAMPLES$Filtered) | x$SAMPLES$Filtered == ""))] <- NA
+      samplegroups <- factor(samplegroups)
     } # else: samplegroups is already defined, so no need for an else action.
 
   }
@@ -1109,20 +1110,22 @@ ap_reactsummary2 <- function(x,
 
       }
       colnames(tmp_fisher) <- colnames(data_freq_ag[[length(data_freq_ag)]])
-      fisher_p[[t]] <- tmp_fisher
-      rownames(fisher_p[[t]]) <- names(data_bin)
+      rownames(tmp_fisher) <- names(data_bin)
+      fisher_p[[t]] <- data.frame(tmp_fisher, check.names=F)
+
 
       colnames(tmp_diff) <- colnames(data_freq_ag[[length(data_freq_ag)]])
-      freq_diff[[t]] <- tmp_diff
-      rownames(freq_diff[[t]]) <- names(data_bin)
+      rownames(tmp_diff) <- names(data_bin)
+      freq_diff[[t]] <- data.frame(tmp_diff, check.names=F)
+
     }
     names(fisher_p) <- paste0(casefold(comparisons[1,], upper=T), "vs",casefold(comparisons[2,], upper=T))
 
     names(freq_diff) <- names(fisher_p)
   }
 
-  data_sum_ag <- do.call(rbind, data_sum_ag)
-  data_freq_ag <- do.call(rbind, data_freq_ag)
+  data_sum_ag <- data.frame(do.call(rbind, data_sum_ag), check.names=F)
+  data_freq_ag <- data.frame(do.call(rbind, data_freq_ag), check.names=F)
 
   # Calculate per sample
   data_sum_samp <- lapply(data_bin,
@@ -1133,8 +1136,8 @@ ap_reactsummary2 <- function(x,
   data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
   names(data_freq_samp) <- names(data_sum_samp)
 
-  data_sum_samp <- do.call(cbind, data_sum_samp)
-  data_freq_samp <- do.call(cbind, data_freq_samp)
+  data_sum_samp <- data.frame(do.call(cbind, data_sum_samp), check.names=F)
+  data_freq_samp <- data.frame(do.call(cbind, data_freq_samp), check.names=F)
 
   # Output
   if(length(levels(samplegroups)) > 1){
