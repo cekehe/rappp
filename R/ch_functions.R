@@ -1407,14 +1407,16 @@ ap_agresults <- function(x,
                   mar_top,
                   ceiling(0.03572519*max(unlist(lapply(names(react_summary$FISHER_P), nchar)), na.rm=T)*19.3) )) # strwidth("M") = 0.03572519
 
-      plotdata <- melt(react_summary$FISHER_P)
+      plotdata <- melt(map(react_summary$FISHER_P, as.matrix)) #melt(react_summary$FISHER_P)
       plotdata <- plotdata[which(unlist(lapply(strsplit(paste(plotdata$Var2), "_co"), function(i) i[[1]])) == tmp_ag),]
       if(sum(grepl("Selected", plotdata$Var1)) > 0){
         plotdata <- plotdata[-grep("Selected", plotdata$Var1), ]
       }
 
       plotdata <- matrix(plotdata$value, nrow=dim(x$CUTOFF_KEY)[1], dimnames=list(unique(plotdata$Var1), unique(plotdata$L1)))
+      if(sum(plotdata > 1) > 0){
       plotdata[which(plotdata > 1, arr.ind=T)] <- 1 # Fix bug with floating aritmetics, some 1s will not be recognized as 1s in image (white field).
+      }
       plotdata <- plotdata[,dim(plotdata)[2]:1, drop=F]
 
       breaks <- sort(c(1, 0.1, 0.05, 10^-seq(2,4,1), 0))
@@ -1579,7 +1581,7 @@ ap_excel <- function(x,
   }
 
   if("FISHER_P" %in% names(excel)){
-    tmp_fisher <- melt(excel$FISHER_P)
+    tmp_fisher <- melt(map(excel$FISHER_P, as.matrix))
     tmp_fisher <- tmp_fisher[grep("Selected", tmp_fisher$Var1),]
     tmp_fisher <- matrix(tmp_fisher$value, ncol=length(levels(tmp_fisher$Var2)), byrow=T,
                          dimnames=list(paste(unique(tmp_fisher$L1)), paste(unique(tmp_fisher$Var2))))
@@ -1587,7 +1589,7 @@ ap_excel <- function(x,
   }
 
   if("FREQ_DIFF" %in% names(excel)){
-    tmp_diff <- melt(excel$FREQ_DIFF)
+    tmp_diff <- melt(map(excel$FREQ_DIFF, as.matrix))
     tmp_diff <- tmp_diff[grep("Selected", tmp_diff$Var1),]
     tmp_diff <- matrix(tmp_diff$value, ncol=length(levels(tmp_diff$Var2)), byrow=T,
                          dimnames=list(paste(unique(tmp_diff$L1)), paste(unique(tmp_diff$Var2))))
