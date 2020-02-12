@@ -1870,6 +1870,7 @@ check_peptides <- function(to_check, map_to=NULL){
 #'
 #' @param inputfile file with sequence information, see Details for needed formatting and columns.
 #' @param shouldpdf Logical, should it plot to pdf?
+#' @param shouldpdf Logical, should it plot to pdf?
 #' @param outputfile filename for the output file.
 #' @param gene string with genename (or other name-identifier) for the alignment.
 #' @param uniprot string with Uniprot ID for the alignment.
@@ -1896,6 +1897,7 @@ check_peptides <- function(to_check, map_to=NULL){
 #' @export
 
 align_sequences <- function(inputfile,
+                            shouldpdf = TRUE,
                             outputfile = "SequenceAlignment.pdf",
                             gene = NULL,
                             uniprot = NULL,
