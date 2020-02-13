@@ -1874,6 +1874,7 @@ check_peptides <- function(to_check, map_to=NULL){
 #' @param outputfile filename for the output file.
 #' @param gene string with genename (or other name-identifier) for the alignment.
 #' @param uniprot string with Uniprot ID for the alignment.
+#' @param writesequence logical, should aa sequences for peptides be stated on the right axis?
 #' @param shouldtextplot logical, should a table with sequence info be plotted below the alignment?
 #' @param textplotcolumns columns to include if printing a table below the alignment.
 #' @details NB! The sequences have to be identical matches to consequtive stretches
@@ -1901,6 +1902,7 @@ align_sequences <- function(inputfile,
                             outputfile = "SequenceAlignment.pdf",
                             gene = NULL,
                             uniprot = NULL,
+                            writesequence = TRUE,
                             shouldtextplot = FALSE,
                             textplotcolumns = NULL) {
 
@@ -1933,17 +1935,25 @@ align_sequences <- function(inputfile,
     layout(matrix(1, ncol=1))
   }
 
+  if(writesequence){
   par(lend="butt", mar=c(2,2,2,25))
+  } else {
+    par(lend="butt", mar=c(2,2,2,2))
+  }
   y_at <- seq(0, length(all)*0.5-0.5, 0.5)
-  ylabs <- ifelse(sequences$Type == "Peptide", paste0(sequences$Sequence1), "")
   aasteps <- ifelse(FLlength < 200, 10, ifelse(FLlength < 500, 50, 100))
   plot(0,0, col=0, xlim=c(1,FLlength), ylim=c(0,sum(sequences$Include)*0.5+0.5), xaxt="n",xlab=NA, las=1, yaxt="n", ylab=NA)
   axis(1, at=seq(1, FLlength, aasteps),
        labels=as.character(seq(1, FLlength, aasteps)),
        las=1)
-  axis(4, at=y_at, labels=ylabs, las=2, cex=0.8)
   abline(v=seq(1, FLlength, aasteps), lty=2, col="lightgrey")
-  abline(h=y_at, lty=2, col="lightgrey")
+
+  if(writesequence){
+    ylabs <- ifelse(sequences$Type == "Peptide", paste0(sequences$Sequence1), "")
+    axis(4, at=y_at, labels=ylabs, las=2, cex=0.8)
+    abline(h=y_at, lty=2, col="lightgrey")
+  }
+
   n=0
   for(i in 1:length(all)){
     if(length(all[[i]]) != 2){
@@ -1952,8 +1962,10 @@ align_sequences <- function(inputfile,
       segments(x0=x0, y0=n,
                x1=x1, y1=n,
                lwd=5, col=as.character(sequences$Color[i]))
+
+      label=paste0(names(all)[i]," (",paste0(paste0(x0,"-",x1), collapse=";"),", ",length(all[[i]])," aa)")
       text(x=ifelse(x0[1] < FLlength*0.75, x0[1], x1[1]), y=(n+0.1), adj=ifelse(x0[1] < FLlength*0.75, 0, 1),
-           labels=paste0(names(all)[i]," (",x0,"-",x1,", ",length(all[[i]])," aa)"),
+           labels=label,
            cex=0.9, offset=0, xpd=NA)
     } else {
       x0_1=which(rollapply(all[[1]], length(all[[i]][[1]]), identical, all[[i]][[1]]))
@@ -1966,9 +1978,14 @@ align_sequences <- function(inputfile,
       segments(x0=x0_2, y0=n,
                x1=x1_2, y1=n,
                lwd=5, col=as.character(sequences$Color[i]))
-      text(x=ifelse(x0[1] < FLlength*0.75, x0[1], x1[1]), y=(n+0.1), adj=ifelse(x0[1] < FLlength*0.75, 0, 1),
-           labels=paste0(names(all)[i]," (",x0_1,"-",x1_1,", ",x0_2,"-",x1_2,", ",
-                         length(all[[i]][[1]]),"+",length(all[[i]][[2]])," aa)"),
+
+      label=paste0(names(all)[i]," (",
+                   paste0(paste0(x0_1,"-",x1_1), collapse=";"),", ",
+                   paste0(paste0(x0_2,"-",x1_2), collapse=";"),
+                   ", ",length(all[[i]][[1]]),"+",length(all[[i]][[2]])," aa)")
+      text(x=ifelse(x0_1[1] < FLlength*0.75, x0_1[1], x1_1[1]), y=(n+0.1),
+           adj=ifelse(x0_1[1] < FLlength*0.75, 0, 1),
+           labels=label,
            cex=0.9, offset=0, xpd=NA)
     }
     n=n+0.5
