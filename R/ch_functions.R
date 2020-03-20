@@ -1168,8 +1168,9 @@ ap_reactsummary2 <- function(x,
 #' Based on output from Autoimmunity Profiling wrapper function \code{\link[rappp:ap_norm2]{ap_norm2()}}.
 #'
 #' @param x list with at least nine elements, see Deatils for naming and content.
-#' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
-#'     If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+#' @param samplegroups factor vector of groupings. NB! Do not include . (period) in names.
+#'     Only samples with an assigned level are included in plots.
+#'     If left as \code{NULL} (default), then all non-filtered if filtering has been done,
 #'     otherwise all, will be assigned "Sample".
 #'     Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.
 #' @param groupcolors A matrix or data.frame with a column named "group" with group names and
@@ -1180,6 +1181,7 @@ ap_reactsummary2 <- function(x,
 #' @param cofisher Cutoff in fisher plot.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename string with filename and desired path, end with .pdf
+#' @param height height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.
 #' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details the x list needs to include at least the element
@@ -1230,6 +1232,7 @@ ap_agresults <- function(x,
                          cofisher=0.05,
                          shouldpdf=TRUE,
                          filename="AntigenResults.pdf",
+                         height=18,
                          useDingbats=FALSE,
                          check.names=FALSE) {
 
@@ -1285,10 +1288,10 @@ ap_agresults <- function(x,
       # Create PDF
     if(shouldpdf){
      pdf(filename,
-          width=ifelse(n_groups > 1, 20+n_groups*0.9, 15), height=18, useDingbats=useDingbats)
+          width=ifelse(n_groups > 1, 20+n_groups*1, 15), height=height, useDingbats=useDingbats)
     }
-      mar_top <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3)+3, 4)
-      mtext_sub_line <- ifelse(n_groups > 1, ceiling((n_comparisons+1)/3), 2)
+      mar_top <- ifelse(n_groups > 1, ceiling((n_groups+1)/3)+3, 4)
+      mtext_sub_line <- ifelse(n_groups > 1, ceiling((n_groups+1)/3), 2)
       par(mgp=c(3,1,0))
 
       if(n_groups > 1){

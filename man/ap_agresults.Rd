@@ -12,6 +12,7 @@ ap_agresults(
   cofisher = 0.05,
   shouldpdf = TRUE,
   filename = "AntigenResults.pdf",
+  height = 18,
   useDingbats = FALSE,
   check.names = FALSE
 )
@@ -19,8 +20,9 @@ ap_agresults(
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
 
-\item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
-If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+\item{samplegroups}{factor vector of groupings. NB! Do not include . (period) in names.
+Only samples with an assigned level are included in plots.
+If left as \code{NULL} (default), then all non-filtered if filtering has been done,
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
@@ -36,6 +38,8 @@ Character vector with column names of what to plot also ok.}
 \item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{string with filename and desired path, end with .pdf}
+
+\item{height}{height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.}
 
