@@ -1106,7 +1106,8 @@ ap_reactsummary2 <- function(x,
                                 function(x) fisher.test(test_groups,
                                                         factor(x,levels=0:1))$p.value)
 
-        tmp_diff[b,] <- unlist(data_freq_ag[[b]][comparisons[1,t],] - data_freq_ag[[b]][comparisons[2,t],])
+        tmp_diff[b,] <- unlist(data_freq_ag[[b]][comparisons[1,t],] -
+                                 data_freq_ag[[b]][comparisons[2,t],])
 
       }
       colnames(tmp_fisher) <- colnames(data_freq_ag[[length(data_freq_ag)]])
@@ -1119,7 +1120,8 @@ ap_reactsummary2 <- function(x,
       freq_diff[[t]] <- data.frame(tmp_diff, check.names=F)
 
     }
-    names(fisher_p) <- paste0(casefold(comparisons[1,], upper=T), "vs",casefold(comparisons[2,], upper=T))
+    names(fisher_p) <- paste0(casefold(comparisons[1,], upper=T), "vs",
+                              casefold(comparisons[2,], upper=T))
 
     names(freq_diff) <- names(fisher_p)
   }
@@ -1133,7 +1135,8 @@ ap_reactsummary2 <- function(x,
                                             function(l) sum(l, na.rm=T)))
   names(data_sum_samp) <- names(data_bin)
 
-  data_freq_samp <- lapply(1:length(data_sum_samp), function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
+  data_freq_samp <- lapply(1:length(data_sum_samp),
+                           function(cutoff) round(data_sum_samp[[cutoff]]/n_ag[[cutoff]]*100,1))
   names(data_freq_samp) <- names(data_sum_samp)
 
   data_sum_samp <- data.frame(do.call(cbind, data_sum_samp), check.names=F)
@@ -1375,11 +1378,11 @@ ap_agresults <- function(x,
 
       # Frequency
         par(mar=c(6,5,mar_top,1))
-      plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
+        plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
       if(n_groups > 1){
-        plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
-        plotdata <- do.call(cbind, plotdata)
-        colnames(plotdata) <- names(data_size)
+         plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
+         plotdata <- do.call(cbind, plotdata)
+         colnames(plotdata) <- names(data_size)
       }
       plot(NULL, xlim=c(0,dim(cokey)[1]),
            ylim=c(0,100), xaxt="n", yaxt="n",
