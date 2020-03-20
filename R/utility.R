@@ -1,5 +1,6 @@
 #' @importFrom beeswarm beeswarm
 #' @importFrom wesanderson wes_palette
+#' @import stringr
 #' @importFrom calibrate textxy
 #' @importFrom network as.color
 #' @importFrom reshape2 melt
