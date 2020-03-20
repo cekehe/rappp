@@ -1344,10 +1344,13 @@ ap_agresults <- function(x,
       if(if_selected_co){
       mtext(paste0("Above dashed line:\n(",tmp_cutoff," MADs)"), adj=0.7,
             side=1, at=par("usr")[1], line=0.6, cex=0.5)
-      mtext(paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
-                   " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))], 0), "%)\n",
-                   levels(samplegroups)),
-            side=1, at=1:n_groups, line=1.1, cex=0.7)
+
+        axis_text <- paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
+                            " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))], 0), "%)\n",
+                            levels(samplegroups))
+        mtext(axis_text,
+              side=1, at=1:n_groups, line=0.7+0.7*max(str_count(axis_text, "\\\n")), cex=0.7)
+
       } else {
         mtext(levels(samplegroups),
               side=1, at=1:n_groups, line=1.1, cex=0.7)
@@ -1400,7 +1403,8 @@ ap_agresults <- function(x,
         mtext("Percentage of reactive samples per group at each exemplified cutoff.",
               line=mtext_sub_line, cex=0.65)
         legend(par("usr")[1], par("usr")[4], yjust=0, xpd=NA, bty="n", cex=0.8, ncol=3,
-               lty=1:5, lwd=2, col=paste(groupcolors$color), legend=groupcolors$group, seg.len=5)
+               lty=1:5, lwd=2, col=paste(groupcolors$color),
+               legend=gsub("\\\n", "_", groupcolors$group), seg.len=5)
         mtext(tmp_ag, line=mtext_sub_line+1, font=2)
       } else {
         mtext("Percentage of reactive samples at each exemplified cutoff.", line=0.1, cex=0.65)
@@ -1430,7 +1434,7 @@ ap_agresults <- function(x,
       image(x=1:dim(plotdata)[1], y=1:dim(plotdata)[2], z=plotdata, xaxt="n", yaxt="n", bty="n",
             col=break_col, ylab=NA, xlab="MADs cutoff", breaks=breaks)
       axis(1, at=1:dim(cokey)[1], labels=c("<0",cokey$xmad[-1]), cex.axis=0.8, tick=F)
-      axis(4, at=1:dim(plotdata)[2], colnames(plotdata), las=2, tick=F)
+      axis(4, at=1:dim(plotdata)[2], gsub("\\\n", "_", colnames(plotdata)), las=2, tick=F)
       legend(par("usr")[1], par("usr")[4], pt.bg=rev(break_col), pch=22, horiz=T, pt.cex=2.5,
              legend=paste0("<=",#expression("\u2264"),
                            format(rev(breaks[-1]), scientific=F, drop0trailing=T)),
