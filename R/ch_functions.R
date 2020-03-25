@@ -2010,3 +2010,86 @@ align_sequences <- function(inputfile,
     dev.off()
   }
 }
+
+#' Find amino acid indices
+#'
+#' Align query sequnces to full length sequences to find start and stopp indices of sequences.
+#'
+#' @param x List with at least one element, see Deatils for naming and content.
+#' @param fasta_list A list of sequences in fasta format. Either this or sequence_list should be provided.
+#' @param sequence_list A list of only sequences. Either this or fasta_list should be provided.
+#' @details NB! The sequences have to be identical matches to consequtive stretches
+#'     in the full length sequence you are aligning to. A future update will include partial matches.
+#'
+#'     The x list needs to include at least the element
+#'
+#'     BEADS = Beads info with identifiable rownames and with at least the columns:
+#'
+#'     "Sequence" with one letter abriviation for the aminoa acids,
+#'
+#'     "Uniprot" withthe uniprot ID the sequence originates from
+#'
+#'     If a list of fasta sequences is provided (\code{fasta_list}), it should be the output of
+#'     \code{\link[seqinr:read.fasta]{read.fasta()}} in the package \code{\link[seqinr]{seqinr}}.
+#'
+#'     If a list of only sequenes is provided (\code{sequence_list}),
+#'     each element should correspond to a Uniprot ID, isoform specific if applicable,
+#'      and contain a consequitive string of one letter amino acid abbreviations.
+#'
+#' @return Updated input x with new columns in the BEADS element for the start and stopp indices of each tested isoform.
+#' @export
+
+ap_aaindex <- function(x, fasta_list=NULL, sequence_list=NULL){
+
+  if(!is.null(fasta_list)){
+    align_to <- fasta_list
+  } else if (!is.null(sequence_list)){
+    align_to <- sequence_list
+  } else {
+    stop("No list of sequence(s) to align to provided.")
+  }
+
+  for(p in seq_along(align_to)){
+    tmp_isoform <- unlist(map(strsplit(names(align_to)[p], "\\|"), 2))
+    tmp_uniprot <- unlist(strsplit(tmp_isoform, "-"))[1]
+
+    if(!is.null(fasta_list)){
+      FLseq <- getSequence(align_to[[p]])
+    } else {
+      FLseq <- substring(align_to[[p]], seq(1,nchar(align_to[[p]]),1), seq(1,nchar(align_to[[p]]),1))
+    }
+
+    tmp_seq <- x$BEADS[which(x$BEADS$Sequence != "" & grepl(tmp_uniprot, x$BEADS$Uniprot)),
+                       "Sequence",drop=F]
+    tmp_seq$Sequence <- as.character(tmp_seq$Sequence)
+    tmp_seq <- apply(tmp_seq, 1, function(x) substring(x, seq(1,nchar(x),1), seq(1,nchar(x),1)))
+
+    if(length(tmp_seq) > 1){
+      ## Find alignments
+      all <- append(list(FullLength=FLseq), tmp_seq)
+      tmp_start <- rep(NA, length(all))
+      tmp_stopp <- rep(NA, length(all))
+      for(i in 1:length(all)){ # Find alignment
+        x0=which(rollapply(all[[1]], length(all[[i]]), identical, all[[i]]))
+        x1=(which(rollapply(all[[1]], length(all[[i]]), identical, all[[i]]))+length(all[[i]])-1)
+        if(length(x0) == 0){ # Test if sequence is in alignment
+          all[[i]] <- NA ; print(tmp_isoform) ; print(names(all)[i]) ; names(all)[i] <- "NoAlign" # Removes the sequence not in alignment
+        } else {
+          tmp_start[i] <- x0
+          tmp_stopp[i] <- x1
+        }
+      }
+      names(tmp_start) <- names(all)
+      names(tmp_stopp) <- names(all)
+      if("NoAlign" %in% names(all)){
+        tmp_start <- tmp_start[-grep("NoAlign", names(all))]
+        tmp_stopp <- tmp_stopp[-grep("NoAlign", names(all))]
+        all <- all[-grep("NoAlign", names(all))]
+      }
+    }
+
+    x$BEADS[, paste0("Start_",tmp_isoform)] <- tmp_start[match(rownames(x$BEADS), names(tmp_start))]
+    x$BEADS[, paste0("Stopp_",tmp_isoform)] <- tmp_stopp[match(rownames(x$BEADS), names(tmp_stopp))]
+  }
+  return(x)
+}

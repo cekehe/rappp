@@ -13,4 +13,5 @@
 #' @importFrom WriteXLS WriteXLS
 #' @importFrom zoo rollapply
 #' @importFrom zoo rollmean
+#' @importFrom seqinr getSequence
 NULL

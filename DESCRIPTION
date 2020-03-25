@@ -28,7 +28,8 @@ Imports:
     gridExtra,
     ggplot2,
     WriteXLS,
-    zoo
+    zoo,
+    seqinr
 Suggests: 
     knitr,
     rmarkdown
