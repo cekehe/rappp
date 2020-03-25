@@ -9,6 +9,7 @@ ap_excel(
   elements = c("MFI", "MADS", "SCORE", "BINARY_CO", "REACTIVITIES", "FISHER",
     "DIFFERENCES", "ANTIGEN_CUTOFFS", "CUTOFF_KEY", "ANTIGENS", "SAMPLES", "COUNT"),
   filename = "DataOutput.xlsx",
+  shouldround = TRUE,
   row.names = TRUE,
   ...
 )
@@ -21,7 +22,9 @@ The sheets will be ordered in the same order as the vector.}
 
 \item{filename}{string with filename and desired path, end with .xlsx.}
 
-\item{row.names}{if TRUE, the row names of the data frames are included in the Excel file worksheets.
+\item{shouldround}{logical, if TRUE MFI values are rounded to integers and MADs to two decimals.}
+
+\item{row.names}{logical. If TRUE, the row names of the data frames are included in the Excel file worksheets.
 Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.}
 
 \item{...}{arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.}
@@ -50,6 +53,8 @@ The x list needs to include at least the elements specified under \code{elements
  the cutoffs assigned by \code{\link[rappp:ap_cutoff_selection2]{ap_cutoff_selection2()}} and formatted
  into the new elements FISHER and DIFFERENCES.
  Therefore, FISHER and DIFFERENCES are default elements to export although they are not present in the input data.\cr
+
+ Line breaks (backslash n) in row and column names will be changed to underscore ("_").
 
   If other list structures are used, it is most likely more convenient to just use
   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.

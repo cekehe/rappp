@@ -1539,9 +1539,10 @@ ap_summary <- function(x, filter=TRUE) {
 #' @param x list with at least the elements to export, see Deatils for more information and exceptions to the rule.
 #' @param elements character vector of names of the list elements to export.
 #'     The sheets will be ordered in the same order as the vector.
-#' @param row.names if TRUE, the row names of the data frames are included in the Excel file worksheets.
-#'     Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
 #' @param filename string with filename and desired path, end with .xlsx.
+#' @param shouldround logical, if TRUE MFI values are rounded to integers and MADs to two decimals.
+#' @param row.names logical. If TRUE, the row names of the data frames are included in the Excel file worksheets.
+#'     Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
 #' @param ... arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
 #' @details The x list needs to include at least the elements specified under \code{elements}.
 #'   It is recommended to append the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
@@ -1562,6 +1563,8 @@ ap_summary <- function(x, filter=TRUE) {
 #'  into the new elements FISHER and DIFFERENCES.
 #'  Therefore, FISHER and DIFFERENCES are default elements to export although they are not present in the input data.\cr
 #'
+#'  Line breaks (backslash n) in row and column names will be changed to underscore ("_").
+#'
 #'   If other list structures are used, it is most likely more convenient to just use
 #'   \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}, which this function is built on.
 #'
@@ -1573,13 +1576,28 @@ ap_excel <- function(x,
                                 "ANTIGEN_CUTOFFS", "CUTOFF_KEY",
                                 "ANTIGENS", "SAMPLES", "COUNT"),
                      filename = "DataOutput.xlsx",
+                     shouldround = TRUE,
                      row.names = TRUE,
                      ...) {
   excel <- x
+
+  ## Handling basic elements in ap SBA structure
   if("BEADS" %in% names(excel)){
   names(excel)[which(names(excel) == "BEADS")] <- "ANTIGENS"
   }
 
+  if(shouldround){
+    if("MFI" %in% names(excel)){
+      excel$MFI <- data.frame(apply(excel$MFI, 2, function(x) {class(x) <- "numeric" ; x } ), check.names=F)
+      excel$MFI <- round(excel$MFI, 0)
+    }
+    if("MADS" %in% names(excel)){
+      excel$MADS <- data.frame(apply(excel$MADS, 2, function(x) {class(x) <- "numeric" ; x } ), check.names=F)
+      excel$MADS <- round(excel$MADS, 2)
+    }
+  }
+
+ ## Handling elements from ap_reactsummary2() if inluded
   if("REACTSUM_AG" %in% names(excel)){
   tmp_sum <- excel$REACTSUM_AG[grep("Selected", rownames(excel$REACTSUM_AG)),]
   rownames(tmp_sum) <- gsub("Selected_co","Sum", rownames(tmp_sum))
@@ -1617,9 +1635,18 @@ ap_excel <- function(x,
                          DIFFERENCES=data.frame(tmp_diff, check.names=F)))
   }
 
+  ## Final formatting
   excel <- excel[match(elements,
                        names(excel))]
 
+  for(i in seq_along(excel)){
+    if(class(excel[[i]])[1] %in% c("data.frame", "matrix")){
+      rownames(excel[[i]]) <- gsub("\\\n", "_", rownames(excel[[i]]))
+      colnames(excel[[i]]) <- gsub("\\\n", "_", colnames(excel[[i]]))
+    }
+  }
+
+  ## Write to file
   WriteXLS(excel,
            ExcelFileName = filename,
            row.names = row.names, ...)
