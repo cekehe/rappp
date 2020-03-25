@@ -32,7 +32,7 @@ NB! The sequences have to be identical matches to consequtive stretches
     "Uniprot" withthe uniprot ID the sequence originates from
 
     If a list of fasta sequences is provided (\code{fasta_list}), it should be the output of
-    \code{\link[seqinr:read.fasta]{read.fasta()}} in the package \code{\link[seqinr]{seqinr}}.
+    \code{\link[seqinr:read.fasta]{read.fasta()}} in the package \code{seqinr}.
 
     If a list of only sequenes is provided (\code{sequence_list}),
     each element should correspond to a Uniprot ID, isoform specific if applicable,
