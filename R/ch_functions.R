@@ -1536,6 +1536,7 @@ ap_summary <- function(x, filter=TRUE) {
 #' @param x list with at least the elements to export, see Deatils for more information and exceptions to the rule.
 #' @param elements character vector of names of the list elements to export.
 #'     The sheets will be ordered in the same order as the vector.
+#'     Specific MAD-cutoffs are not included in the default output but can be added, eg. "25xMAD".
 #' @param filename string with filename and desired path, end with .xlsx.
 #' @param shouldround logical, if TRUE MFI values are rounded to integers and MADs to two decimals.
 #' @param row.names logical. If TRUE, the row names of the data frames are included in the Excel file worksheets.
@@ -1591,6 +1592,13 @@ ap_excel <- function(x,
     if("MADS" %in% names(excel)){
       excel$MADS <- data.frame(apply(excel$MADS, 2, function(x) {class(x) <- "numeric" ; x } ), check.names=F)
       excel$MADS <- round(excel$MADS, 2)
+    }
+  }
+
+  ## Extract specific binary matrices
+  if(sum(grepl("xMAD", elements)) > 0 & "BINARY" %in% names(excel)){
+    for(i in grep("xMAD", elements)){
+      excel <- append(excel, excel$BINARY[elements[i]])
     }
   }
 

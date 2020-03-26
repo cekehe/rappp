@@ -18,7 +18,8 @@ ap_excel(
 \item{x}{list with at least the elements to export, see Deatils for more information and exceptions to the rule.}
 
 \item{elements}{character vector of names of the list elements to export.
-The sheets will be ordered in the same order as the vector.}
+The sheets will be ordered in the same order as the vector.
+Specific MAD-cutoffs are not included in the default output but can be added, eg. "25xMAD".}
 
 \item{filename}{string with filename and desired path, end with .xlsx.}
 
