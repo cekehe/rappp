@@ -120,6 +120,10 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' @param IgX_cutoff MFI cutoff value for filtering.
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
 #'     for drawing lines and detecting potential outliers.
+#' @param internal_sampID Column name in SAMPLES with internal sample IDs, such as from LIMS.
+#'     Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
+#'     and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.
+#' @param external_sampID Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
@@ -134,16 +138,9 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #'     FILTERINFO = Vector with info on which filter steps has been done.
 #'
 #' The SAMPLES element needs at least the columns:
-#'
-#'     "sample_name" with sample names, preferably LIMS-IDs, where
-#'     replicates (named with one of pool|rep|mix|commercial)
-#'     and blanks (named with one of empty|blank|buffer) are also stated,
-#'
 #'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
 #'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-#'
-#'     "tube_label" with alternative sample names, eg. from collaborator,
 #'
 #' Note: The function plots to a layout containing seven areas.
 #'
@@ -152,12 +149,13 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' @export
 
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
+                   internal_sampID="sample_name", external_sampID="tube_label",
                    shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
                    width=12, height=6, useDingbats=FALSE) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
-    SamplesNames <- sampledata$sample_name
+    SamplesNames <- sampledata[,internal_sampID]
     AssayNum <- sampledata$AssayNum
 
     cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
@@ -201,8 +199,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
       # Display samples outside boundaries
       par(mar=c(5,1,4,1))
       plottext_all <- data.frame(AssayWell=sampledata$AssayWell,
-                                 InternalID=sampledata$sample_name,
-                                 Subject=sampledata$tube_label,
+                                 InternalID=sampledata[,internal_sampID],
+                                 Subject=sampledata[,external_sampID],
                                  MFI=plotdata)
       plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
                                       ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
@@ -263,7 +261,11 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' Filter and/or flag samples and beads with low bead count.
 #'
 #' @param x List with at least four elements, see Deatils for naming and content.
-#' @param labels Column name in BEADS with antigen names to be used in pdf.
+#' @param internal_sampID Column name in SAMPLES with internal sample IDs, such as from LIMS.
+#'     Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
+#'     and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.
+#' @param external_sampID Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.
+#' @param Aglabels Column name in BEADS with antigen names to be used in pdf.
 #' @param protein Column name in BEADS with short protein or gene name.
 #' @param agID Column name in BEADS with antigen identifier, eg. PrEST ID or product number.
 #' @param samp_co Cutoff for filtering samples with low median count.
@@ -295,13 +297,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #' The SAMPLES element needs at least the columns:
 #'
-#'     "sample_name" with sample names, preferably LIMS-IDs, where
-#'     replicates (named with one of pool|rep|mix|commercial)
-#'     and blanks (named with one of empty|blank|buffer) are also stated,
-#'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-#'
-#'     "tube_label" with alternative sample names, eg. from collaborator,
 #'
 #'     "WashCol", a numerical vector with groupings for during-run-washes in Luminex.
 #'     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
@@ -313,7 +309,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
+ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_label",
+                     Aglabels="Gene_agID", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
                      width=12, height=10, useDingbats=FALSE) {
@@ -380,8 +377,8 @@ ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
         lowSB <- sampledata[which_lowSB, ]
         ap_textplot(data.frame(
           AssayWell=lowSB$AssayWell,
-          InternalID=lowSB$sample_name,
-          Subject=lowSB$tube_label,
+          InternalID=lowSB[,internal_sampID],
+          ExternalID=lowSB[,external_sampID],
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
@@ -411,7 +408,7 @@ ap_count <- function(x, labels="Gene_agID", protein="GeneShort", agID="PrEST",
               ylab="Bead count per analyte",
               col=c("blueviolet","burlywood4","chartreuse4","coral4")[beaddata$Plate], # color boxes based on which coupling plate they come from
               border=c("blueviolet","burlywood4","chartreuse4","coral4")[beaddata$Plate])
-      text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,labels],
+      text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,Aglabels],
            srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
       abline(h=c(bead_filter,
                  bead_flag,

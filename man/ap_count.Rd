@@ -6,7 +6,9 @@
 \usage{
 ap_count(
   x,
-  labels = "Gene_agID",
+  internal_sampID = "sample_name",
+  external_sampID = "tube_label",
+  Aglabels = "Gene_agID",
   protein = "GeneShort",
   agID = "PrEST",
   samp_co = 32,
@@ -24,7 +26,13 @@ ap_count(
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
 
-\item{labels}{Column name in BEADS with antigen names to be used in pdf.}
+\item{internal_sampID}{Column name in SAMPLES with internal sample IDs, such as from LIMS.
+Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
+and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.}
+
+\item{external_sampID}{Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.}
+
+\item{Aglabels}{Column name in BEADS with antigen names to be used in pdf.}
 
 \item{protein}{Column name in BEADS with short protein or gene name.}
 
@@ -76,13 +84,7 @@ The BEADS element needs at least the columns:
 
 The SAMPLES element needs at least the columns:
 
-    "sample_name" with sample names, preferably LIMS-IDs, where
-    replicates (named with one of pool|rep|mix|commercial)
-    and blanks (named with one of empty|blank|buffer) are also stated,
-
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-
-    "tube_label" with alternative sample names, eg. from collaborator,
 
     "WashCol", a numerical vector with groupings for during-run-washes in Luminex.
     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
