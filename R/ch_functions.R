@@ -397,7 +397,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       }
 
       # Per antigen
-      which_failAB <- which(apply(plotdata, 2, function(x) length(which(x < bead_filter))) > 0)
+      which_failAB <- which(apply(plotdata, 2, function(x) length(which(x < bead_filter))) > N_filter)
       which_lowAB <- which(apply(plotdata, 2, function(x) length(which(x < bead_flag))) > 0)
     } else {
       plotdata <- t(plotdata)
