@@ -129,6 +129,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param ... Arguments are passed to base plot function.
 #' @details The x list needs to include at least the elements:
 #'
 #'     MFI = assay mfi,
@@ -151,7 +152,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                    internal_sampID="sample_name", external_sampID="tube_label",
                    shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
-                   width=12, height=6, useDingbats=FALSE) {
+                   width=12, height=6, useDingbats=FALSE, ...) {
 
     plotdata <- unlist(x$MFI[,IgX_bead])
     sampledata <- x$SAMPLES
@@ -173,7 +174,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                       1,1,1,6,7), nrow=3, byrow=T))
       par(mar=c(5,5,4,4))
 
-      plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum],
+      plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum], ...,
            xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
            col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
                       ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))

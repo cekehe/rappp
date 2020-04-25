@@ -17,7 +17,8 @@ ap_igx(
   filename = "anti-humanIgX.pdf",
   width = 12,
   height = 6,
-  useDingbats = FALSE
+  useDingbats = FALSE,
+  ...
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{...}{Arguments are passed to base plot function.}
 }
 \value{
 Updated input x with relevant filtering info and a pdf
