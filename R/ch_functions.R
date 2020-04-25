@@ -896,7 +896,8 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 
   ggsave(file=filename,
          grid.arrange(grobs=g, layout_matrix = lay),
-         width=4.5*length(perp), height=height, useDingbats=useDingbats)
+         width=4.5*length(perp)+ifelse(legend, length(perp)*2*length(levels(groups))/10, 0),
+         height=height, useDingbats=useDingbats)
 }
 
 #' Overview of signals in relation to neg control beads
