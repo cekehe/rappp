@@ -243,7 +243,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
     }
     if(length(which_lowIgG) > 0) {
       tmp_remove <- rownames(sampledata)[which_lowIgG]
+      if(length(grep("empty|blank|buffer", tmp_remove, ignore.case=T)) > 0){
       tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove, ignore.case=T)]
+      }
       if(length(tmp_remove) > 0){
         x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
                                      paste0(x$SAMPLES$Filtered, ", hIg", IgType),
