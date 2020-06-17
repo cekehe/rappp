@@ -905,7 +905,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 
 #' Overview of signals in relation to neg control beads
 #'
-#' Plot overview of singals in relation to the neg control beads.
+#' Plot overview of singals in relation to the neg control beads (Empty, His6ABP, Neutravidin or Biotin).
 #' Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #'
 #' @param x List with at least four elements, see Deatils for naming and content.
@@ -937,7 +937,8 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
 
   negctrl <- list(Empty="empty|bare|blank",
                   His6ABP="his6abp|hisabp",
-                  Neutravidin="neutravidin")
+                  Neutravidin="neutravidin",
+                  Biotin="Biotin")
 
   if(shouldpdf){
   pdf(filename, width=width, height=height, useDingbats=useDingbats)
@@ -968,13 +969,14 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   }
 
   plotcolor <- x$CUTOFF_KEY
-  legend_col <- c(Empty="magenta", His6ABP="chartreuse1", Neutravidin="cyan")
+  legend_col <- c(Empty="magenta", His6ABP="chartreuse1", Neutravidin="cyan", Biotin="aquamarine1")
 
   beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
            pwcol=ifelse(grepl(negctrl$Empty, rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Empty"],
                         ifelse(grepl(negctrl$His6ABP,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["His6ABP"],
                                ifelse(grepl(negctrl$Neutravidin,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Neutravidin"],
-                               as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4)))),
+                                      ifelse(grepl(negctrl$Biotin,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Biotin"],
+                                             as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4))))),
            pwpch=rep(ifelse(grepl(paste0(unlist(negctrl), collapse="|"), colnames(plotdata), ignore.case=T), 16, 1), dim(plotdata)[1]),
            ylab="Signal intensity [AU]", cex.axis=0.5)
 

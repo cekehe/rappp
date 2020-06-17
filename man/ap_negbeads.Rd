@@ -25,7 +25,7 @@ ap_negbeads(
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \description{
-Plot overview of singals in relation to the neg control beads.
+Plot overview of singals in relation to the neg control beads (Empty, His6ABP, Neutravidin or Biotin).
 Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 }
 \details{
