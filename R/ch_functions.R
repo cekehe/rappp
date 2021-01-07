@@ -139,7 +139,6 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #'     FILTERINFO = Vector with info on which filter steps has been done.
 #'
 #' The SAMPLES element needs at least the columns:
-#'     "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
 #'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 #'
@@ -154,106 +153,97 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                    shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
                    width=12, height=6, useDingbats=FALSE, ...) {
 
-    plotdata <- unlist(x$MFI[,IgX_bead])
-    sampledata <- x$SAMPLES
-    SamplesNames <- sampledata[,internal_sampID]
-    AssayNum <- sampledata$AssayNum
+  plotdata <- unlist(x$MFI[,IgX_bead])
+  sampledata <- x$SAMPLES
+  SamplesNames <- sampledata[,internal_sampID]
 
-    cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
-    tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
-    cosIgG <- c(cosIgG, IgX_cutoff)
+  cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
+  tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
+  cosIgG <- c(cosIgG, IgX_cutoff)
 
-    which_lowIgG <- which(plotdata<cosIgG[3])
+  which_lowIgG <- which(plotdata<cosIgG[3])
 
-    if(shouldplot){
-      if(shouldpdf){
+  if(shouldplot){
+    if(shouldpdf){
       pdf(filename, width=width, height=height, useDingbats=useDingbats)
-      }
-      layout(matrix(c(1,1,1,2,3,
-                      1,1,1,4,5,
-                      1,1,1,6,7), nrow=3, byrow=T))
-      par(mar=c(5,5,4,4))
+    }
+    layout(matrix(c(1,1,1,2,3,
+                    1,1,1,4,5,
+                    1,1,1,6,7), nrow=3, byrow=T))
+    par(mar=c(5,5,4,4))
 
-      plot(1:length(plotdata), plotdata, cex=0.6, pch=c(16:18,6,8)[AssayNum], ...,
-           xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
-           col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
-                      ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
-      if(length(unique(AssayNum)) > 1){
-        legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
-               legend=c("Sample","Replicate","Buffer", paste("Assay", unique(AssayNum))),
-               cex=0.8,
-               pch=c(rep(NA, 3), c(16:18,6,8)[unique(AssayNum)]),
-               fill=c(4, 5, 2, rep(NA, length(unique(AssayNum)))), border=NA,
-               col=c(rep(NA, 3), rep("grey", length(unique(AssayNum)))),
-               xpd=NA)
-      } else {
-        legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
-               legend=c("Sample","Replicate","Buffer"),
-               cex=0.8,
-               fill=c(4, 5, 2), border=NA,
-               xpd=NA)
-      }
-      abline(h=cosIgG, lty=2)
-      textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), paste0("Filter cutoff (",IgX_cutoff,")")),
-             offset=0.6, xpd=NA)
+    plot(1:length(plotdata), plotdata, cex=0.6, ...,
+         xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
+         col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
+                    ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
 
-      # Display samples outside boundaries
-      par(mar=c(5,1,4,1))
-      plottext_all <- data.frame(AssayWell=sampledata$AssayWell,
-                                 InternalID=sampledata[,internal_sampID],
-                                 Subject=sampledata[,external_sampID],
-                                 MFI=plotdata)
-      plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
-                                      ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
-                                             ifelse(plottext_all$MFI < cosIgG[2], paste0("between ", cosIgG[3]," & ", cosIgG[2]), NA)))
-      mfi_groups <- c("above", "between", "below")
-      for(i in mfi_groups){
-        if(sum(grepl(i, plottext_all$MFIgroup)) > 0){
-          plottext <- plottext_all[grep(i, plottext_all$MFIgroup),]
-          tmp_name <- unique(plottext$MFIgroup)
-          plottext <- plottext[order(plottext$MFI, decreasing=T), -which(colnames(plottext) == "MFIgroup")]
+    legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
+           legend=c("Sample","Replicate","Buffer"),
+           cex=0.8,
+           fill=c(4, 5, 2), border=NA,
+           xpd=NA)
 
-          if(dim(plottext)[1] > 20){
-            ap_textplot(plottext[1:20,],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-            ap_textplot(plottext[21:dim(plottext)[1],],
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-            mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
-          } else {
-            ap_textplot(plottext,
-                        halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-            mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
-            frame()
-          }
+    abline(h=cosIgG, lty=2)
+    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), paste0("Filter cutoff (",IgX_cutoff,")")),
+                      offset=0.6, xpd=NA)
 
+    # Display samples outside boundaries
+    par(mar=c(5,1,4,1))
+    plottext_all <- data.frame(AssayWell=sampledata$AssayWell,
+                               InternalID=sampledata[,internal_sampID],
+                               Subject=sampledata[,external_sampID],
+                               MFI=plotdata)
+    plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
+                                    ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
+                                           ifelse(plottext_all$MFI < cosIgG[2], paste0("between ", cosIgG[3]," & ", cosIgG[2]), NA)))
+    mfi_groups <- c("above", "between", "below")
+    for(i in mfi_groups){
+      if(sum(grepl(i, plottext_all$MFIgroup)) > 0){
+        plottext <- plottext_all[grep(i, plottext_all$MFIgroup),]
+        tmp_name <- unique(plottext$MFIgroup)
+        plottext <- plottext[order(plottext$MFI, decreasing=T), -which(colnames(plottext) == "MFIgroup")]
+
+        if(dim(plottext)[1] > 20){
+          ap_textplot(plottext[1:20,],
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
+          ap_textplot(plottext[21:dim(plottext)[1],],
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
+          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
         } else {
-          frame()
+          ap_textplot(plottext,
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
+          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
           frame()
         }
 
+      } else {
+        frame()
+        frame()
       }
-      if(shouldpdf){
-      dev.off()
-      }
-    }
 
-    # Annotate filtering in SAMPLES
-    if(!("Filtered" %in% colnames(x$SAMPLES))){
-      x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
     }
-    if(length(which_lowIgG) > 0) {
-      tmp_remove <- rownames(sampledata)[which_lowIgG]
-      if(length(grep("empty|blank|buffer", tmp_remove, ignore.case=T)) > 0){
+    if(shouldpdf){
+      dev.off()
+    }
+  }
+
+  # Annotate filtering in SAMPLES
+  if(!("Filtered" %in% colnames(x$SAMPLES))){
+    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F, check.names=F)
+  }
+  if(length(which_lowIgG) > 0) {
+    tmp_remove <- rownames(sampledata)[which_lowIgG]
+    if(length(grep("empty|blank|buffer", tmp_remove, ignore.case=T)) > 0){
       tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove, ignore.case=T)]
-      }
-      if(length(tmp_remove) > 0){
-        x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
-                                     paste0(x$SAMPLES$Filtered, ", hIg", IgType),
-                                     paste(x$SAMPLES$Filtered))
-        x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
-      }
     }
-    x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-hIg", IgType))
+    if(length(tmp_remove) > 0){
+      x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
+                                   paste0(x$SAMPLES$Filtered, ", hIg", IgType),
+                                   paste(x$SAMPLES$Filtered))
+      x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
+    }
+  }
+  x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-hIg", IgType))
 
   return(x)
 }
@@ -275,11 +265,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param bead_flag Cutoff for flagging beads with low counts.
 #' @param bead_filter Cutoff for filtering beads with low counts.
 #' @param N_filter Accepted number of samples with low count per bead ID.
+#' @param bead_dispense How many wells are bead dispensed in per aspiration?
+#' @param luminex_wash After how many wells are there washes in the Luminex?
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param ... Other arguments passed to ap_textplot.
 #' @details The x list needs to include at least the elements:
 #'
 #'     COUNT = bead count,
@@ -292,8 +285,6 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #' The BEADS element needs at least the columns:
 #'
-#'     "Plate" with coupling plate number(s),
-#'
 #'     "BeadID" with bead ID number,
 #'
 #'     separate columns with full desired labels, protein/gene names and product ID numbers.
@@ -301,10 +292,6 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' The SAMPLES element needs at least the columns:
 #'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-#'
-#'     "WashCol", a numerical vector with groupings for during-run-washes in Luminex.
-#'     Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
-#'     Colors boxes accordingly. There are 6 colors available.
 #'
 #' Note: The function plots to a layout containing up to four areas.
 #'
@@ -315,8 +302,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_label",
                      Aglabels="Gene_agID", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
+                     bead_dispense=32, luminex_wash=96,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
-                     width=12, height=10, useDingbats=FALSE) {
+                     width=12, height=10, useDingbats=FALSE, ...) {
 
   plotdata <- t(x$COUNT)
   sampledata <- x$SAMPLES
@@ -324,9 +312,29 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 
   which_lowSB <- which(apply(plotdata, 2, function(x) median(x, na.rm=T)) < samp_co) # Checks which samples have low count in general, e.g. due to faulty bead dispens in well
 
-    if(shouldplot & shouldpdf){
+  if(shouldplot & shouldpdf){
     pdf(filename, width=width, height=height, useDingbats=useDingbats)
+  }
+
+  if(is.na(bead_dispense) | bead_dispense == 0){
+    bead_dispense <- "burlywood1"
+  } else if(length(bead_dispense) == 1){
+    bead_dispense <- c("burlywood1", "burlywood4")[c(rep(1, bead_dispense), rep(2, bead_dispense))]
+  } else if (sum(bead_dispense == dim(plotdata)[2])){
+    tmp <- NULL
+    for(i in seq_along(bead_dispense)){
+      tmp <- c(tmp, ifelse(i %% 2 != 0, rep(1, bead_dispense), rep(2, bead_dispense)))
     }
+    bead_dispense <- c("burlywood1", "burlywood4")[tmp]
+  }
+
+  if(is.na(luminex_wash) | luminex_wash == 0){
+    luminex_wash <- -100
+  } else if(length(luminex_wash) == 1){
+    luminex_wash <- c(seq(luminex_wash, dim(plotdata)[2], 96), dim(plotdata)[2])+0.5
+  } else {
+    luminex_wash <- luminex_wash+0.5
+  }
 
   for(state in c("before", "after")){
 
@@ -344,28 +352,25 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 
       # Per sample ALL DATA
       boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
-              col=c("burlywood1", "burlywood4",
-                    "darkorchid2","darkorchid4",
-                    "darkolivegreen2","darkolivegreen4")[sampledata$WashCol],
-              border=c("burlywood1", "burlywood4",
-                       "darkorchid2","darkorchid4",
-                       "darkolivegreen2","darkolivegreen4")[sampledata$WashCol],
+              col=bead_dispense,
+              border=bead_dispense,
               ylab="Bead count per sample")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
            srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
       abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
+      abline(v=luminex_wash)
       legend(par("usr")[2], par("usr")[4],
              legend=c(bead_filter,
                       paste0("Failed (", samp_co, ")"),
                       paste0("Median (", median(plotdata, na.rm=T), ")"),
-                      rep("Wash cycle grouping", length(unique(sampledata$WashCol)))),
-             lty=c(rep(2,3), rep(0,length(unique(sampledata$WashCol)))),
-             col=c("grey","red", "cornflowerblue", rep(0, length(unique(sampledata$WashCol)))),
-             fill=c(rep(0, 3), c("burlywood1", "burlywood4",
-                                 "darkorchid2","darkorchid4",
-                                 "darkolivegreen2","darkolivegreen4")[unique(sampledata$WashCol)]),
-             border=c(rep(0,3), rep("black",length(unique(sampledata$WashCol)))),
-             xpd=NA, cex=0.7)
+                      rep("Bead dispensing batch", length(unique(bead_dispense))),
+                      ifelse(luminex_wash[1] != -100, "Luminex wash", "")),
+             lty=c(rep(2,3), rep(0, length(unique(bead_dispense))+1)),
+             pch=c(rep(NA, 3+length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, 73, 0)),
+             col=c("grey","red", "cornflowerblue", rep(0, length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, "black", 0)),
+             fill=c(rep(0, 3), unique(bead_dispense), 0),
+             border=c(rep(0,3), unique(bead_dispense), 0),
+             xpd=NA, cex=0.7, bty="n")
       mtext("Sample wells, in order of analysis", side=1, cex=0.7, line=1)
       mtext("Sample bead count", side=3, cex=1, font=2, line=1)
       if(state == "after"){
@@ -385,7 +390,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
           MedianCount=apply(plotdata, 2, function(x) median(x, na.rm=T))[which_lowSB],
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowSB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowSB]),
-          cmar=1.5, show.rownames=F, valign="top", halign="left", hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.4)
+          show.rownames=F, valign="top", halign="left",
+          hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA, ...)#, cex=0.4)
         title(paste0("Samples with median bead count < ", samp_co, ", (N=", dim(lowSB)[1], ")"), xpd=NA)
       } else if(shouldplot){
         ap_textplot(matrix("No samples filtered based on bead count."), show.rownames=F, show.colnames=F)
@@ -408,9 +414,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 
     if(shouldplot){
       boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
-              ylab="Bead count per analyte",
-              col=c("blueviolet","burlywood4","chartreuse4","coral4")[beaddata$Plate], # color boxes based on which coupling plate they come from
-              border=c("blueviolet","burlywood4","chartreuse4","coral4")[beaddata$Plate])
+              ylab="Bead count per analyte")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,Aglabels],
            srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
       abline(h=c(bead_filter,
@@ -419,13 +423,12 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       legend(par("usr")[2], par("usr")[4],
              legend=c(paste0("Failed if N>", N_filter, " (", bead_filter,")"),
                       paste0("Flagged (", bead_flag,")"),
-                      paste0("Median (", median(unlist(plotdata), na.rm=T), ")"),
-                      paste0("Coupling plate ", unique(beaddata$Plate))),
-             lty=c(rep(2,3), rep(0, length(unique(beaddata$Plate)))),
-             col=c("red", "orange", "cornflowerblue", rep(0, length(unique(beaddata$Plate)))),
-             fill=c(rep(0,3), unique(c("blueviolet","burlywood4","chartreuse4","coral4")[beaddata$Plate])),
-             border=c(rep(0,3), rep(1, length(unique(beaddata$Plate)))),
-             xpd=NA, cex=0.7)
+                      paste0("Median (", median(unlist(plotdata), na.rm=T), ")")),
+             lty=c(rep(2,3)),
+             col=c("red", "orange", "cornflowerblue"),
+             fill=c(rep(0,3)),
+             border=c(rep(0,3)),
+             xpd=NA, cex=0.7, bty="n")
       mtext("Analyte bead count", side=3, cex=1, font=2, line=1)
       if(state == "before"){
         mtext(paste0("Samples with median bead count < ", samp_co, " removed (see above plot)"),
@@ -452,8 +455,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
         lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
 
         if(shouldplot){
-          ap_textplot(lowAB, cmar=1.5, show.rownames=F, valign="top", halign="left",
-                            hadj=0, vadj=0, mar=c(1, 2, 3, 8), xpd=NA)#, cex=0.3)
+          ap_textplot(lowAB, show.rownames=F, valign="top", halign="left",
+                      hadj=0, vadj=0, mar=c(1, 1, 3, 8), xpd=NA, ...)#, cex=0.3)
           title(paste0("Analytes with any bead count < ", bead_flag, " (N=",dim(lowAB)[1],")"), xpd=NA)
         }
       } else {
@@ -480,7 +483,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
   # Annotate filtering in SAMPLES and BEADS
   # SAMPLES
   if(!("Filtered" %in% colnames(x$SAMPLES))){
-    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F)
+    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F, check.names=F)
   }
   if(length(which_lowSB) > 0){
     x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% names(which_lowSB),
@@ -491,7 +494,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 
   # BEADS filtered
   if(!("Filtered" %in% colnames(x$BEADS))){
-    x$BEADS <- data.frame(Filtered="", x$BEADS, stringsAsFactors=F)
+    x$BEADS <- data.frame(Filtered="", x$BEADS, stringsAsFactors=F, check.names=F)
   }
 
   if(length(which_lowAB) > 0){
@@ -505,7 +508,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 
   # BEADS flagged
   if(!("Flagged" %in% colnames(x$BEADS))){
-    x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
+    x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F, check.names=F)
   }
 
   if(length(which_lowAB) > 0){

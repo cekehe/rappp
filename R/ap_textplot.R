@@ -13,12 +13,12 @@
 #' @export
 
 setGeneric("ap_textplot",
-           function(object, halign="center", valign="center", cex, ... ) {
+           function(object, halign="center", valign="center", cex, cmar=1.5, ... ) {
              if(is.matrix(object) || is.data.frame(object) || is.vector(object) && length(object)>1) {
 
-                 } else if(is.character(object) || is.numeric(object) || is.integer(object)) {
+             } else if(is.character(object) || is.numeric(object) || is.integer(object)) {
 
-                   } else {
+             } else {
                stop("Object needs to be a matrix, data.frame, vector longer than 1 or
                     single character string, integer or numeric value.") }
            }
@@ -26,164 +26,164 @@ setGeneric("ap_textplot",
 
 # Function to be used for classes matrix, data.frame and vectors longer than 1. (setMethod individually below)
 .tables <- function(object,
-                   halign=c("center","left","right"),
-                   valign=c("center","top","bottom"),
-                   cex, cmar=2, rmar=0.5,
-                   show.rownames=TRUE, show.colnames=TRUE,
-                   hadj=1,
-                   vadj=1,
-                   mar= c(1,1,4,1)+0.1,
-                   col.data=par("col"),
-                   col.rownames=par("col"),
-                   col.colnames=par("col"),
-                   ... ){
+                    halign=c("center","left","right"),
+                    valign=c("center","top","bottom"),
+                    cex, cmar=cmar, rmar=0.5,
+                    show.rownames=TRUE, show.colnames=TRUE,
+                    hadj=1,
+                    vadj=1,
+                    mar= c(1,1,4,1)+0.1,
+                    col.data=par("col"),
+                    col.rownames=par("col"),
+                    col.colnames=par("col"),
+                    ... ){
 
-            if(is.vector(object) && length(object)>1)
-              object <- t(as.matrix(object))
-            else
-              object <- as.matrix(object)
-
-
-            # check dimensions of col.data, col.rownames, col.colnames
-            if(length(col.data)==1)
-              col.data <- matrix(col.data, nrow=nrow(object), ncol=ncol(object))
-            else
-              if( nrow(col.data)!=nrow(object) || ncol(col.data)!=ncol(object) )
-                stop("Dimensions of 'col.data' do not match dimensions of 'object'.")
-
-            if(length(col.rownames)==1)
-              col.rownames <- rep(col.rownames, nrow(object))
-
-            if(length(col.colnames)==1)
-              if(show.rownames)
-                col.colnames <- rep(col.colnames, ncol(object)+1)
-              else
-                col.colnames <- rep(col.colnames, ncol(object))
-
-              halign=match.arg(halign)
-              valign=match.arg(valign)
-
-              opar <- par()[c("mar","xpd","cex")]
-              on.exit( par(opar) )
-              par(mar=mar, xpd=FALSE )
-
-              # setup plot area
-              plot.new()
-              plot.window(xlim=c(0,1),ylim=c(0,1), log = "", asp=NA)
+  if(is.vector(object) && length(object)>1)
+    object <- t(as.matrix(object))
+  else
+    object <- as.matrix(object)
 
 
+  # check dimensions of col.data, col.rownames, col.colnames
+  if(length(col.data)==1)
+    col.data <- matrix(col.data, nrow=nrow(object), ncol=ncol(object))
+  else
+    if( nrow(col.data)!=nrow(object) || ncol(col.data)!=ncol(object) )
+      stop("Dimensions of 'col.data' do not match dimensions of 'object'.")
 
-              # add 'r-style' row and column labels if not present
-              if( is.null(colnames(object) ) )
-                colnames(object) <- paste( "[,", 1:ncol(object), "]", sep="" )
-              if( is.null(rownames(object)) )
-                rownames(object) <- paste( "[", 1:nrow(object), ",]", sep="")
+  if(length(col.rownames)==1)
+    col.rownames <- rep(col.rownames, nrow(object))
+
+  if(length(col.colnames)==1)
+    if(show.rownames)
+      col.colnames <- rep(col.colnames, ncol(object)+1)
+    else
+      col.colnames <- rep(col.colnames, ncol(object))
+
+    halign=match.arg(halign)
+    valign=match.arg(valign)
+
+    opar <- par()[c("mar","xpd","cex")]
+    on.exit( par(opar) )
+    par(mar=mar, xpd=FALSE )
+
+    # setup plot area
+    plot.new()
+    plot.window(xlim=c(0,1),ylim=c(0,1), log = "", asp=NA)
 
 
-              # extend the matrix to include row and column labels
-              if( show.rownames )
-              {
-                object <- cbind( rownames(object), object )
-                col.data <- cbind( col.rownames, col.data )
 
-              }
-              if( show.colnames )
-              {
-                object <- rbind( colnames(object), object )
-                col.data <- rbind( col.colnames, col.data )
-              }
+    # add 'r-style' row and column labels if not present
+    if( is.null(colnames(object) ) )
+      colnames(object) <- paste( "[,", 1:ncol(object), "]", sep="" )
+    if( is.null(rownames(object)) )
+      rownames(object) <- paste( "[", 1:nrow(object), ",]", sep="")
 
-              # set the character size
-              if( missing(cex) )
-              {
-                cex <- 1.0
-                lastloop <- FALSE
-              }
-              else
-              {
-                lastloop <- TRUE
-              }
 
-              iterations <- 10000
-              for (i in 1:iterations) # max 20 iteration in original, increased in ap_textplot to better fine tune char size. /CH
-              {
-                if(!lastloop){ #added to let xpos part be run even if cex is predefined. /CH
-                  # oldcex <- cex # Not necessary with changed loop break check. /CH
+    # extend the matrix to include row and column labels
+    if( show.rownames )
+    {
+      object <- cbind( rownames(object), object )
+      col.data <- cbind( col.rownames, col.data )
 
-                  width  <- sum(
-                    apply( object, 2,
-                           function(x) max(strwidth(x,cex=cex) ) )
-                  ) +
-                    strwidth('M', cex=cex) * cmar * ncol(object)
+    }
+    if( show.colnames )
+    {
+      object <- rbind( colnames(object), object )
+      col.data <- rbind( col.colnames, col.data )
+    }
 
-                  height <- strheight('M', cex=cex) * nrow(object) * (1 + rmar)
+    # set the character size
+    if( missing(cex) )
+    {
+      cex <- 1.0
+      lastloop <- FALSE
+    }
+    else
+    {
+      lastloop <- TRUE
+    }
 
-                  # if(lastloop) break # Moved to below xpos etc /CH
+    iterations <- 10000
+    for (i in 1:iterations) # max 20 iteration in original, increased in ap_textplot to better fine tune char size. /CH
+    {
+      if(!lastloop){ #added to let xpos part be run even if cex is predefined. /CH
+        # oldcex <- cex # Not necessary with changed loop break check. /CH
 
-                  cex <- cex / max(width,height)
-                }
+        width  <- sum(
+          apply( object, 2,
+                 function(x) max(strwidth(x,cex=cex) ) )
+        ) +
+          strwidth('M', cex=cex) * cmar * ncol(object)
 
-                # Changed check for loop, now based on total column width below /CH
-                #   if (abs(oldcex - cex) < 0.001)
-                #   {
-                #     lastloop <- TRUE
-                #   }
-                # }
+        height <- strheight('M', cex=cex) * nrow(object) * (1 + rmar)
 
-                # compute the individual row and column heights
-                rowheight<-strheight("M",cex=cex) * (1 + rmar)  # Changed from W to M /CH
-                colwidth<- apply( object, 2, function(XX) max(strwidth(XX, cex=cex)) ) +
-                  strwidth("M")*cmar # Changed from W to M /CH
+        # if(lastloop) break # Moved to below xpos etc /CH
 
-                width  <- sum(colwidth)
-                height <- rowheight*nrow(object)
+        cex <- cex / max(width,height)
+      }
 
-                # setup x alignment
-                if(halign=="left")
-                  xpos <- 0
-                else if(halign=="center")
-                  xpos <- 0 + (1-width)/2
-                else #if(halign=="right")
-                  xpos <- 0 + (1-width)
+      # Changed check for loop, now based on total column width below /CH
+      #   if (abs(oldcex - cex) < 0.001)
+      #   {
+      #     lastloop <- TRUE
+      #   }
+      # }
 
-                # setup y alignment
-                if(valign=="top")
-                  ypos <- 1
-                else if (valign=="center")
-                  ypos <- 1 - (1-height)/2
-                else #if (valign=="bottom")
-                  ypos <- 0 + height
+      # compute the individual row and column heights
+      rowheight<-strheight("M",cex=cex) * (1 + rmar)  # Changed from W to M /CH
+      colwidth<- apply( object, 2, function(XX) max(strwidth(XX, cex=cex)) ) +
+        strwidth("M")*cmar # Changed from W to M /CH
 
-                # Added instead of (abs(oldcex - cex) < 0.001) check /CH
-                if ((xpos + width) <= 1 & (ypos - height) >= 0)
-                {
-                  lastloop <- TRUE
-                }
+      width  <- sum(colwidth)
+      height <- rowheight*nrow(object)
 
-                if(lastloop) break # moved from above /CH
-              }
+      # setup x alignment
+      if(halign=="left")
+        xpos <- 0
+      else if(halign=="center")
+        xpos <- 0 + (1-width)/2
+      else #if(halign=="right")
+        xpos <- 0 + (1-width)
 
-              x <- xpos
-              y <- ypos
+      # setup y alignment
+      if(valign=="top")
+        ypos <- 1
+      else if (valign=="center")
+        ypos <- 1 - (1-height)/2
+      else #if (valign=="bottom")
+        ypos <- 0 + height
 
-              # iterate across elements, plotting them
-              xpos<-x
-              for(i in 1:ncol(object)) {
-                xpos <- xpos + hadj*colwidth[i]
-                for(j in 1:nrow(object)) {
-                  ypos<-y-(j-1)*rowheight
-                  if( (show.rownames && i==1) || (show.colnames && j==1) )
-                    text(xpos, ypos, object[j,i], adj=c(hadj,vadj), cex=cex, font=2,
-                         col=col.data[j,i], ... )
-                  else
-                    text(xpos, ypos, object[j,i], adj=c(hadj,vadj), cex=cex, font=1,
-                         col=col.data[j,i], ... )
-                }
-                xpos <- xpos + (1-hadj)*colwidth[i]
-              }
+      # Added instead of (abs(oldcex - cex) < 0.001) check /CH
+      if ((xpos + width) <= 1 & (ypos - height) >= 0)
+      {
+        lastloop <- TRUE
+      }
 
-              par(opar)
-          }
+      if(lastloop) break # moved from above /CH
+    }
+
+    x <- xpos
+    y <- ypos
+
+    # iterate across elements, plotting them
+    xpos<-x
+    for(i in 1:ncol(object)) {
+      xpos <- xpos + hadj*colwidth[i]
+      for(j in 1:nrow(object)) {
+        ypos<-y-(j-1)*rowheight
+        if( (show.rownames && i==1) || (show.colnames && j==1) )
+          text(xpos, ypos, object[j,i], adj=c(hadj,vadj), cex=cex, font=2,
+               col=col.data[j,i], ... )
+        else
+          text(xpos, ypos, object[j,i], adj=c(hadj,vadj), cex=cex, font=1,
+               col=col.data[j,i], ... )
+      }
+      xpos <- xpos + (1-hadj)*colwidth[i]
+    }
+
+    par(opar)
+}
 
 setMethod("ap_textplot", "matrix", .tables)
 setMethod("ap_textplot", "data.frame", .tables)
@@ -191,90 +191,90 @@ setMethod("ap_textplot", "vector", .tables)
 
 ## Function to be used for classes character, numeric and integer, ie. vectors of length 1. (setMethod individually below)
 .singles <- function (object,
-                    halign = c("center", "left", "right"),
-                    valign = c("center", "top", "bottom"),
-                    cex, fixed.width=TRUE,
-                    cspace=1,
-                    lspace=1,
-                    mar=c(0,0,3,0)+0.1,
-                    tab.width=8,
-                    ...)
-          {
-            object <- paste(object,collapse="\n",sep="")
-            object <- replaceTabs(object, width=tab.width)
+                      halign = c("center", "left", "right"),
+                      valign = c("center", "top", "bottom"),
+                      cex, fixed.width=TRUE,
+                      cspace=1,
+                      lspace=1,
+                      mar=c(0,0,3,0)+0.1,
+                      tab.width=8,
+                      ...)
+{
+  object <- paste(object,collapse="\n",sep="")
+  object <- replaceTabs(object, width=tab.width)
 
-            halign = match.arg(halign)
-            valign = match.arg(valign)
-            plot.new()
+  halign = match.arg(halign)
+  valign = match.arg(valign)
+  plot.new()
 
-            opar <- par()[c("mar","xpd","cex","family")]
-            on.exit( par(opar) )
+  opar <- par()[c("mar","xpd","cex","family")]
+  on.exit( par(opar) )
 
-            par(mar=mar,xpd=FALSE )
-            if(fixed.width)
-              par(family="mono")
+  par(mar=mar,xpd=FALSE )
+  if(fixed.width)
+    par(family="mono")
 
-            plot.window(xlim = c(0, 1), ylim = c(0, 1), log = "", asp = NA)
+  plot.window(xlim = c(0, 1), ylim = c(0, 1), log = "", asp = NA)
 
-            slist   <- unlist(lapply(object, function(x) strsplit(x,'\n')))
-            slist   <- lapply(slist, function(x) unlist(strsplit(x,'')))
+  slist   <- unlist(lapply(object, function(x) strsplit(x,'\n')))
+  slist   <- lapply(slist, function(x) unlist(strsplit(x,'')))
 
-            slen    <- sapply(slist, length)
-            slines  <- length(slist)
+  slen    <- sapply(slist, length)
+  slines  <- length(slist)
 
-            if (missing(cex))
-            {
-              lastloop <- FALSE
-              cex <- 1
-            }
-            else
-              lastloop <- TRUE
+  if (missing(cex))
+  {
+    lastloop <- FALSE
+    cex <- 1
+  }
+  else
+    lastloop <- TRUE
 
 
-            for (i in 1:20)
-            {
-              oldcex <- cex
-              #cat("cex=",cex,"\n")
-              #cat("i=",i,"\n")
-              #cat("calculating width...")
-              cwidth  <- max(sapply(unlist(slist), strwidth,  cex=cex)) * cspace
-              #cat("done.\n")
-              #cat("calculating height...")
-              cheight <- max(sapply(unlist(slist), strheight, cex=cex)) * ( lspace + 0.5 )
-              #cat("done.\n")
+  for (i in 1:20)
+  {
+    oldcex <- cex
+    #cat("cex=",cex,"\n")
+    #cat("i=",i,"\n")
+    #cat("calculating width...")
+    cwidth  <- max(sapply(unlist(slist), strwidth,  cex=cex)) * cspace
+    #cat("done.\n")
+    #cat("calculating height...")
+    cheight <- max(sapply(unlist(slist), strheight, cex=cex)) * ( lspace + 0.5 )
+    #cat("done.\n")
 
-              width <- strwidth(object, cex=cex)
-              height <- strheight(object, cex=cex)
+    width <- strwidth(object, cex=cex)
+    height <- strheight(object, cex=cex)
 
-              if(lastloop) break
+    if(lastloop) break
 
-              cex <- cex  / max(width, height)
+    cex <- cex  / max(width, height)
 
-              if (abs(oldcex - cex) < 0.001)
-              {
-                lastloop <- TRUE
-              }
+    if (abs(oldcex - cex) < 0.001)
+    {
+      lastloop <- TRUE
+    }
 
-            }
+  }
 
-            if (halign == "left")
-              xpos <- 0
-            else if (halign == "center")
-              xpos <- 0 + (1 - width)/2
-            else xpos <- 0 + (1 - width)
+  if (halign == "left")
+    xpos <- 0
+  else if (halign == "center")
+    xpos <- 0 + (1 - width)/2
+  else xpos <- 0 + (1 - width)
 
-            if (valign == "top")
-              ypos <- 1
-            else if (valign == "center")
-              ypos <- 1 - (1 - height)/2
-            else ypos <- 1 - (1 - height)
+  if (valign == "top")
+    ypos <- 1
+  else if (valign == "center")
+    ypos <- 1 - (1 - height)/2
+  else ypos <- 1 - (1 - height)
 
-            text(x=xpos, y=ypos, labels=object, adj=c(0,1),
-                 cex=cex, ...)
+  text(x=xpos, y=ypos, labels=object, adj=c(0,1),
+       cex=cex, ...)
 
-            par(opar)
-            invisible(cex)
-          }
+  par(opar)
+  invisible(cex)
+}
 
 setMethod("ap_textplot", "character", .singles)
 setMethod("ap_textplot", "numeric", .singles)
