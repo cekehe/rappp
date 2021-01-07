@@ -4,7 +4,7 @@
 \alias{ap_textplot}
 \title{Display text information in a graphics plot.}
 \usage{
-ap_textplot(object, halign = "center", valign = "center", cex, ...)
+ap_textplot(object, halign = "center", valign = "center", cex, cmar = 1.5, ...)
 }
 \description{
 This function displays text output in a graphics window.

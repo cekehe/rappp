@@ -68,7 +68,6 @@ The x list needs to include at least the elements:
     FILTERINFO = Vector with info on which filter steps has been done.
 
 The SAMPLES element needs at least the columns:
-    "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
 
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 
