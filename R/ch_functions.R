@@ -55,7 +55,9 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
                                    ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
                                           ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
-                                                        ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red", "darkgrey"))))),
+                                                        ifelse(!grepl(types, x$BEADS$Type), "lightgrey",
+                                                               ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red",
+                                                                      "darkgrey")))))),
                             each=dim(x$CT)[1]))
 
           vert_lines <- seq(min(bs$x)-0.5, max(bs$x)+0.5, 1)
@@ -69,8 +71,8 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
             side=1, line=0, cex=0.7, font=2)
 
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Flagged"),
-             col=c("orange", "darkgreen", "blue", "purple", "red"),
+             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Passed", "Flagged", "Not relevant"),
+             col=c("orange", "darkgreen", "blue", "purple", "darkgrey", "red", "lightgrey"),
              pch=16, xpd=NA)
       abline(h=empty_co, lty=2)
       textxy(X=par("usr")[2], Y=empty_co, offset=0.55, cex=1,
