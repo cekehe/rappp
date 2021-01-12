@@ -1,8 +1,8 @@
 Package: rappp
 Type: Package
 Title: QC, data transformation and visualization for PAPP
-Version: 0.1.0.9007.0005
-Date: 2020-01-07
+Version: 0.1.0.9007.0006
+Date: 2020-01-12
 Author: August Jernbom Falk, Cecilia Hellström, Sofia Bergström.
     Affinity Proteomics, KTH Royal Institute of Technology, SciLifeLab, Stockholm, Sweden
 Maintainer: The package maintainer <cecilia.hellstrom@scilifelab.se>
