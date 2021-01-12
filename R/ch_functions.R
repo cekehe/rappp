@@ -1552,6 +1552,7 @@ ap_summary <- function(x, filter=TRUE) {
 #' @param shouldround logical, if TRUE MFI values are rounded to integers and MADs to two decimals.
 #' @param row.names logical. If TRUE, the row names of the data frames are included in the Excel file worksheets.
 #'     Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
+#' @param save_rdata logical. If TRUE, an RData-file is saved, containg a list matching the Excel-file content.
 #' @param ... arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.
 #' @details The x list needs to include at least the elements specified under \code{elements}.
 #'   It is recommended to append the output from \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} or
@@ -1587,6 +1588,7 @@ ap_excel <- function(x,
                      filename = "DataOutput.xlsx",
                      shouldround = TRUE,
                      row.names = TRUE,
+                     save_rdata = TRUE,
                      ...) {
   excel <- x
 
@@ -1663,7 +1665,11 @@ ap_excel <- function(x,
   }
 
   ## Write to file
-  WriteXLS(excel,
+  if(save_rdata){
+    save(excel, file=gsub("\\.xls|\\.xlsx", "\\.RData", filename))
+  }
+
+    WriteXLS(excel,
            ExcelFileName = filename,
            row.names = row.names, ...)
 }

@@ -11,6 +11,7 @@ ap_excel(
   filename = "DataOutput.xlsx",
   shouldround = TRUE,
   row.names = TRUE,
+  save_rdata = TRUE,
   ...
 )
 }
@@ -27,6 +28,8 @@ Specific MAD-cutoffs are not included in the default output but can be added, eg
 
 \item{row.names}{logical. If TRUE, the row names of the data frames are included in the Excel file worksheets.
 Deafult altered from \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.}
+
+\item{save_rdata}{logical. If TRUE, an RData-file is saved, containg a list matching the Excel-file content.}
 
 \item{...}{arguments passed to \code{\link[WriteXLS:WriteXLS]{WriteXLS()}}.}
 }
