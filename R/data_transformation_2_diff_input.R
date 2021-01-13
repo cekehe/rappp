@@ -1,14 +1,15 @@
 #' MAD normalization
 #'
 #' Sample based normalization to number of Median Absolute Deviations (MADs)
-#' from the median for Autoimmunity profiling data.
+#' from the median (or other quantile probability) for Autoimmunity profiling data.
 #'
 #' @param x list with at least two elements, see Details for naming and content.
+#' @param center_prob value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.
 #' @param constant constant for \code{\link[stats:mad]{mad()}} function,
 #'     default is 1 (compared to 1.4826 in base function).
 #' @param na.rm logical, indicating whether NA values should be stripped
 #'     before the computation proceeds. Altered default from
-#'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
+#'     \code{\link[stats:quantile]{quantile()}} and \code{\link[stats:mad]{mad()}}.
 #' @param low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
 #'     the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).
 #' @param high if TRUE, compute the ‘hi-median’, i.e., take the larger of the two middle values
@@ -24,12 +25,16 @@
 #'     BEADS = Beads info, if any should be excluded then these should be annotated in a column called "Filtered".
 #'     Any beads with no text (ie. "" or NA) or "NegControl" in such column will be included in the transformation.
 #'
-#' @return Updated input x with the new list element
+#' @return Updated input x with the new list elements
 #'
 #'     MADS = assay MADs.
+#'
+#'     MADS_CENTER = used center probability, default 0.5 means median.
+#'
 #' @export
 
 ap_mads2 <- function(x,
+                     center_prob=0.5,
                      constant = 1,
                      na.rm = TRUE,
                      low = FALSE,
@@ -45,14 +50,22 @@ ap_mads2 <- function(x,
                                    grepl("NegControl", x$BEADS$Filtered))]
   }
 
-  mads <- (tmp_data - apply(tmp_data, 1, function(i) median(i, na.rm = na.rm)))/
-    apply(tmp_data, 1, function(i) mad(i, constant = constant, na.rm = na.rm, low = low, high = high))
+  mads <- (tmp_data - apply(tmp_data, 1, function(i)
+    quantile(i,
+             prob=center_prob,
+             na.rm = na.rm)))/
+    apply(tmp_data, 1, function(i)
+      mad(i,
+          center=quantile(i, prob=center_prob, na.rm = na.rm),
+          constant = constant,
+          na.rm = na.rm, low = low, high = high))
 
   mads <- data.frame(mads, NA, check.names = check.names)[, match(org_names, colnames(mads),
                                                                   nomatch = dim(mads)[2]+1)]
   colnames(mads) <- org_names
 
-  x <- append(x, list(MADS = mads))
+  x <- append(x, list(MADS = mads,
+                      MADS_CENTER = center_prob))
 
   return(x)
 }
@@ -312,6 +325,7 @@ ap_cutoff_selection2 <- function(x,
 #'     before the computation proceeds. Altered default from
 #'     \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.
 #' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
+#' @param mad_center_prob value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.
 #' @param mad_constant constant for \code{\link[stats:mad]{mad()}} function,
 #'     default is 1 (compared to 1.4826 in base function).
 #' @param mad_low if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
@@ -360,6 +374,7 @@ ap_norm2 <- function(x,
                      MADlimits = seq(0,70,5),
                      na.rm = TRUE,
                      check.names = FALSE,
+                     mad_center_prob = 0.5,
                      mad_constant = 1,
                      mad_low = FALSE,
                      mad_high = FALSE,
@@ -374,6 +389,7 @@ ap_norm2 <- function(x,
 
   print("Doing MADs transformation")
   tmp <- ap_mads2(x = tmp,
+                  center_prob = mad_center_prob,
                   constant = mad_constant,
                   na.rm = na.rm,
                   low = mad_low,
