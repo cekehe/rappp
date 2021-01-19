@@ -1013,6 +1013,7 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
 #' @param x List with at least two elements, see Details for naming and content.
 #' @param samplegroups factor vector of groupings. Only samples with an assigned level are included in plots.
 #'     If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".
+#' @param percdec integer indicating the number of decimal places in percentage value.
 #' @param check.names logical, altered default from \code{\link[base:data.frame]{data.frame()}}.
 #' @details
 #'
@@ -1045,6 +1046,7 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
 
 ap_reactsummary2 <- function(x,
                              samplegroups = NULL,
+                             percdec = 1,
                              check.names = FALSE) {
 
   if("BINARY_CO" %in%  names(x)){
@@ -1078,7 +1080,7 @@ ap_reactsummary2 <- function(x,
 
   data_freq_ag <- lapply(data_sum_ag,
                          function(cutoff) lapply(cutoff,
-                                                 function(antigen) round(antigen$x/data_size*100,1)))
+                                                 function(antigen) round(antigen$x/data_size*100, digits=percdec)))
 
   data_sum_ag <- lapply(data_sum_ag,
                         function(cutoff) data.frame(do.call(cbind,
@@ -1189,6 +1191,7 @@ ap_reactsummary2 <- function(x,
 #'     Alternatively, a vector with colors (will be assigned to the factor levels in order).
 #' @param agtoplot indices for which antigens to plot, default is all.
 #'     Character vector with column names of what to plot also ok.
+#' @param percdec integer indicating the number of decimal places in percentage value.
 #' @param cofisher Cutoff in fisher plot.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename string with filename and desired path, end with .pdf
@@ -1240,6 +1243,7 @@ ap_agresults <- function(x,
                          samplegroups=NULL,
                          groupcolors=2:6,
                          agtoplot=NULL,
+                         percdec=1,
                          cofisher=0.05,
                          shouldpdf=TRUE,
                          filename="AntigenResults.pdf",
@@ -1250,6 +1254,7 @@ ap_agresults <- function(x,
   print("Calculating frequencies")
   react_summary <- ap_reactsummary2(x,
                                     samplegroups = samplegroups,
+                                    percdec = percdec,
                                     check.names = check.names)
   samplegroups <- factor(react_summary$SAMPLEGROUPS$Grouping, exclude=c(paste(NA), NA))
   n_groups <- length(levels(samplegroups))
@@ -1301,7 +1306,7 @@ ap_agresults <- function(x,
      pdf(filename,
           width=ifelse(n_groups > 1, 20+n_groups*1, 15), height=height, useDingbats=useDingbats)
     }
-      mar_top <- ifelse(n_groups > 1, ceiling((n_groups+1)/3)+3, 4)
+      mar_top <- ifelse(n_groups > 1, ceiling((n_groups+1)/3)+3, 5)
       mtext_sub_line <- ifelse(n_groups > 1, ceiling((n_groups+1)/3), 2)
       par(mgp=c(3,1,0))
 
@@ -1354,7 +1359,8 @@ ap_agresults <- function(x,
             side=1, at=par("usr")[1], line=0.6, cex=0.5)
 
         axis_text <- paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
-                            " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))], 0), "%)\n",
+                            " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))],
+                                        digits=percdec), "%)\n",
                             levels(samplegroups))
         mtext(axis_text,
               side=1, at=1:n_groups, line=0.7+0.7*max(str_count(axis_text, "\\\n")), cex=0.7)

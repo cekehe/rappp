@@ -9,6 +9,7 @@ ap_agresults(
   samplegroups = NULL,
   groupcolors = 2:6,
   agtoplot = NULL,
+  percdec = 1,
   cofisher = 0.05,
   shouldpdf = TRUE,
   filename = "AntigenResults.pdf",
@@ -32,6 +33,8 @@ Alternatively, a vector with colors (will be assigned to the factor levels in or
 
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
+
+\item{percdec}{integer indicating the number of decimal places in percentage value.}
 
 \item{cofisher}{Cutoff in fisher plot.}
 

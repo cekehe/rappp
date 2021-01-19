@@ -4,13 +4,15 @@
 \alias{ap_reactsummary2}
 \title{Calculate reactivity frequencies}
 \usage{
-ap_reactsummary2(x, samplegroups = NULL, check.names = FALSE)
+ap_reactsummary2(x, samplegroups = NULL, percdec = 1, check.names = FALSE)
 }
 \arguments{
 \item{x}{List with at least two elements, see Details for naming and content.}
 
 \item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
 If left as \code{NULL} (default), the all non-filtered, if filetring done otherwise all, will be assigned "Sample".}
+
+\item{percdec}{integer indicating the number of decimal places in percentage value.}
 
 \item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
