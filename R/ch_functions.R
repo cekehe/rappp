@@ -940,10 +940,11 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
                         filename="neg-control-beads.pdf",
                         width=15, height=10, useDingbats=FALSE){
 
-  negctrl <- list(Empty="empty|bare|blank",
+  negctrl <- list(Empty="empty|bare|blank|buffer",
                   His6ABP="his6abp|hisabp",
                   Neutravidin="neutravidin",
-                  Biotin="Biotin")
+                  Biotin="Biotin",
+                  "Other neg ag"="^neg_M")
 
   if(shouldpdf){
   pdf(filename, width=width, height=height, useDingbats=useDingbats)
@@ -974,14 +975,17 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   }
 
   plotcolor <- x$CUTOFF_KEY
-  legend_col <- c(Empty="magenta", His6ABP="chartreuse1", Neutravidin="cyan", Biotin="aquamarine1")
+  legend_col <- c(Empty="magenta", His6ABP="chartreuse1",
+                  Neutravidin="cyan", Biotin="aquamarine1",
+                  "Other neg ag"="black")
 
   beeswarm(data.frame(t(plotdata)), log=T, corral="gutter", cex=0.5, las=2,
            pwcol=ifelse(grepl(negctrl$Empty, rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Empty"],
                         ifelse(grepl(negctrl$His6ABP,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["His6ABP"],
                                ifelse(grepl(negctrl$Neutravidin,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Neutravidin"],
                                       ifelse(grepl(negctrl$Biotin,rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Biotin"],
-                                             as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4))))),
+                                             ifelse(grepl(negctrl$"Other neg ag",rep(colnames(plotdata), dim(plotdata)[1]), ignore.case=T), legend_col["Other neg ag"],
+                                             as.color(paste(plotcolor$color[t(plotdata_score)*10+1]), 0.4)))))),
            pwpch=rep(ifelse(grepl(paste0(unlist(negctrl), collapse="|"), colnames(plotdata), ignore.case=T), 16, 1), dim(plotdata)[1]),
            ylab="Signal intensity [AU]", cex.axis=0.5)
 
