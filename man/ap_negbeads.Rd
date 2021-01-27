@@ -6,6 +6,7 @@
 \usage{
 ap_negbeads(
   x,
+  center_prob = 0.5,
   shouldpdf = TRUE,
   filename = "neg-control-beads.pdf",
   width = 15,
@@ -15,6 +16,8 @@ ap_negbeads(
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
+
+\item{center_prob}{value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
 

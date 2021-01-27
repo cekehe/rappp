@@ -914,6 +914,7 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #' Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 #'
 #' @param x List with at least four elements, see Deatils for naming and content.
+#' @param center_prob value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
@@ -936,9 +937,13 @@ tsne_perp <- function(z, perp=c(2,5,10,50), sqrt=TRUE, iterations=1000, groups, 
 #'
 #' @export
 
-ap_negbeads <- function(x, shouldpdf=TRUE,
-                        filename="neg-control-beads.pdf",
-                        width=15, height=10, useDingbats=FALSE){
+ap_negbeads <- function(x,
+                        center_prob = 0.5,
+                        shouldpdf = TRUE,
+                        filename = "neg-control-beads.pdf",
+                        width = 15,
+                        height = 10,
+                        useDingbats = FALSE){
 
   negctrl <- list(Empty="empty|bare|blank|buffer",
                   His6ABP="his6abp|hisabp",
@@ -999,8 +1004,12 @@ ap_negbeads <- function(x, shouldpdf=TRUE,
   par(pty="s")
   for(i in seq_along(negctrl)){
     if(sum(grepl(negctrl[[i]], colnames(plotdata), ignore.case=T)) > 0){
-      plot(apply(plotdata, 1, median, na.rm=T), plotdata[,grep(negctrl[[i]], colnames(plotdata), ignore.case=T)],
-           las=1, xlab="Median signal per sample", ylab=paste0(names(negctrl)[[i]]," bead signal"), main=paste0(names(negctrl)[i], " bead"),
+      plot(apply(plotdata, 1, quantile, prob = center_prob, na.rm = T),
+           plotdata[,grep(negctrl[[i]], colnames(plotdata), ignore.case=T)],
+           las=1,
+           xlab=paste0(ifelse(center_prob == 0.5, "Median", paste0(round(center_prob*100, 0), " percentile")), " signal per sample"),
+           ylab=paste0(names(negctrl)[[i]]," bead signal"),
+           main=paste0(names(negctrl)[i], " bead"),
            col=paste(plotcolor$color[plotdata_score[,grep(negctrl[[i]], colnames(plotdata), ignore.case=T)]*10+1]))
     }
   }
