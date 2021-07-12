@@ -333,7 +333,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
   if(is.na(luminex_wash) | luminex_wash == 0){
     luminex_wash <- -100
   } else if(length(luminex_wash) == 1){
-    luminex_wash <- c(seq(luminex_wash, dim(plotdata)[2], 96), dim(plotdata)[2])+0.5
+    luminex_wash <- c(seq(luminex_wash, dim(plotdata)[2], luminex_wash), dim(plotdata)[2])+0.5
   } else {
     luminex_wash <- luminex_wash+0.5
   }
