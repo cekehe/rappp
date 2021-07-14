@@ -1376,8 +1376,8 @@ ap_agresults <- function(x,
       mtext(paste0("Above dashed line:\n(",tmp_cutoff," MADs)"), adj=0.7,
             side=1, at=par("usr")[1], line=0.6, cex=0.5)
 
-        axis_text <- paste0(data_sum[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_sum))], "/", data_size,
-                            " (", round(data_freq[, grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq))],
+        axis_text <- paste0(data_sum[, grep(paste0("^",tmp_ag,"(?=_co)"), colnames(data_sum), perl = T)], "/", data_size,
+                            " (", round(data_freq[, grep(paste0("^",tmp_ag,"(?=_co)"), colnames(data_freq), perl = T)],
                                         digits=percdec), "%)\n",
                             levels(samplegroups))
         mtext(axis_text,
@@ -1413,7 +1413,7 @@ ap_agresults <- function(x,
 
       # Frequency
         par(mar=c(6,5,mar_top,1))
-        plotdata <- data_freq_all[,grep(paste0("\\Q",tmp_ag,"\\E"), colnames(data_freq_all)), drop=F]
+        plotdata <- data_freq_all[,grep(paste0("^",tmp_ag,"(?=_co)"), colnames(data_freq_all), perl = T), drop=F]
       if(n_groups > 1){
          plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
          plotdata <- do.call(cbind, plotdata)
