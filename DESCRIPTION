@@ -29,7 +29,8 @@ Imports:
     ggplot2,
     WriteXLS,
     zoo,
-    seqinr
+    seqinr,
+    openxlsx
 Suggests: 
     knitr,
     rmarkdown

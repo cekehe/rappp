@@ -14,4 +14,5 @@
 #' @importFrom zoo rollapply
 #' @importFrom zoo rollmean
 #' @importFrom seqinr getSequence
+#' @importFrom openxlsx write.xlsx
 NULL

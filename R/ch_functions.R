@@ -1693,9 +1693,9 @@ ap_excel <- function(x,
     save(excel, file=gsub("\\.xls|\\.xlsx", "\\.RData", filename))
   }
 
-    WriteXLS(excel,
-           ExcelFileName = filename,
-           row.names = row.names, ...)
+  openxlsx::write.xlsx(x=excel,
+                       file = filename,
+                       rowNames = row.names, ...)
 }
 
 #' Cutoff key image
