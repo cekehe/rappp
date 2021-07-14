@@ -532,6 +532,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #' Boxplots of signals per antigen and sample in different orders.
 #'
 #' @param x List with at least one elements, see Deatils for naming and content.
+#' @param grepneg Regular expression for color of negative control beads.
+#' @param greppos Regular expression for color of positive control beads.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
@@ -547,43 +549,46 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #'
 #' @export
 
-ap_overview <- function(x, shouldpdf=TRUE,
-                  filename="Signal_overview.pdf",
-                  width=25, height=15, useDingbats=FALSE, ...){
+ap_overview <- function(x,
+                        grepneg = "his6abp|hisabp|empty|bare|biotin|neutravidin|neg_",
+                        greppos = "anti-h|hIg|ebna",
+                        shouldpdf=TRUE,
+                        filename="Signal_overview.pdf",
+                        width=25, height=15, useDingbats=FALSE, ...){
 
   if(shouldpdf){
-  pdf(filename,
-      width=width, height=height, useDingbats=useDingbats)
+    pdf(filename,
+        width=width, height=height, useDingbats=useDingbats)
   }
   par(mfcol=c(3, 1), mar=c(15,5,4,2))
 
   tmp_data <- x$MFI
   tmp_data[which(is.na(tmp_data) | tmp_data == 0, arr.ind=T)] <- 1
 
-    ## Antigens
-    plotdata <- list('Bead ID'=tmp_data,
-                     median=tmp_data[,order(apply(tmp_data, 2, median, na.rm=T))],
-                     max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
+  ## Antigens
+  plotdata <- list('Bead ID'=tmp_data,
+                   median=tmp_data[,order(apply(tmp_data, 2, median, na.rm=T))],
+                   max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
 
-    for(i in 1:length(plotdata)){
-          boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, xaxt="n", ...,
+  for(i in 1:length(plotdata)){
+    boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, xaxt="n", ...,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl("his6abp|hisabp|empty|bare|biotin|neutravidin", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl("anti-h|hIg|ebna", colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+            outcol=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                          ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
+            col=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
+                       ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
 
-      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
-            axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
-      }
+    cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+    axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
+  }
 
-    ## Samples
-    tmp <- data.frame(t(tmp_data), check.names=F)
-    plotdata <- list('analysis order'=tmp,
-                     median=tmp[,order(apply(tmp, 2, median, na.rm=T))],
-                     max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
+  ## Samples
+  tmp <- data.frame(t(tmp_data), check.names=F)
+  plotdata <- list('analysis order'=tmp,
+                   median=tmp[,order(apply(tmp, 2, median, na.rm=T))],
+                   max=tmp[,order(apply(tmp, 2, max, na.rm=T))])
 
-    for(i in 1:length(plotdata)){
+  for(i in 1:length(plotdata)){
     boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2,  xaxt="n", ...,
             main=paste0("Samples, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
             outcol=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
@@ -591,12 +596,12 @@ ap_overview <- function(x, shouldpdf=TRUE,
             col=ifelse(grepl("empty|buffer|blank", colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
                        ifelse(grepl("rep|pool|mix|commercial", colnames(plotdata[[i]]), ignore.case=T), as.color("cornflowerblue", 0.7), as.color("black", 0.5))))
 
-      cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
-      axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
-    }
-    if(shouldpdf){
-  dev.off()
-    }
+    cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
+    axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
+  }
+  if(shouldpdf){
+    dev.off()
+  }
 }
 
 
