@@ -4,11 +4,20 @@
 \alias{ap_negbeads}
 \title{Overview of signals in relation to neg control beads}
 \usage{
-ap_negbeads(x, shouldpdf = TRUE, filename = "neg-control-beads.pdf",
-  width = 15, height = 10, useDingbats = FALSE)
+ap_negbeads(
+  x,
+  center_prob = 0.5,
+  shouldpdf = TRUE,
+  filename = "neg-control-beads.pdf",
+  width = 15,
+  height = 10,
+  useDingbats = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
+
+\item{center_prob}{value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
 
@@ -19,7 +28,7 @@ ap_negbeads(x, shouldpdf = TRUE, filename = "neg-control-beads.pdf",
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
 }
 \description{
-Plot overview of singals in relation to the neg control beads.
+Plot overview of singals in relation to the neg control beads (Empty, His6ABP, Neutravidin or Biotin).
 Based on output from Autoimmunity Profiling scoring function \code{\link[rappp:ap_scoring2]{ap_scoring2()}}.
 }
 \details{

@@ -4,8 +4,14 @@
 \alias{ap_scoring}
 \title{Scoring}
 \usage{
-ap_scoring(x, MADlimits = seq(0, 70, 5), rightmost.closed = FALSE,
-  left.open = FALSE, check.names = FALSE, ...)
+ap_scoring(
+  x,
+  MADlimits = seq(0, 70, 5),
+  rightmost.closed = FALSE,
+  left.open = FALSE,
+  check.names = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{List of MADs values with two levels per element: level one = assay data sets ;

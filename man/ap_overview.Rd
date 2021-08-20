@@ -4,11 +4,24 @@
 \alias{ap_overview}
 \title{Signal overview}
 \usage{
-ap_overview(x, shouldpdf = TRUE, filename = "Signal_overview.pdf",
-  width = 25, height = 15, useDingbats = FALSE, ...)
+ap_overview(
+  x,
+  grepneg = "his6abp|hisabp|empty|bare|biotin|neutravidin|neg_",
+  greppos = "anti-h|hIg|ebna",
+  shouldpdf = TRUE,
+  filename = "Signal_overview.pdf",
+  width = 25,
+  height = 15,
+  useDingbats = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{List with at least one elements, see Deatils for naming and content.}
+
+\item{grepneg}{Regular expression for color of negative control beads.}
+
+\item{greppos}{Regular expression for color of positive control beads.}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
 

@@ -4,11 +4,25 @@
 \alias{pairs2}
 \title{Scatterplot Matrices}
 \usage{
-pairs2(x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc,
-  lower.panel = panel, upper.panel = panel, diag.panel = NULL,
-  text.panel = textPanel, label.pos = 0.5 + has.diag/3,
-  line.main = 3, cex.labels = NULL, font.labels = 1,
-  row1attop = TRUE, gap = 1, log = "")
+pairs2(
+  x,
+  labels,
+  panel = points,
+  ...,
+  horInd = 1:nc,
+  verInd = 1:nc,
+  lower.panel = panel,
+  upper.panel = panel,
+  diag.panel = NULL,
+  text.panel = textPanel,
+  label.pos = 0.5 + has.diag/3,
+  line.main = 3,
+  cex.labels = NULL,
+  font.labels = 1,
+  row1attop = TRUE,
+  gap = 1,
+  log = ""
+)
 }
 \arguments{
 \item{x}{the coordinates of points given as numeric columns of a matrix or data frame.
@@ -55,6 +69,7 @@ variables where logarithmic axes should be used for both x and y.
 A matrix of scatterplots is produced.
 Alternative version of \code{\link[graphics:pairs]{pairs()}} (default S3 method) where all axes are on the bottom and left sides.
 Argument information copied from \code{\link[graphics:pairs]{pairs()}}.
+NB! Better functionality for layout alterations is in the works.
 }
 \details{
 Please see \code{\link[graphics:pairs]{pairs()}}

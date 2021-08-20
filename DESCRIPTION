@@ -1,8 +1,8 @@
 Package: rappp
 Type: Package
 Title: QC, data transformation and visualization for PAPP
-Version: 0.1.0.9007
-Date: 2019-12-18
+Version: 0.1.0.9008
+Date: 2021-08-20
 Author: August Jernbom Falk, Cecilia Hellström, Sofia Bergström.
     Affinity Proteomics, KTH Royal Institute of Technology, SciLifeLab, Stockholm, Sweden
 Maintainer: The package maintainer <cecilia.hellstrom@scilifelab.se>
@@ -12,7 +12,7 @@ Depends: R (>= 2.10)
 License: CC0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Imports:
     beeswarm,
     wesanderson,
@@ -28,7 +28,9 @@ Imports:
     gridExtra,
     ggplot2,
     WriteXLS,
-    zoo
+    zoo,
+    seqinr,
+    openxlsx
 Suggests: 
     knitr,
     rmarkdown

@@ -4,8 +4,7 @@
 \alias{make_peptides}
 \title{Make peptides}
 \usage{
-make_peptides(sequence, lengths = 15:20, min_overlap = 2,
-  min_shift = 1)
+make_peptides(sequence, lengths = 15:20, min_overlap = 2, min_shift = 1)
 }
 \arguments{
 \item{sequence}{string with amino acid sequence to make peptides from,

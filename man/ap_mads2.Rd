@@ -4,18 +4,27 @@
 \alias{ap_mads2}
 \title{MAD normalization}
 \usage{
-ap_mads2(x, constant = 1, na.rm = TRUE, low = FALSE, high = FALSE,
-  check.names = FALSE)
+ap_mads2(
+  x,
+  center_prob = 0.5,
+  constant = 1,
+  na.rm = TRUE,
+  low = FALSE,
+  high = FALSE,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{list with at least two elements, see Details for naming and content.}
+
+\item{center_prob}{value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.}
 
 \item{constant}{constant for \code{\link[stats:mad]{mad()}} function,
 default is 1 (compared to 1.4826 in base function).}
 
 \item{na.rm}{logical, indicating whether NA values should be stripped
 before the computation proceeds. Altered default from
-\code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.}
+\code{\link[stats:quantile]{quantile()}} and \code{\link[stats:mad]{mad()}}.}
 
 \item{low}{if TRUE, compute the ‘lo-median’, i.e., for even sample size, do not average
 the two middle values, but take the smaller one.(From \code{\link[stats:mad]{mad()}}).}
@@ -26,13 +35,15 @@ for even sample size.(From \code{\link[stats:mad]{mad()}}).}
 \item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
 }
 \value{
-Updated input x with the new list element
+Updated input x with the new list elements
 
     MADS = assay MADs.
+
+    MADS_CENTER = used center probability, default 0.5 means median.
 }
 \description{
 Sample based normalization to number of Median Absolute Deviations (MADs)
-from the median for Autoimmunity profiling data.
+from the median (or other quantile probability) for Autoimmunity profiling data.
 }
 \details{
 The input values will be normalized per sample to the number of MADs from the median

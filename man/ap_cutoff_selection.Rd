@@ -4,8 +4,7 @@
 \alias{ap_cutoff_selection}
 \title{Cutoff selection}
 \usage{
-ap_cutoff_selection(x, cutoffs, slope_cutoff = -0.5, offset = 0.1,
-  bw = 0.1)
+ap_cutoff_selection(x, cutoffs, slope_cutoff = -0.5, offset = 0.1, bw = 0.1)
 }
 \arguments{
 \item{x}{List of scoring values with two levels per element: level one = assay data sets ;

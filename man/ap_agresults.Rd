@@ -4,16 +4,26 @@
 \alias{ap_agresults}
 \title{Reactivity result plots}
 \usage{
-ap_agresults(x, samplegroups = NULL, groupcolors = 2:6,
-  agtoplot = NULL, cofisher = 0.05, shouldpdf = TRUE,
-  filename = "AntigenResults.pdf", useDingbats = FALSE,
-  check.names = FALSE)
+ap_agresults(
+  x,
+  samplegroups = NULL,
+  groupcolors = 2:6,
+  agtoplot = NULL,
+  percdec = 1,
+  cofisher = 0.05,
+  shouldpdf = TRUE,
+  filename = "AntigenResults.pdf",
+  height = 18,
+  useDingbats = FALSE,
+  check.names = FALSE
+)
 }
 \arguments{
 \item{x}{list with at least nine elements, see Deatils for naming and content.}
 
-\item{samplegroups}{factor vector of groupings. Only samples with an assigned level are included in plots.
-If left as \code{NULL} (default), the all non-filtered if filtering has been done,
+\item{samplegroups}{factor vector of groupings. NB! Do not include . (period) in names.
+Only samples with an assigned level are included in plots.
+If left as \code{NULL} (default), then all non-filtered if filtering has been done,
 otherwise all, will be assigned "Sample".
 Passed to \code{\link[rappp:ap_reactsummary2]{ap_reactsummary2()}} to calculate frequencies.}
 
@@ -24,11 +34,15 @@ Alternatively, a vector with colors (will be assigned to the factor levels in or
 \item{agtoplot}{indices for which antigens to plot, default is all.
 Character vector with column names of what to plot also ok.}
 
+\item{percdec}{integer indicating the number of decimal places in percentage value.}
+
 \item{cofisher}{Cutoff in fisher plot.}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
 
 \item{filename}{string with filename and desired path, end with .pdf}
+
+\item{height}{height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{logical, altered default from \code{\link[grDevices:pdf]{pdf()}}.}
 

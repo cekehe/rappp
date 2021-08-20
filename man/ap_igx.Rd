@@ -4,10 +4,22 @@
 \alias{ap_igx}
 \title{Loading control}
 \usage{
-ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
-  -3), shouldplot = TRUE, shouldpdf = TRUE,
-  filename = "anti-humanIgX.pdf", width = 12, height = 6,
-  useDingbats = FALSE)
+ap_igx(
+  x,
+  IgX_bead,
+  IgType = "G",
+  IgX_cutoff = 5000,
+  cosfac = c(3, -3),
+  internal_sampID = "sample_name",
+  external_sampID = "tube_label",
+  shouldplot = TRUE,
+  shouldpdf = TRUE,
+  filename = "anti-humanIgX.pdf",
+  width = 12,
+  height = 6,
+  useDingbats = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
@@ -21,6 +33,12 @@ ap_igx(x, IgX_bead, IgType = "G", IgX_cutoff = 5000, cosfac = c(3,
 \item{cosfac}{Median absolute deviation multipliers in vector c(upper, lower),
 for drawing lines and detecting potential outliers.}
 
+\item{internal_sampID}{Column name in SAMPLES with internal sample IDs, such as from LIMS.
+Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
+and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.}
+
+\item{external_sampID}{Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.}
+
 \item{shouldplot}{Logical, should a plot be made?}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
@@ -30,6 +48,8 @@ for drawing lines and detecting potential outliers.}
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{...}{Arguments are passed to base plot function.}
 }
 \value{
 Updated input x with relevant filtering info and a pdf
@@ -49,15 +69,7 @@ The x list needs to include at least the elements:
 
 The SAMPLES element needs at least the columns:
 
-    "sample_name" with sample names, preferably LIMS-IDs, where
-    replicates (named with one of pool|rep|mix|commercial)
-    and blanks (named with one of empty|blank|buffer) are also stated,
-
-    "AssayNum" with assay number (vector with 1s if only one assay, support for up to 5 assys in one plot),
-
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-
-    "tube_label" with alternative sample names, eg. from collaborator,
 
 Note: The function plots to a layout containing seven areas.
 }

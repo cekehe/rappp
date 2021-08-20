@@ -4,10 +4,19 @@
 \alias{ap_ct}
 \title{Coupling efficency test}
 \usage{
-ap_ct(x, empty_bead, empty_co_multiple = 3, types = "PrEST",
-  shouldplot = TRUE, shouldpdf = TRUE,
-  filename = "coupling_efficiency.pdf", width = 25, height = 6,
-  useDingbats = FALSE, ...)
+ap_ct(
+  x,
+  empty_bead,
+  empty_co_multiple = 3,
+  types = "PrEST",
+  shouldplot = TRUE,
+  shouldpdf = TRUE,
+  filename = "coupling_efficiency.pdf",
+  width = 25,
+  height = 6,
+  useDingbats = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}

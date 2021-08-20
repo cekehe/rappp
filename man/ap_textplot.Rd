@@ -4,7 +4,7 @@
 \alias{ap_textplot}
 \title{Display text information in a graphics plot.}
 \usage{
-ap_textplot(object, halign = "center", valign = "center", cex, ...)
+ap_textplot(object, halign = "center", valign = "center", cex, cmar = 1.5, ...)
 }
 \description{
 This function displays text output in a graphics window.
@@ -13,5 +13,8 @@ It is the equivalent of 'print' except that the output is displayed as a plot.
 \details{
 Based on \code{\link[gplots:textplot]{textplot()}} with slightly altered code.
 Altered code found onlne (https://gist.github.com/johncolby/1482973).
-Additional alteration done by CH, see code.
+Additional alteration done by CH, including making working methods, see code.
+
+The input should be one of classes \code{matrix}, \code{data.frame}, \code{vectors} longer than 1,
+single \code{character} string, single \code{integer} or single \code{numeric} value.
 }

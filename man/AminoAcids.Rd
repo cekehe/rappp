@@ -4,7 +4,9 @@
 \name{AminoAcids}
 \alias{AminoAcids}
 \title{Data frame with amino acid names}
-\format{An object of class \code{\link[base:data.frame]{"data.frame"}}.}
+\format{
+An object of class \code{\link[base:data.frame]{"data.frame"}}.
+}
 \usage{
 data(AminoAcids)
 }

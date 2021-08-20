@@ -4,16 +4,38 @@
 \alias{ap_count}
 \title{Bead count}
 \usage{
-ap_count(x, labels = "Gene_agID", protein = "GeneShort",
-  agID = "PrEST", samp_co = 32, bead_flag = 32, bead_filter = 16,
-  N_filter = 0, shouldplot = TRUE, shouldpdf = TRUE,
-  filename = "bead_count.pdf", width = 12, height = 10,
-  useDingbats = FALSE)
+ap_count(
+  x,
+  internal_sampID = "sample_name",
+  external_sampID = "tube_label",
+  Aglabels = "Gene_agID",
+  protein = "GeneShort",
+  agID = "PrEST",
+  samp_co = 32,
+  bead_flag = 32,
+  bead_filter = 16,
+  N_filter = 0,
+  bead_dispense = 32,
+  luminex_wash = 96,
+  shouldplot = TRUE,
+  shouldpdf = TRUE,
+  filename = "bead_count.pdf",
+  width = 12,
+  height = 10,
+  useDingbats = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{List with at least four elements, see Deatils for naming and content.}
 
-\item{labels}{Column name in BEADS with antigen names to be used in pdf.}
+\item{internal_sampID}{Column name in SAMPLES with internal sample IDs, such as from LIMS.
+Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
+and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.}
+
+\item{external_sampID}{Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.}
+
+\item{Aglabels}{Column name in BEADS with antigen names to be used in pdf.}
 
 \item{protein}{Column name in BEADS with short protein or gene name.}
 
@@ -27,6 +49,10 @@ ap_count(x, labels = "Gene_agID", protein = "GeneShort",
 
 \item{N_filter}{Accepted number of samples with low count per bead ID.}
 
+\item{bead_dispense}{How many wells are bead dispensed in per aspiration?}
+
+\item{luminex_wash}{After how many wells are there washes in the Luminex?}
+
 \item{shouldplot}{Logical, should a plot be made?}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
@@ -36,6 +62,8 @@ ap_count(x, labels = "Gene_agID", protein = "GeneShort",
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{...}{Other arguments passed to ap_textplot.}
 }
 \value{
 Updated input x with relevant filtering and/or flagging info and a pdf
@@ -57,25 +85,13 @@ The x list needs to include at least the elements:
 
 The BEADS element needs at least the columns:
 
-    "Plate" with coupling plate number(s),
-
     "BeadID" with bead ID number,
 
     separate columns with full desired labels, protein/gene names and product ID numbers.
 
 The SAMPLES element needs at least the columns:
 
-    "sample_name" with sample names, preferably LIMS-IDs, where
-    replicates (named with one of pool|rep|mix|commercial)
-    and blanks (named with one of empty|blank|buffer) are also stated,
-
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
-
-    "tube_label" with alternative sample names, eg. from collaborator,
-
-    "WashCol", a numerical vector with groupings for during-run-washes in Luminex.
-    Eg. c(rep(1, 96), rep(2, 96), rep(1, 96), rep(2, 96)) if washes every 96th well in a 384-well plate.
-    Colors boxes accordingly. There are 6 colors available.
 
 Note: The function plots to a layout containing up to four areas.
 }

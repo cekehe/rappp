@@ -4,8 +4,15 @@
 \alias{ap_rep}
 \title{Check replicate samples}
 \usage{
-ap_rep(x, iter = 500, shouldpdf = TRUE, filename = "replicates.pdf",
-  width = 12, height = 12, useDingbats = FALSE)
+ap_rep(
+  x,
+  iter = 500,
+  shouldpdf = TRUE,
+  filename = "replicates.pdf",
+  width = 12,
+  height = 12,
+  useDingbats = FALSE
+)
 }
 \arguments{
 \item{x}{List with at least two elements, see Deatils for naming and content.}

@@ -28,6 +28,9 @@
 #' @export
 
 ap_mads <- function(x, constant=1, ...) {
+
+  .Deprecated("ap_mads2")
+
   lapply(x, function(assay)
     lapply(assay,function(selection) {
       (selection-apply(selection, 1, function(x) median(x, ...)))/
@@ -52,6 +55,8 @@ ap_mads <- function(x, constant=1, ...) {
 #' @export
 
 ap_cutoffs <- function(MADlimits=seq(0,70,5)){
+
+  .Deprecated("ap_cutoffs2")
 
   xmad_score <- data.frame(xmad=c(NA, MADlimits),
                            score=c(0, 1:length(MADlimits)/10),
@@ -87,6 +92,8 @@ ap_cutoffs <- function(MADlimits=seq(0,70,5)){
 ap_scoring <- function(x, MADlimits=seq(0,70,5),
                        rightmost.closed=FALSE, left.open=FALSE,
                        check.names=FALSE, ...) {
+
+  .Deprecated("ap_scoring2")
 
   xmad_score <- ap_cutoffs(MADlimits)
 
@@ -124,6 +131,8 @@ ap_scoring <- function(x, MADlimits=seq(0,70,5),
 #' @export
 
 ap_binary <- function(x, cutoffs) {
+
+  .Deprecated("ap_binary2")
 
   binary_list <- lapply(x, function(assay)
     lapply(assay, function(selection)
@@ -174,6 +183,8 @@ ap_cutoff_selection <- function(x,
                                 slope_cutoff=-0.5,
                                 offset=0.1,
                                 bw=0.1) {
+
+  .Deprecated("ap_cutoff_selection2")
 
   dens <- lapply(x, function(y) rep(list(NULL), length(y)))
 
@@ -274,6 +285,8 @@ ap_cutoff_selection <- function(x,
 #' @export
 
 ap_norm <- function(x, MADlimits=seq(0,70,5), ...){
+
+  .Deprecated("ap_norm2")
 
   tmp_mads <- ap_mads(x, ...)
 

@@ -4,8 +4,12 @@
 \alias{ap_cutoffs2image}
 \title{Cutoff key image}
 \usage{
-ap_cutoffs2image(cutoffkey = NULL, MADlimits = NULL,
-  shouldpng = TRUE, filename = "CutoffColorKey.png")
+ap_cutoffs2image(
+  cutoffkey = NULL,
+  MADlimits = NULL,
+  shouldpng = TRUE,
+  filename = "CutoffColorKey.png"
+)
 }
 \arguments{
 \item{cutoffkey}{table matching output from \code{\link[rappp:ap_cutoffs2]{ap_cutoffs2()}},

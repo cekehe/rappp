@@ -4,12 +4,22 @@
 \alias{ap_norm2}
 \title{Full AP data transformation}
 \usage{
-ap_norm2(x, MADlimits = seq(0, 70, 5), na.rm = TRUE,
-  check.names = FALSE, mad_constant = 1, mad_low = FALSE,
-  mad_high = FALSE, score_rightmost.closed = FALSE,
-  score_left.open = FALSE, score_all.inside = FALSE,
-  coselect_slope_cutoff = -0.5, coselect_offset = 0.1,
-  coselect_bw = 0.1)
+ap_norm2(
+  x,
+  MADlimits = seq(0, 70, 5),
+  na.rm = TRUE,
+  check.names = FALSE,
+  mad_center_prob = 0.5,
+  mad_constant = 1,
+  mad_low = FALSE,
+  mad_high = FALSE,
+  score_rightmost.closed = FALSE,
+  score_left.open = FALSE,
+  score_all.inside = FALSE,
+  coselect_slope_cutoff = -0.5,
+  coselect_offset = 0.1,
+  coselect_bw = 0.1
+)
 }
 \arguments{
 \item{x}{List with at least three elements, see Details for naming and content.}
@@ -21,6 +31,8 @@ before the computation proceeds. Altered default from
 \code{\link[stats:median]{median()}} and \code{\link[stats:mad]{mad()}}.}
 
 \item{check.names}{logical, altered default from \code{\link[base:data.frame]{data.frame()}}.}
+
+\item{mad_center_prob}{value in [0,1] passed to prob in \code{\link[stats:quantile]{quantile()}}, defaults to the median.}
 
 \item{mad_constant}{constant for \code{\link[stats:mad]{mad()}} function,
 default is 1 (compared to 1.4826 in base function).}
