@@ -69,6 +69,7 @@ variables where logarithmic axes should be used for both x and y.
 A matrix of scatterplots is produced.
 Alternative version of \code{\link[graphics:pairs]{pairs()}} (default S3 method) where all axes are on the bottom and left sides.
 Argument information copied from \code{\link[graphics:pairs]{pairs()}}.
+NB! Better functionality for layout alterations is in the works.
 }
 \details{
 Please see \code{\link[graphics:pairs]{pairs()}}

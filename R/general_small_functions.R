@@ -60,6 +60,7 @@ layout384 <- function(x, n=1:384) {
 #' A matrix of scatterplots is produced.
 #' Alternative version of \code{\link[graphics:pairs]{pairs()}} (default S3 method) where all axes are on the bottom and left sides.
 #' Argument information copied from \code{\link[graphics:pairs]{pairs()}}.
+#' NB! Better functionality for layout alterations is in the works.
 #'
 #' @details Please see \code{\link[graphics:pairs]{pairs()}}
 #'
@@ -91,16 +92,48 @@ layout384 <- function(x, n=1:384) {
 #'     \code{log = "xy"} specifies logarithmic axes for all variables.
 #' @export
 
-pairs2 <- function (x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc,
+pairs2 <- function (x, labels, panel = points,
+                    # lower.panel.args = NULL,
+                    # upper.panel.args = NULL,
+                    # diag.panel.args = NULL,
+                    ..., horInd = 1:nc, verInd = 1:nc,
                     lower.panel = panel, upper.panel = panel, diag.panel = NULL,
                     text.panel = textPanel, label.pos = 0.5 + has.diag/3, line.main = 3,
                     cex.labels = NULL, font.labels = 1, row1attop = TRUE, gap = 1,
                     log = "")
 {
+  # if(is.null(args)){
+  #   args <- list(lower.panel = NULL,
+  #                upper.panel = NULL,
+  #                diag.panel = NULL)
+  # } else if (!(lower.panel %in% names(args))){
+  #   args <- append(args, list(lower.panel = NULL))
+  # } else if (!(upper.panel %in% names(args))){
+  #   args <- append(args, list(upper.panel = NULL))
+  # }  else if (!(diag.panel %in% names(args))){
+  #   args <- append(args, list(diag.panel = NULL))
+  # }
+
+  # if(is.null(args)){
+  #   lower.panel.args = NULL
+  #   upper.panel.args = NULL
+  #   diag.panel.args = NULL
+  # } else {
+  #   if(lower.panel %in% names(args)){
+  #     lower.panel.args = args$lower.panel
+  #   }
+  #   if(upper.panel %in% names(args)){
+  #     upper.panel.args = args$upper.panel
+  #   }
+  #   if(diag.panel %in% names(args)){
+  #     diag.panel.args = args$diag.panel
+  #   }
+  # }
+
   if (doText <- missing(text.panel) || is.function(text.panel))
     textPanel <- function(x = 0.5, y = 0.5, txt, cex, font) text(x,
                                                                  y, txt, cex = cex, font = font)
-  localAxis <- function(side, x, y, xpd, bg, col = NULL, main,
+  localAxis <- function(side, x, y, xpd, bg, col.axis = NULL, main,
                         oma, ...) {
     xpd <- NA
     if (side%%2L == 1L && xl[j])
@@ -115,6 +148,30 @@ pairs2 <- function (x, labels, panel = points, ..., horInd = 1:nc, verInd = 1:nc
   localLowerPanel <- function(..., main, oma, font.main, cex.main) lower.panel(...)
   localUpperPanel <- function(..., main, oma, font.main, cex.main) upper.panel(...)
   localDiagPanel <- function(..., main, oma, font.main, cex.main) diag.panel(...)
+
+  # localLowerPanel <- function(..., main, oma, font.main, cex.main) {
+  #   if(is.null(lower.panel.args)) {
+  #     lower.panel(...)
+  #   } else {
+  #     lower.panel(..., lower.panel.args)
+  #   }
+  # }
+  #
+  # if(is.null(upper.panel.args)) {
+  #   localUpperPanel <- function(..., main, oma, font.main, cex.main) { upper.panel(...) }
+  # } else {
+  #   localUpperPanel <- function(..., main, oma, font.main, cex.main, upper.panel.args=upper.panel.args) {
+  #     do.call(upper.panel, args=c(..., upper.panel.args)) }
+  # }
+  #
+  # localDiagPanel <- function(..., main, oma, font.main, cex.main)  {
+  #   if(is.null(diag.panel.args)) {
+  #     diag.panel(...)
+  #   } else {
+  #     diag.panel(..., diag.panel.args)
+  #   }
+  # }
+
   dots <- list(...)
   nmdots <- names(dots)
   if (!is.matrix(x)) {
