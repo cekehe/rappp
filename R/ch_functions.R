@@ -453,8 +453,9 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowAB],
           Nbelow16=apply(plotdata, 2, function(x) length(which(x < 16)))[which_lowAB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowAB])
-        lowAB <- lowAB[order(lowAB$LowestCount),]
-        lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
+        lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter |
+                                                   lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
+        lowAB <- lowAB[order(lowAB$Action, lowAB$LowestCount),]
 
         if(shouldplot){
           ap_textplot(lowAB, show.rownames=F, valign="top", halign="left",
