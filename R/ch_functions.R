@@ -1431,7 +1431,8 @@ ap_agresults <- function(x,
 
       # Frequency
         par(mar=c(6,5,mar_top,1))
-        plotdata <- data_freq_all[,grep(paste0("^",tmp_ag,"(?=_co)"), colnames(data_freq_all), perl = T), drop=F]
+        plotdata <- data_freq_all[,grep(gsub("\\*", "\\\\*", paste0("^",tmp_ag,"(?=_co)")),
+                                        colnames(data_freq_all), perl = T), drop=F]
       if(n_groups > 1){
          plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
          plotdata <- do.call(cbind, plotdata)
