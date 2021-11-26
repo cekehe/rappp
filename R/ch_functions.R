@@ -535,6 +535,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #' @param x List with at least one elements, see Deatils for naming and content.
 #' @param grepneg Regular expression for color of negative control beads.
 #' @param greppos Regular expression for color of positive control beads.
+#' @param includeFilter Logical, should antigen boxes be colored based on filtering?
+#' @param Aglabels Column in x$BEADS with matching names as columns in x$MFI. Only used if includeFilter is TRUE.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
@@ -542,6 +544,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #' @param ... Further arguments passed to \code{\link[graphics:boxplot]{boxplot()}}.
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi.
+#'
+#'     BEADS = Beads info. Only needed if includeFilter is TRUE.
 #'
 #'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
 #'     logarithmic scale without filtering any beads or samples.
@@ -553,6 +557,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 ap_overview <- function(x,
                         grepneg = "his6abp|hisabp|empty|bare|biotin|neutravidin|neg_",
                         greppos = "anti-h|hIg|ebna",
+                        includeFilter = TRUE,
+                        Aglabels = "Gene_agID",
                         shouldpdf=TRUE,
                         filename="Signal_overview.pdf",
                         width=25, height=15, useDingbats=FALSE, ...){
@@ -572,12 +578,23 @@ ap_overview <- function(x,
                    max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
 
   for(i in 1:length(plotdata)){
+
+    colors <- ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T),
+                     as.color("brown", 0.7),
+                     ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T),
+                            as.color("darkolivegreen", 0.7),
+                            0))
+
+    if(includeFilter & "Filtered" %in% colnames(x$BEADS)){
+      tmp_beads <- x$BEADS[match(colnames(plotdata[[i]]), x$BEADS[, Aglabels]),]
+
+      colors <- ifelse(tmp_beads$Filtered != "", "grey", colors)
+    }
+
     boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, xaxt="n", ...,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+            outcol=as.color(ifelse(colors == 0, "black", colors), 0.6),
+            col=colors)
 
     cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
     axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
