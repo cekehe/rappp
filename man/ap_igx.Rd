@@ -24,7 +24,7 @@ ap_igx(
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
 
-\item{IgX_bead}{Column index for empty bead.}
+\item{IgX_bead}{Column index for anti-IgX bead.}
 
 \item{IgType}{Which Imunoglobulin is measured, default is G.}
 

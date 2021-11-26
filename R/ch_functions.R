@@ -117,7 +117,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' Filter samples with low MFI for the anti-human IgX bead.
 #'
 #' @param x List with at least three elements, see Deatils for naming and content.
-#' @param IgX_bead Column index for empty bead.
+#' @param IgX_bead Column index for anti-IgX bead.
 #' @param IgType Which Imunoglobulin is measured, default is G.
 #' @param IgX_cutoff MFI cutoff value for filtering.
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
