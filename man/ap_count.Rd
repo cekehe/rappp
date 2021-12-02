@@ -17,6 +17,7 @@ ap_count(
   N_filter = 0,
   bead_dispense = 32,
   luminex_wash = 96,
+  presampfilter = FALSE,
   shouldplot = TRUE,
   shouldpdf = TRUE,
   filename = "bead_count.pdf",
@@ -52,6 +53,8 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 \item{bead_dispense}{How many wells are bead dispensed in per aspiration?}
 
 \item{luminex_wash}{After how many wells are there washes in the Luminex?}
+
+\item{presampfilter}{Logical, should samples with annotation under Filtered be removed prior to count evaluation?}
 
 \item{shouldplot}{Logical, should a plot be made?}
 
@@ -92,6 +95,8 @@ The BEADS element needs at least the columns:
 The SAMPLES element needs at least the columns:
 
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
+
+    "Filtered" if \code{presampfilter=TRUE}
 
 Note: The function plots to a layout containing up to four areas.
 }

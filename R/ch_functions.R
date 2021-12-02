@@ -269,6 +269,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param N_filter Accepted number of samples with low count per bead ID.
 #' @param bead_dispense How many wells are bead dispensed in per aspiration?
 #' @param luminex_wash After how many wells are there washes in the Luminex?
+#' @param presampfilter Logical, should samples with annotation under Filtered be removed prior to count evaluation?
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
@@ -295,6 +296,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 #'
+#'     "Filtered" if \code{presampfilter=TRUE}
+#'
 #' Note: The function plots to a layout containing up to four areas.
 #'
 #' @return Updated input x with relevant filtering and/or flagging info and a pdf
@@ -304,13 +307,18 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_label",
                      Aglabels="Gene_agID", protein="GeneShort", agID="PrEST",
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
-                     bead_dispense=32, luminex_wash=96,
+                     bead_dispense=32, luminex_wash=96, presampfilter=FALSE,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
                      width=12, height=10, useDingbats=FALSE, ...) {
 
   plotdata <- t(x$COUNT)
   sampledata <- x$SAMPLES
   beaddata <- x$BEADS
+
+  if(presampfilter){
+    plotdata <- plotdata[, which(sampledata$Filtered == "")]
+    sampledata <- sampledata[which(sampledata$Filtered == ""), ]
+  }
 
   which_lowSB <- which(apply(plotdata, 2, function(x) median(x, na.rm=T)) < samp_co) # Checks which samples have low count in general, e.g. due to faulty bead dispens in well
 
