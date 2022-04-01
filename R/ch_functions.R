@@ -275,6 +275,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param cex_axis_samp Text size on x-axis in sample-based plots.
+#' @param cex_axis_ag Text size on x-axis in bead-based plots.
 #' @param ... Other arguments passed to ap_textplot.
 #' @details The x list needs to include at least the elements:
 #'
@@ -309,7 +311,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
                      samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
                      bead_dispense=32, luminex_wash=96, presampfilter=FALSE,
                      shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
-                     width=12, height=10, useDingbats=FALSE, ...) {
+                     width=12, height=10, useDingbats=FALSE,
+                     cex_axis_samp = 0.1, cex_axis_ag = 0.1, ...) {
 
   plotdata <- t(x$COUNT)
   sampledata <- x$SAMPLES
@@ -366,7 +369,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
               border=bead_dispense,
               ylab="Bead count per sample")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
-           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
+           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_samp)
       abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
       abline(v=luminex_wash)
       legend(par("usr")[2], par("usr")[4],
@@ -426,7 +429,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
               ylab="Bead count per analyte")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,Aglabels],
-           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
+           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_ag)
       abline(h=c(bead_filter,
                  bead_flag,
                  median(unlist(plotdata), na.rm=T)), lty=2, col=c("red", "orange", "cornflowerblue"))

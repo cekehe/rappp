@@ -24,6 +24,8 @@ ap_count(
   width = 12,
   height = 10,
   useDingbats = FALSE,
+  cex_axis_samp = 0.1,
+  cex_axis_ag = 0.1,
   ...
 )
 }
@@ -65,6 +67,10 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{cex_axis_samp}{Text size on x-axis in sample-based plots.}
+
+\item{cex_axis_ag}{Text size on x-axis in bead-based plots.}
 
 \item{...}{Other arguments passed to ap_textplot.}
 }
