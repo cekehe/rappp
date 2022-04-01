@@ -52,7 +52,12 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 
 \item{N_filter}{Accepted number of samples with low count per bead ID.}
 
-\item{bead_dispense}{How many wells are beads dispensed in per aspiration?}
+\item{bead_dispense}{How many wells are beads dispensed in per aspiration?
+If all in one dispense, then input is NA, 0 , or 1.
+If evenly divided, then input is one value with number of wells per dispense, e.g. 96.
+If unevenly distributed, then input is a vector of how many wells per dispense,
+e.g. \code{c(rep(96, 3), rep(48, 2))} for first three dispenses being 96 at a time,
+and the last 96 being divided in two dispenses.}
 
 \item{luminex_wash}{After how many wells are there washes in the Luminex?}
 

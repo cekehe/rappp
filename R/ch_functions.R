@@ -267,7 +267,12 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param bead_flag Cutoff for flagging beads with low counts.
 #' @param bead_filter Cutoff for filtering beads with low counts.
 #' @param N_filter Accepted number of samples with low count per bead ID.
-#' @param bead_dispense How many wells are bead dispensed in per aspiration?
+#' @param bead_dispense How many wells are beads dispensed in per aspiration?
+#'     If all in one dispense, then input is NA, 0 , or 1.
+#'     If evenly divided, then input is one value with number of wells per dispense, e.g. 96.
+#'     If unevenly distributed, then input is a vector of how many wells per dispense,
+#'     e.g. \code{c(rep(96, 3), rep(48, 2))} for first three dispenses being 96 at a time,
+#'     and the last 96 being divided in two dispenses.
 #' @param luminex_wash After how many wells are there washes in the Luminex?
 #' @param presampfilter Logical, should samples with annotation under Filtered be removed prior to count evaluation?
 #' @param shouldplot Logical, should a plot be made?
@@ -329,16 +334,25 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
     pdf(filename, width=width, height=height, useDingbats=useDingbats)
   }
 
-  if(is.na(bead_dispense) | bead_dispense == 0){
-    bead_dispense <- "burlywood1"
-  } else if(length(bead_dispense) == 1){
-    bead_dispense <- c("burlywood1", "burlywood4")[c(rep(1, bead_dispense), rep(2, bead_dispense))]
-  } else if (sum(bead_dispense == dim(plotdata)[2])){
+  if(length(bead_dispense) == 1){
+    if(is.na(bead_dispense) | bead_dispense == 0){
+      bead_dispense <- "burlywood1"
+    } else {
+      bead_dispense <- c("burlywood1", "burlywood4")[c(rep(1, bead_dispense),
+                                                       rep(2, bead_dispense))]
+    }
+  } else if (sum(bead_dispense) == ncol(plotdata)){
     tmp <- NULL
     for(i in seq_along(bead_dispense)){
-      tmp <- c(tmp, ifelse(i %% 2 != 0, rep(1, bead_dispense), rep(2, bead_dispense)))
+      if(i %% 2 != 0){
+        tmp <- c(tmp, rep(1, bead_dispense[i]))
+      } else {
+        tmp <- c(tmp, rep(2, bead_dispense[i]))
+      }
     }
     bead_dispense <- c("burlywood1", "burlywood4")[tmp]
+  } else {
+    stop("bead_dispense not correctly entered")
   }
 
   if(is.na(luminex_wash) | luminex_wash == 0){
