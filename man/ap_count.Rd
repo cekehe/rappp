@@ -52,7 +52,7 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 
 \item{N_filter}{Accepted number of samples with low count per bead ID.}
 
-\item{bead_dispense}{How many wells are bead dispensed in per aspiration?}
+\item{bead_dispense}{How many wells are beads dispensed in per aspiration?}
 
 \item{luminex_wash}{After how many wells are there washes in the Luminex?}
 
