@@ -370,11 +370,11 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       if(state == "before"){
         layout(matrix(c(1,1,1,2,
                         3,3,3,4), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 10))
+        par(mar=c(5, 4, 3, 10))
       } else {
         layout(matrix(c(1,
                         2), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 10))
+        par(mar=c(5, 4, 3, 10))
       }
 
       # Per sample ALL DATA
