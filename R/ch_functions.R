@@ -159,8 +159,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
   sampledata <- x$SAMPLES
   SamplesNames <- sampledata[,internal_sampID]
 
-  cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
-  tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
+  tmp <- subset(plotdata, !grepl("empty|blank|buffer", SamplesNames, ignore.case=T))
+  cosIgG <- median(tmp, na.rm=T)+cosfac*mad(tmp, constant = 1, na.rm=T)
   cosIgG <- c(cosIgG, IgX_cutoff)
 
   which_lowIgG <- which(plotdata<cosIgG[3])
@@ -186,7 +186,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
            xpd=NA)
 
     abline(h=cosIgG, lty=2)
-    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), paste0("Filter cutoff (",IgX_cutoff,")")),
+    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (samples)"), paste0("Filter cutoff (",IgX_cutoff,")")),
                       offset=0.6, xpd=NA)
 
     # Display samples outside boundaries
