@@ -53,7 +53,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
                   pwcol=rep(ifelse(grepl("empty|bare|blank|neutravidin", colnames(x$CT),ignore.case=T), "orange",
                                    ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
-                                          ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
+                                          ifelse(grepl("hig|anti-human|anti-", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
                                                         ifelse(!grepl(types, x$BEADS$Type), "lightgrey",
                                                                ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red",
@@ -71,7 +71,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
             side=1, line=0, cex=0.7, font=2)
 
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Passed", "Flagged", "Not relevant"),
+             legend=c("Empty", "His6ABP", "a-IgX", "EBNA1", "Passed", "Flagged", "Not relevant"),
              col=c("orange", "darkgreen", "blue", "purple", "darkgrey", "red", "lightgrey"),
              pch=16, xpd=NA)
       abline(h=empty_co, lty=2)
