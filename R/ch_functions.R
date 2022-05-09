@@ -272,11 +272,11 @@ ap_igx <- function(x, IgX_bead, IgType="G", species = "h",
 #'
 #' Filter and/or flag samples and beads with low bead count.
 #'
-#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param x List with at least four elements, see Details for naming and content.
 #' @param internal_sampID Column name in SAMPLES with internal sample IDs, such as from LIMS.
 #'     Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
 #'     and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.
-#' @param external_sampID Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.
+#' @param external_sampID Column name in SAMPLES with external sample IDs, such as given from the collaborator or user.
 #' @param Aglabels Column name in BEADS with antigen names to be used in pdf.
 #' @param protein Column name in BEADS with short protein or gene name.
 #' @param agID Column name in BEADS with antigen identifier, eg. PrEST ID or product number.

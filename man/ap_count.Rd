@@ -31,13 +31,13 @@ ap_count(
 )
 }
 \arguments{
-\item{x}{List with at least four elements, see Deatils for naming and content.}
+\item{x}{List with at least four elements, see Details for naming and content.}
 
 \item{internal_sampID}{Column name in SAMPLES with internal sample IDs, such as from LIMS.
 Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
 and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.}
 
-\item{external_sampID}{Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.}
+\item{external_sampID}{Column name in SAMPLES with external sample IDs, such as given from the collaborator or user.}
 
 \item{Aglabels}{Column name in BEADS with antigen names to be used in pdf.}
 
