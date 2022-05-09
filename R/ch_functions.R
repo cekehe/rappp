@@ -119,6 +119,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' @param x List with at least three elements, see Deatils for naming and content.
 #' @param IgX_bead Column index for anti-IgX bead.
 #' @param IgType Which Imunoglobulin is measured, default is G.
+#' @param species letter for which species is measured, affects text in output.
 #' @param IgX_cutoff MFI cutoff value for filtering.
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
 #'     for drawing lines and detecting potential outliers.
@@ -150,7 +151,8 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #'     with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
+ap_igx <- function(x, IgX_bead, IgType="G", species = "h",
+                   IgX_cutoff=5000, cosfac=c(3, -3),
                    internal_sampID="sample_name", external_sampID="tube_label",
                    shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
                    width=12, height=6, useDingbats=FALSE, ...) {
@@ -175,9 +177,11 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
     par(mar=c(5,5,4,4))
 
     plot(1:length(plotdata), plotdata, cex=0.6, ...,
-         xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
+         xlab="Samples in analysis order",ylab="Signal intensity (MFI)",
+         main=paste0("Anti-", species, "Ig", IgType, ""),
          col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
-                    ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
+                    ifelse(grepl("pool|rep|mix|commercial", SamplesNames,
+                                 ignore.case=T),5, 4)))
 
     legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
            legend=c("Sample","Replicate","Buffer"),
@@ -186,7 +190,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
            xpd=NA)
 
     abline(h=cosIgG, lty=2)
-    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (samples)"), paste0("Filter cutoff (",IgX_cutoff,")")),
+    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG,
+                      labs=c(paste0(cosfac,"xMAD+median (samples)"),
+                             paste0("Filter cutoff (",IgX_cutoff,")")),
                       offset=0.6, xpd=NA)
 
     # Display samples outside boundaries
@@ -195,26 +201,35 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                                InternalID=sampledata[,internal_sampID],
                                Subject=sampledata[,external_sampID],
                                MFI=plotdata)
-    plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
-                                    ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
-                                           ifelse(plottext_all$MFI < cosIgG[2], paste0("between ", cosIgG[3]," & ", cosIgG[2]), NA)))
+    plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1],
+                                    paste0("above ", cosIgG[1]),
+                                    ifelse(plottext_all$MFI < cosIgG[3],
+                                           paste0("below ", cosIgG[3]),
+                                           ifelse(plottext_all$MFI < cosIgG[2],
+                                                  paste0("between ", cosIgG[3]," & ", cosIgG[2]),
+                                                  NA)))
     mfi_groups <- c("above", "between", "below")
     for(i in mfi_groups){
       if(sum(grepl(i, plottext_all$MFIgroup)) > 0){
         plottext <- plottext_all[grep(i, plottext_all$MFIgroup),]
         tmp_name <- unique(plottext$MFIgroup)
-        plottext <- plottext[order(plottext$MFI, decreasing=T), -which(colnames(plottext) == "MFIgroup")]
+        plottext <- plottext[order(plottext$MFI, decreasing=T),
+                             -which(colnames(plottext) == "MFIgroup")]
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
           ap_textplot(plottext[21:dim(plottext)[1],],
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
+          mtext(paste0("anti-", species, "Ig", IgType, " MFI ", tmp_name), font=2,
+                cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
+          mtext(paste0("anti-", species, "Ig", IgType, " MFI ", tmp_name), font=2, cex=0.6)
           frame()
         }
 
@@ -231,21 +246,23 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
   # Annotate filtering in SAMPLES
   if(!("Filtered" %in% colnames(x$SAMPLES))){
-    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F, check.names=F)
+    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F,
+                            check.names=F)
   }
   if(length(which_lowIgG) > 0) {
     tmp_remove <- rownames(sampledata)[which_lowIgG]
     if(length(grep("empty|blank|buffer", tmp_remove, ignore.case=T)) > 0){
-      tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove, ignore.case=T)]
+      tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove,
+                                     ignore.case=T)]
     }
     if(length(tmp_remove) > 0){
       x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
-                                   paste0(x$SAMPLES$Filtered, ", hIg", IgType),
+                                   paste0(x$SAMPLES$Filtered, ", ", species, "Ig", IgType),
                                    paste(x$SAMPLES$Filtered))
       x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
     }
   }
-  x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-hIg", IgType))
+  x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-", species, "Ig", IgType))
 
   return(x)
 }
