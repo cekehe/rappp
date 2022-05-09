@@ -18,6 +18,7 @@ ap_count(
   bead_dispense = 32,
   luminex_wash = 96,
   presampfilter = FALSE,
+  plotafter = TRUE,
   shouldplot = TRUE,
   shouldpdf = TRUE,
   filename = "bead_count.pdf",
@@ -62,6 +63,8 @@ and the last 96 being divided in two dispenses.}
 \item{luminex_wash}{After how many wells are there washes in the Luminex?}
 
 \item{presampfilter}{Logical, should samples with annotation under Filtered be removed prior to count evaluation?}
+
+\item{plotafter}{Logical, should plots after filtering be included?}
 
 \item{shouldplot}{Logical, should a plot be made?}
 

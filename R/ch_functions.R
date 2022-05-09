@@ -275,6 +275,7 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     and the last 96 being divided in two dispenses.
 #' @param luminex_wash After how many wells are there washes in the Luminex?
 #' @param presampfilter Logical, should samples with annotation under Filtered be removed prior to count evaluation?
+#' @param plotafter Logical, should plots after filtering be included?
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
@@ -311,12 +312,14 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_label",
-                     Aglabels="Gene_agID", protein="GeneShort", agID="PrEST",
-                     samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
-                     bead_dispense=32, luminex_wash=96, presampfilter=FALSE,
-                     shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
-                     width=12, height=10, useDingbats=FALSE,
+ap_count <- function(x, internal_sampID = "sample_name", external_sampID = "tube_label",
+                     Aglabels = "Gene_agID", protein = "GeneShort", agID = "PrEST",
+                     samp_co = 32, bead_flag = 32, bead_filter = 16, N_filter = 0,
+                     bead_dispense = 32, luminex_wash = 96,
+                     presampfilter = FALSE, plotafter = TRUE,
+                     shouldplot = TRUE, shouldpdf = TRUE,
+                     filename = "bead_count.pdf",
+                     width = 12, height = 10, useDingbats = FALSE,
                      cex_axis_samp = 0.1, cex_axis_ag = 0.1, ...) {
 
   plotdata <- t(x$COUNT)
@@ -378,32 +381,34 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       }
 
       # Per sample ALL DATA
-      boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
-              col=bead_dispense,
-              border=bead_dispense,
-              ylab="Bead count per sample")
-      text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
-           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_samp)
-      abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
-      abline(v=luminex_wash)
-      legend(par("usr")[2], par("usr")[4],
-             legend=c(bead_filter,
-                      paste0("Failed (", samp_co, ")"),
-                      paste0("Median (", median(plotdata, na.rm=T), ")"),
-                      rep("Bead dispensing batch", length(unique(bead_dispense))),
-                      ifelse(luminex_wash[1] != -100, "Luminex wash", "")),
-             lty=c(rep(2,3), rep(0, length(unique(bead_dispense))+1)),
-             pch=c(rep(NA, 3+length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, 73, 0)),
-             col=c("grey","red", "cornflowerblue", rep(0, length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, "black", 0)),
-             fill=c(rep(0, 3), unique(bead_dispense), 0),
-             border=c(rep(0,3), unique(bead_dispense), 0),
-             xpd=NA, cex=0.7, bty="n")
-      mtext("Sample wells, in order of analysis", side=1, cex=0.7, line=1)
-      mtext("Sample bead count", side=3, cex=1, font=2, line=1)
-      if(state == "after"){
-        mtext(paste0("Filtered: Samples with median bead count < ", samp_co,
-                     " and analytes with >", N_filter, " samples with bead count < ", bead_filter, " removed"),
-              side=3, cex=0.6, line=0)
+      if(state == "before" | (state == "after" & plotafter)){
+        boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
+                col=bead_dispense,
+                border=bead_dispense,
+                ylab="Bead count per sample")
+        text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
+             srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_samp)
+        abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
+        abline(v=luminex_wash)
+        legend(par("usr")[2], par("usr")[4],
+               legend=c(bead_filter,
+                        paste0("Failed (", samp_co, ")"),
+                        paste0("Median (", median(plotdata, na.rm=T), ")"),
+                        rep("Bead dispensing batch", length(unique(bead_dispense))),
+                        ifelse(luminex_wash[1] != -100, "Luminex wash", "")),
+               lty=c(rep(2,3), rep(0, length(unique(bead_dispense))+1)),
+               pch=c(rep(NA, 3+length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, 73, 0)),
+               col=c("grey","red", "cornflowerblue", rep(0, length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, "black", 0)),
+               fill=c(rep(0, 3), unique(bead_dispense), 0),
+               border=c(rep(0,3), unique(bead_dispense), 0),
+               xpd=NA, cex=0.7, bty="n")
+        mtext("Sample wells, in order of analysis", side=1, cex=0.7, line=1)
+        mtext("Sample bead count", side=3, cex=1, font=2, line=1)
+        if(state == "after"){
+          mtext(paste0("Filtered: Samples with median bead count < ", samp_co,
+                       " and analytes with >", N_filter, " samples with bead count < ", bead_filter, " removed"),
+                side=3, cex=0.6, line=0)
+        }
       }
     }
 
@@ -439,7 +444,7 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       plotdata <- t(plotdata)
     }
 
-    if(shouldplot){
+    if(shouldplot & (state == "before" | (state == "after" & plotafter))){
       boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
               ylab="Bead count per analyte")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,Aglabels],
