@@ -1774,7 +1774,10 @@ ap_excel <- function(x,
 #'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 #'     Not used if cutoffkey is provided.
-#' @param padding numerical vector of the form \code{c(bottom, left, top, right)}, passed to graphical parameter \code{\link[par]{mar}}.
+#' @param padding numerical vector of the form \code{c(bottom, left, top, right)},
+#'     passed to graphical parameter \code{\link[par]{mar}}.
+#' @param signsyntax string value of either \code{"Unicode"} or \code{"Expression"},
+#'     determines mode of printing "greater or equal" to sign.
 #' @param shouldpdf Logical, should it plot to png?
 #' @param filename string with filename and desired path, end with .png
 #' @return If MADlimits is provided a data.frame with three columns will be returned:
@@ -1789,6 +1792,7 @@ ap_excel <- function(x,
 ap_cutoffs2image <- function(cutoffkey = NULL,
                              MADlimits = NULL,
                              padding = c(4,6,4,1),
+                             signsyntax = "Unicode",
                              shouldpng = TRUE,
                              filename = "CutoffColorKey.png") {
 
@@ -1825,8 +1829,15 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
   textxy(X=xmad_score$score,
          Y=rep(1.03,dim(xmad_score)[1]),
          labs=c("<0", xmad_score$xmad[-1]), offset=0, cex=0.8)
-  text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
-       labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+  if(signsyntax == "Unicode"){
+    text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+         labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+  } else if (signsyntax == "Expression"){
+    text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+         labels=expression("MADs cutoff (">=")"), font=2, offset=0, cex=1, adj=1)
+  } else {
+    stop("Wrong sign syntax chosen, must be either Unicode or Expression")
+  }
 
   if(shouldpng){
     dev.off()
