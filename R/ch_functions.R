@@ -1774,6 +1774,7 @@ ap_excel <- function(x,
 #'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 #'     Not used if cutoffkey is provided.
+#' @param padding numerical vector of the form \code{c(bottom, left, top, right)}, passed to graphical parameter \code{\link[par]{mar}}.
 #' @param shouldpdf Logical, should it plot to png?
 #' @param filename string with filename and desired path, end with .png
 #' @return If MADlimits is provided a data.frame with three columns will be returned:
@@ -1787,6 +1788,7 @@ ap_excel <- function(x,
 
 ap_cutoffs2image <- function(cutoffkey = NULL,
                              MADlimits = NULL,
+                             padding = c(4,6,4,1),
                              shouldpng = TRUE,
                              filename = "CutoffColorKey.png") {
 
@@ -1802,7 +1804,7 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
     png(filename=filename)
   }
 
-  par(mar=c(4,6,4,1))
+  par(mar=padding)
   plot(x=xmad_score$score, y=rep(1,dim(xmad_score)[1]),
        ylim=c(0.9,1.1), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
        xlab=NA, ylab=NA, xaxt="n", yaxt="n", frame.plot=F,
