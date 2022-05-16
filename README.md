@@ -39,7 +39,7 @@ https://www.w3schools.com/cssref/default.asp - Good reference list for css-synta
 
 Create .tar.gz-file - In RStudio terminal (go one folder up and create the file there):<br/>
 ```
-cd..
+cd ..
 R CMD build rappp
 ```
 
