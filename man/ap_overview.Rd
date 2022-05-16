@@ -8,6 +8,8 @@ ap_overview(
   x,
   grepneg = "his6abp|hisabp|empty|bare|biotin|neutravidin|neg_",
   greppos = "anti-h|hIg|ebna",
+  includeFilter = TRUE,
+  Aglabels = "Gene_agID",
   shouldpdf = TRUE,
   filename = "Signal_overview.pdf",
   width = 25,
@@ -22,6 +24,10 @@ ap_overview(
 \item{grepneg}{Regular expression for color of negative control beads.}
 
 \item{greppos}{Regular expression for color of positive control beads.}
+
+\item{includeFilter}{Logical, should antigen boxes be colored based on filtering?}
+
+\item{Aglabels}{Column in x$BEADS with matching names as columns in x$MFI. Only used if includeFilter is TRUE.}
 
 \item{shouldpdf}{Logical, should it plot to pdf?}
 
@@ -39,6 +45,8 @@ Boxplots of signals per antigen and sample in different orders.
 \details{
 The x list needs to include at least the element
     MFI = assay mfi.
+
+    BEADS = Beads info. Only needed if includeFilter is TRUE.
 
     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
     logarithmic scale without filtering any beads or samples.

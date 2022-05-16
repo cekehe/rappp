@@ -53,7 +53,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
                   main="Copupling efficiency test", ylab="Signal intensity [MFI]",
                   pwcol=rep(ifelse(grepl("empty|bare|blank|neutravidin", colnames(x$CT),ignore.case=T), "orange",
                                    ifelse(grepl("his6abp|hisabp", colnames(x$CT),ignore.case=T), "darkgreen",
-                                          ifelse(grepl("hig|anti-human", colnames(x$CT),ignore.case=T), "blue",
+                                          ifelse(grepl("hig|anti-human|anti-", colnames(x$CT),ignore.case=T), "blue",
                                                  ifelse(grepl("ebna", colnames(x$CT),ignore.case=T), "purple",
                                                         ifelse(!grepl(types, x$BEADS$Type), "lightgrey",
                                                                ifelse(apply(x$CT, 2, median, na.rm=T) < empty_co, "red",
@@ -71,7 +71,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
             side=1, line=0, cex=0.7, font=2)
 
       legend(par("usr")[2], par("usr")[4],
-             legend=c("Empty", "His6ABP", "ahIgX", "EBNA1", "Passed", "Flagged", "Not relevant"),
+             legend=c("Empty", "His6ABP", "a-IgX", "EBNA1", "Passed", "Flagged", "Not relevant"),
              col=c("orange", "darkgreen", "blue", "purple", "darkgrey", "red", "lightgrey"),
              pch=16, xpd=NA)
       abline(h=empty_co, lty=2)
@@ -97,7 +97,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 
     # Annotate filtering in BEADS
     if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
-      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
+      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F, check.names = F)
     }
 
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
@@ -117,8 +117,9 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #' Filter samples with low MFI for the anti-human IgX bead.
 #'
 #' @param x List with at least three elements, see Deatils for naming and content.
-#' @param IgX_bead Column index for empty bead.
+#' @param IgX_bead Column index for anti-IgX bead.
 #' @param IgType Which Imunoglobulin is measured, default is G.
+#' @param species letter for which species is measured, affects text in output.
 #' @param IgX_cutoff MFI cutoff value for filtering.
 #' @param cosfac Median absolute deviation multipliers in vector c(upper, lower),
 #'     for drawing lines and detecting potential outliers.
@@ -150,7 +151,8 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 #'     with plot (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
+ap_igx <- function(x, IgX_bead, IgType="G", species = "h",
+                   IgX_cutoff=5000, cosfac=c(3, -3),
                    internal_sampID="sample_name", external_sampID="tube_label",
                    shouldplot=TRUE, shouldpdf=TRUE, filename="anti-humanIgX.pdf",
                    width=12, height=6, useDingbats=FALSE, ...) {
@@ -159,8 +161,8 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
   sampledata <- x$SAMPLES
   SamplesNames <- sampledata[,internal_sampID]
 
-  cosIgG <- median(plotdata, na.rm=T)+cosfac*mad(plotdata, constant = 1, na.rm=T)
-  tmp <- plotdata[grepl("empty|blank|buffer", SamplesNames, ignore.case=T)]
+  tmp <- subset(plotdata, !grepl("empty|blank|buffer", SamplesNames, ignore.case=T))
+  cosIgG <- median(tmp, na.rm=T)+cosfac*mad(tmp, constant = 1, na.rm=T)
   cosIgG <- c(cosIgG, IgX_cutoff)
 
   which_lowIgG <- which(plotdata<cosIgG[3])
@@ -175,9 +177,11 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
     par(mar=c(5,5,4,4))
 
     plot(1:length(plotdata), plotdata, cex=0.6, ...,
-         xlab="Samples in analysis order",ylab="Signal intensity (MFI)",main=paste0("Anti-hIg", IgType, ""),
+         xlab="Samples in analysis order",ylab="Signal intensity (MFI)",
+         main=paste0("Anti-", species, "Ig", IgType, ""),
          col=ifelse(grepl("empty|blank|buffer", SamplesNames, ignore.case=T),2,
-                    ifelse(grepl("pool|rep|mix|commercial", SamplesNames, ignore.case=T),5, 4)))
+                    ifelse(grepl("pool|rep|mix|commercial", SamplesNames,
+                                 ignore.case=T),5, 4)))
 
     legend(par("usr")[1], par("usr")[4], horiz=T, yjust=0.1, bty="n",
            legend=c("Sample","Replicate","Buffer"),
@@ -186,7 +190,9 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
            xpd=NA)
 
     abline(h=cosIgG, lty=2)
-    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG, labs=c(paste0(cosfac,"xMAD+median (all)"), paste0("Filter cutoff (",IgX_cutoff,")")),
+    calibrate::textxy(X=rep(par("usr")[2], 3),Y=cosIgG,
+                      labs=c(paste0(cosfac,"xMAD+median (samples)"),
+                             paste0("Filter cutoff (",IgX_cutoff,")")),
                       offset=0.6, xpd=NA)
 
     # Display samples outside boundaries
@@ -195,26 +201,35 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
                                InternalID=sampledata[,internal_sampID],
                                Subject=sampledata[,external_sampID],
                                MFI=plotdata)
-    plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1], paste0("above ", cosIgG[1]),
-                                    ifelse(plottext_all$MFI < cosIgG[3], paste0("below ", cosIgG[3]),
-                                           ifelse(plottext_all$MFI < cosIgG[2], paste0("between ", cosIgG[3]," & ", cosIgG[2]), NA)))
+    plottext_all$MFIgroup <- ifelse(plottext_all$MFI > cosIgG[1],
+                                    paste0("above ", cosIgG[1]),
+                                    ifelse(plottext_all$MFI < cosIgG[3],
+                                           paste0("below ", cosIgG[3]),
+                                           ifelse(plottext_all$MFI < cosIgG[2],
+                                                  paste0("between ", cosIgG[3]," & ", cosIgG[2]),
+                                                  NA)))
     mfi_groups <- c("above", "between", "below")
     for(i in mfi_groups){
       if(sum(grepl(i, plottext_all$MFIgroup)) > 0){
         plottext <- plottext_all[grep(i, plottext_all$MFIgroup),]
         tmp_name <- unique(plottext$MFIgroup)
-        plottext <- plottext[order(plottext$MFI, decreasing=T), -which(colnames(plottext) == "MFIgroup")]
+        plottext <- plottext[order(plottext$MFI, decreasing=T),
+                             -which(colnames(plottext) == "MFIgroup")]
 
         if(dim(plottext)[1] > 20){
           ap_textplot(plottext[1:20,],
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
           ap_textplot(plottext[21:dim(plottext)[1],],
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6, xpd=NA, at=-0.5)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
+          mtext(paste0("anti-", species, "Ig", IgType, " MFI ", tmp_name), font=2,
+                cex=0.6, xpd=NA, at=-0.5)
         } else {
           ap_textplot(plottext,
-                      halign="left", show.rownames=F, hadj=0, cmar=0.7, valign="top", xpd=NA)
-          mtext(paste0("anti-hIg", IgType, " MFI ", tmp_name), font=2, cex=0.6)
+                      halign="left", show.rownames=F, hadj=0, cmar=0.7,
+                      valign="top", xpd=NA)
+          mtext(paste0("anti-", species, "Ig", IgType, " MFI ", tmp_name), font=2, cex=0.6)
           frame()
         }
 
@@ -231,21 +246,23 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 
   # Annotate filtering in SAMPLES
   if(!("Filtered" %in% colnames(x$SAMPLES))){
-    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F, check.names=F)
+    x$SAMPLES <- data.frame(Filtered="", x$SAMPLES, stringsAsFactors=F,
+                            check.names=F)
   }
   if(length(which_lowIgG) > 0) {
     tmp_remove <- rownames(sampledata)[which_lowIgG]
     if(length(grep("empty|blank|buffer", tmp_remove, ignore.case=T)) > 0){
-      tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove, ignore.case=T)]
+      tmp_remove <- tmp_remove[-grep("empty|blank|buffer", tmp_remove,
+                                     ignore.case=T)]
     }
     if(length(tmp_remove) > 0){
       x$SAMPLES$Filtered <- ifelse(rownames(x$SAMPLES) %in% tmp_remove,
-                                   paste0(x$SAMPLES$Filtered, ", hIg", IgType),
+                                   paste0(x$SAMPLES$Filtered, ", ", species, "Ig", IgType),
                                    paste(x$SAMPLES$Filtered))
       x$SAMPLES$Filtered <- gsub("^, ", "", x$SAMPLES$Filtered)
     }
   }
-  x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-hIg", IgType))
+  x$FILTERINFO <- c(x$FILTERINFO, paste0("anti-", species, "Ig", IgType))
 
   return(x)
 }
@@ -255,11 +272,11 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #' Filter and/or flag samples and beads with low bead count.
 #'
-#' @param x List with at least four elements, see Deatils for naming and content.
+#' @param x List with at least four elements, see Details for naming and content.
 #' @param internal_sampID Column name in SAMPLES with internal sample IDs, such as from LIMS.
 #'     Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
 #'     and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.
-#' @param external_sampID Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.
+#' @param external_sampID Column name in SAMPLES with external sample IDs, such as given from the collaborator or user.
 #' @param Aglabels Column name in BEADS with antigen names to be used in pdf.
 #' @param protein Column name in BEADS with short protein or gene name.
 #' @param agID Column name in BEADS with antigen identifier, eg. PrEST ID or product number.
@@ -267,13 +284,22 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #' @param bead_flag Cutoff for flagging beads with low counts.
 #' @param bead_filter Cutoff for filtering beads with low counts.
 #' @param N_filter Accepted number of samples with low count per bead ID.
-#' @param bead_dispense How many wells are bead dispensed in per aspiration?
+#' @param bead_dispense How many wells are beads dispensed in per aspiration?
+#'     If all in one dispense, then input is NA, 0 , or 1.
+#'     If evenly divided, then input is one value with number of wells per dispense, e.g. 96.
+#'     If unevenly distributed, then input is a vector of how many wells per dispense,
+#'     e.g. \code{c(rep(96, 3), rep(48, 2))} for first three dispenses being 96 at a time,
+#'     and the last 96 being divided in two dispenses.
 #' @param luminex_wash After how many wells are there washes in the Luminex?
+#' @param presampfilter Logical, should samples with annotation under Filtered be removed prior to count evaluation?
+#' @param plotafter Logical, should plots after filtering be included?
 #' @param shouldplot Logical, should a plot be made?
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
 #' @param useDingbats Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.
+#' @param cex_axis_samp Text size on x-axis in sample-based plots.
+#' @param cex_axis_ag Text size on x-axis in bead-based plots.
 #' @param ... Other arguments passed to ap_textplot.
 #' @details The x list needs to include at least the elements:
 #'
@@ -295,22 +321,32 @@ ap_igx <- function(x, IgX_bead, IgType="G", IgX_cutoff=5000, cosfac=c(3, -3),
 #'
 #'     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
 #'
+#'     "Filtered" if \code{presampfilter=TRUE}
+#'
 #' Note: The function plots to a layout containing up to four areas.
 #'
 #' @return Updated input x with relevant filtering and/or flagging info and a pdf
 #'     with plots (if \code{shouldplot=TRUE} and \code{shouldpdf=TRUE}).
 #' @export
 
-ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_label",
-                     Aglabels="Gene_agID", protein="GeneShort", agID="PrEST",
-                     samp_co=32, bead_flag=32, bead_filter=16, N_filter=0,
-                     bead_dispense=32, luminex_wash=96,
-                     shouldplot=TRUE, shouldpdf=TRUE, filename="bead_count.pdf",
-                     width=12, height=10, useDingbats=FALSE, ...) {
+ap_count <- function(x, internal_sampID = "sample_name", external_sampID = "tube_label",
+                     Aglabels = "Gene_agID", protein = "GeneShort", agID = "PrEST",
+                     samp_co = 32, bead_flag = 32, bead_filter = 16, N_filter = 0,
+                     bead_dispense = 32, luminex_wash = 96,
+                     presampfilter = FALSE, plotafter = TRUE,
+                     shouldplot = TRUE, shouldpdf = TRUE,
+                     filename = "bead_count.pdf",
+                     width = 12, height = 10, useDingbats = FALSE,
+                     cex_axis_samp = 0.1, cex_axis_ag = 0.1, ...) {
 
   plotdata <- t(x$COUNT)
   sampledata <- x$SAMPLES
   beaddata <- x$BEADS
+
+  if(presampfilter){
+    plotdata <- plotdata[, which(sampledata$Filtered == "")]
+    sampledata <- sampledata[which(sampledata$Filtered == ""), ]
+  }
 
   which_lowSB <- which(apply(plotdata, 2, function(x) median(x, na.rm=T)) < samp_co) # Checks which samples have low count in general, e.g. due to faulty bead dispens in well
 
@@ -318,16 +354,25 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
     pdf(filename, width=width, height=height, useDingbats=useDingbats)
   }
 
-  if(is.na(bead_dispense) | bead_dispense == 0){
-    bead_dispense <- "burlywood1"
-  } else if(length(bead_dispense) == 1){
-    bead_dispense <- c("burlywood1", "burlywood4")[c(rep(1, bead_dispense), rep(2, bead_dispense))]
-  } else if (sum(bead_dispense == dim(plotdata)[2])){
+  if(length(bead_dispense) == 1){
+    if(is.na(bead_dispense) | bead_dispense == 0){
+      bead_dispense <- "burlywood1"
+    } else {
+      bead_dispense <- c("burlywood1", "burlywood4")[c(rep(1, bead_dispense),
+                                                       rep(2, bead_dispense))]
+    }
+  } else if (sum(bead_dispense) == ncol(plotdata)){
     tmp <- NULL
     for(i in seq_along(bead_dispense)){
-      tmp <- c(tmp, ifelse(i %% 2 != 0, rep(1, bead_dispense), rep(2, bead_dispense)))
+      if(i %% 2 != 0){
+        tmp <- c(tmp, rep(1, bead_dispense[i]))
+      } else {
+        tmp <- c(tmp, rep(2, bead_dispense[i]))
+      }
     }
     bead_dispense <- c("burlywood1", "burlywood4")[tmp]
+  } else {
+    stop("bead_dispense not correctly entered")
   }
 
   if(is.na(luminex_wash) | luminex_wash == 0){
@@ -345,40 +390,42 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       if(state == "before"){
         layout(matrix(c(1,1,1,2,
                         3,3,3,4), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 10))
+        par(mar=c(5, 4, 3, 10))
       } else {
         layout(matrix(c(1,
                         2), nrow=2, byrow=T))
-        par(mar=c(4, 4, 3, 10))
+        par(mar=c(5, 4, 3, 10))
       }
 
       # Per sample ALL DATA
-      boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
-              col=bead_dispense,
-              border=bead_dispense,
-              ylab="Bead count per sample")
-      text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
-           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
-      abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
-      abline(v=luminex_wash)
-      legend(par("usr")[2], par("usr")[4],
-             legend=c(bead_filter,
-                      paste0("Failed (", samp_co, ")"),
-                      paste0("Median (", median(plotdata, na.rm=T), ")"),
-                      rep("Bead dispensing batch", length(unique(bead_dispense))),
-                      ifelse(luminex_wash[1] != -100, "Luminex wash", "")),
-             lty=c(rep(2,3), rep(0, length(unique(bead_dispense))+1)),
-             pch=c(rep(NA, 3+length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, 73, 0)),
-             col=c("grey","red", "cornflowerblue", rep(0, length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, "black", 0)),
-             fill=c(rep(0, 3), unique(bead_dispense), 0),
-             border=c(rep(0,3), unique(bead_dispense), 0),
-             xpd=NA, cex=0.7, bty="n")
-      mtext("Sample wells, in order of analysis", side=1, cex=0.7, line=1)
-      mtext("Sample bead count", side=3, cex=1, font=2, line=1)
-      if(state == "after"){
-        mtext(paste0("Filtered: Samples with median bead count < ", samp_co,
-                     " and analytes with >", N_filter, " samples with bead count < ", bead_filter, " removed"),
-              side=3, cex=0.6, line=0)
+      if(state == "before" | (state == "after" & plotafter)){
+        boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
+                col=bead_dispense,
+                border=bead_dispense,
+                ylab="Bead count per sample")
+        text(1:dim(plotdata)[2],par("usr")[3]-1, labels = rownames(sampledata),
+             srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_samp)
+        abline(h=c(16,32, median(plotdata, na.rm=T)), lty=2, col=c("grey","red", "cornflowerblue"))
+        abline(v=luminex_wash)
+        legend(par("usr")[2], par("usr")[4],
+               legend=c(bead_filter,
+                        paste0("Failed (", samp_co, ")"),
+                        paste0("Median (", median(plotdata, na.rm=T), ")"),
+                        rep("Bead dispensing batch", length(unique(bead_dispense))),
+                        ifelse(luminex_wash[1] != -100, "Luminex wash", "")),
+               lty=c(rep(2,3), rep(0, length(unique(bead_dispense))+1)),
+               pch=c(rep(NA, 3+length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, 73, 0)),
+               col=c("grey","red", "cornflowerblue", rep(0, length(unique(bead_dispense))), ifelse(luminex_wash[1] != -100, "black", 0)),
+               fill=c(rep(0, 3), unique(bead_dispense), 0),
+               border=c(rep(0,3), unique(bead_dispense), 0),
+               xpd=NA, cex=0.7, bty="n")
+        mtext("Sample wells, in order of analysis", side=1, cex=0.7, line=1)
+        mtext("Sample bead count", side=3, cex=1, font=2, line=1)
+        if(state == "after"){
+          mtext(paste0("Filtered: Samples with median bead count < ", samp_co,
+                       " and analytes with >", N_filter, " samples with bead count < ", bead_filter, " removed"),
+                side=3, cex=0.6, line=0)
+        }
       }
     }
 
@@ -414,11 +461,11 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
       plotdata <- t(plotdata)
     }
 
-    if(shouldplot){
+    if(shouldplot & (state == "before" | (state == "after" & plotafter))){
       boxplot(plotdata, pch=16, cex=0.6, ylim=c(0, max(plotdata, na.rm=T)), las=1, names=F, xaxt="n",
               ylab="Bead count per analyte")
       text(1:dim(plotdata)[2],par("usr")[3]-1, labels = beaddata[,Aglabels],
-           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=0.1)
+           srt = 45, adj=c(1.1,1.1), xpd = TRUE, cex=cex_axis_ag)
       abline(h=c(bead_filter,
                  bead_flag,
                  median(unlist(plotdata), na.rm=T)), lty=2, col=c("red", "orange", "cornflowerblue"))
@@ -453,8 +500,9 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
           LowestCount=apply(plotdata, 2, function(x) min(x, na.rm=T))[which_lowAB],
           Nbelow16=apply(plotdata, 2, function(x) length(which(x < 16)))[which_lowAB],
           HighestCount=apply(plotdata, 2, function(x) max(x, na.rm=T))[which_lowAB])
-        lowAB <- lowAB[order(lowAB$LowestCount),]
-        lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter | lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
+        lowAB <- data.frame(lowAB, Action=ifelse(lowAB$LowestCount > bead_filter |
+                                                   lowAB$Nbelow16 <= N_filter, "Flagged", "Filtered"))
+        lowAB <- lowAB[order(lowAB$Action, lowAB$LowestCount),]
 
         if(shouldplot){
           ap_textplot(lowAB, show.rownames=F, valign="top", halign="left",
@@ -534,6 +582,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #' @param x List with at least one elements, see Deatils for naming and content.
 #' @param grepneg Regular expression for color of negative control beads.
 #' @param greppos Regular expression for color of positive control beads.
+#' @param includeFilter Logical, should antigen boxes be colored based on filtering?
+#' @param Aglabels Column in x$BEADS with matching names as columns in x$MFI. Only used if includeFilter is TRUE.
 #' @param shouldpdf Logical, should it plot to pdf?
 #' @param filename String with filename and desired path, end with .pdf
 #' @param width,height Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.
@@ -541,6 +591,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 #' @param ... Further arguments passed to \code{\link[graphics:boxplot]{boxplot()}}.
 #' @details The x list needs to include at least the element
 #'     MFI = assay mfi.
+#'
+#'     BEADS = Beads info. Only needed if includeFilter is TRUE.
 #'
 #'     Data points with the value NA or 0 will be set to 1 for the plotting to allow for
 #'     logarithmic scale without filtering any beads or samples.
@@ -552,6 +604,8 @@ ap_count <- function(x, internal_sampID="sample_name", external_sampID="tube_lab
 ap_overview <- function(x,
                         grepneg = "his6abp|hisabp|empty|bare|biotin|neutravidin|neg_",
                         greppos = "anti-h|hIg|ebna",
+                        includeFilter = TRUE,
+                        Aglabels = "Gene_agID",
                         shouldpdf=TRUE,
                         filename="Signal_overview.pdf",
                         width=25, height=15, useDingbats=FALSE, ...){
@@ -571,12 +625,23 @@ ap_overview <- function(x,
                    max=tmp_data[,order(apply(tmp_data, 2, max, na.rm=T))])
 
   for(i in 1:length(plotdata)){
+
+    colors <- ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T),
+                     as.color("brown", 0.7),
+                     ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T),
+                            as.color("darkolivegreen", 0.7),
+                            0))
+
+    if(includeFilter & "Filtered" %in% colnames(x$BEADS)){
+      tmp_beads <- x$BEADS[match(colnames(plotdata[[i]]), x$BEADS[, Aglabels]),]
+
+      colors <- ifelse(tmp_beads$Filtered != "", "grey", colors)
+    }
+
     boxplot(plotdata[[i]], pch=16, cex=0.5, log="y", las=2, xaxt="n", ...,
             main=paste0("Antigens, sorted by ", names(plotdata)[i]), ylab="log(MFI) [AU]",
-            outcol=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                          ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), as.color("black", 0.5))),
-            col=ifelse(grepl(grepneg, colnames(plotdata[[i]]), ignore.case=T), as.color("brown", 0.7),
-                       ifelse(grepl(greppos, colnames(plotdata[[i]]), ignore.case=T), as.color("darkolivegreen", 0.7), 0)))
+            outcol=as.color(ifelse(colors == 0, "black", colors), 0.6),
+            col=colors)
 
     cex_xaxis <- c(1,1,0.75, 0.35, 0.25, 0.1)[findInterval(dim(plotdata[[i]])[2], c(1, seq(96, 96*5, 96)))]
     axis(1, at=1:dim(plotdata[[i]])[2], labels=colnames(plotdata[[i]]), cex.axis=cex_xaxis, las=2)
@@ -1413,7 +1478,8 @@ ap_agresults <- function(x,
 
       # Frequency
         par(mar=c(6,5,mar_top,1))
-        plotdata <- data_freq_all[,grep(paste0("^",tmp_ag,"(?=_co)"), colnames(data_freq_all), perl = T), drop=F]
+        plotdata <- data_freq_all[,grep(gsub("\\*", "\\\\*", paste0("^",tmp_ag,"(?=_co)")),
+                                        colnames(data_freq_all), perl = T), drop=F]
       if(n_groups > 1){
          plotdata <- split(plotdata, do.call(rbind, strsplit(rownames(plotdata), "\\."))[,2])
          plotdata <- do.call(cbind, plotdata)
@@ -1708,6 +1774,10 @@ ap_excel <- function(x,
 #'     recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.
 #' @param MADlimits vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 #'     Not used if cutoffkey is provided.
+#' @param padding numerical vector of the form \code{c(bottom, left, top, right)},
+#'     passed to graphical parameter \code{\link[par]{mar}}.
+#' @param signsyntax string value of either \code{"Unicode"} or \code{"Expression"},
+#'     determines mode of printing "greater or equal" to sign.
 #' @param shouldpdf Logical, should it plot to png?
 #' @param filename string with filename and desired path, end with .png
 #' @return If MADlimits is provided a data.frame with three columns will be returned:
@@ -1721,6 +1791,8 @@ ap_excel <- function(x,
 
 ap_cutoffs2image <- function(cutoffkey = NULL,
                              MADlimits = NULL,
+                             padding = c(4,6,4,1),
+                             signsyntax = "Unicode",
                              shouldpng = TRUE,
                              filename = "CutoffColorKey.png") {
 
@@ -1736,9 +1808,9 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
     png(filename=filename)
   }
 
-  par(mar=c(4,6,4,1))
+  par(mar=padding)
   plot(x=xmad_score$score, y=rep(1,dim(xmad_score)[1]),
-       ylim=c(0.9,1.1), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
+       ylim=c(0.99,1.04), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
        xlab=NA, ylab=NA, xaxt="n", yaxt="n", frame.plot=F,
        pch=22, bg=paste(xmad_score$color), col="black", cex=4)
   text(x=min(xmad_score$score)-0.2, y=1, xpd=NA,
@@ -1757,8 +1829,15 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
   textxy(X=xmad_score$score,
          Y=rep(1.03,dim(xmad_score)[1]),
          labs=c("<0", xmad_score$xmad[-1]), offset=0, cex=0.8)
-  text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
-       labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+  if(signsyntax == "Unicode"){
+    text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+         labels="MADs cutoff (\u2265)", font=2, offset=0, cex=1, adj=1)
+  } else if (signsyntax == "Expression"){
+    text(x=min(xmad_score$score)-0.2, y=1.03, xpd=NA,
+         labels=expression("MADs cutoff (">=")"), font=2, offset=0, cex=1, adj=1)
+  } else {
+    stop("Wrong sign syntax chosen, must be either Unicode or Expression")
+  }
 
   if(shouldpng){
     dev.off()

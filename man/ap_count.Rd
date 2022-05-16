@@ -17,23 +17,27 @@ ap_count(
   N_filter = 0,
   bead_dispense = 32,
   luminex_wash = 96,
+  presampfilter = FALSE,
+  plotafter = TRUE,
   shouldplot = TRUE,
   shouldpdf = TRUE,
   filename = "bead_count.pdf",
   width = 12,
   height = 10,
   useDingbats = FALSE,
+  cex_axis_samp = 0.1,
+  cex_axis_ag = 0.1,
   ...
 )
 }
 \arguments{
-\item{x}{List with at least four elements, see Deatils for naming and content.}
+\item{x}{List with at least four elements, see Details for naming and content.}
 
 \item{internal_sampID}{Column name in SAMPLES with internal sample IDs, such as from LIMS.
 Replicates (named with one of pool|rep|mix|commercial, not case sensitive)
 and blanks (named with one of empty|blank|buffer, not case sensitive) must be stated in this column.}
 
-\item{external_sampID}{Column name in SAMPLES with externaö sample IDs, such as given from the collaborator or user.}
+\item{external_sampID}{Column name in SAMPLES with external sample IDs, such as given from the collaborator or user.}
 
 \item{Aglabels}{Column name in BEADS with antigen names to be used in pdf.}
 
@@ -49,9 +53,18 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 
 \item{N_filter}{Accepted number of samples with low count per bead ID.}
 
-\item{bead_dispense}{How many wells are bead dispensed in per aspiration?}
+\item{bead_dispense}{How many wells are beads dispensed in per aspiration?
+If all in one dispense, then input is NA, 0 , or 1.
+If evenly divided, then input is one value with number of wells per dispense, e.g. 96.
+If unevenly distributed, then input is a vector of how many wells per dispense,
+e.g. \code{c(rep(96, 3), rep(48, 2))} for first three dispenses being 96 at a time,
+and the last 96 being divided in two dispenses.}
 
 \item{luminex_wash}{After how many wells are there washes in the Luminex?}
+
+\item{presampfilter}{Logical, should samples with annotation under Filtered be removed prior to count evaluation?}
+
+\item{plotafter}{Logical, should plots after filtering be included?}
 
 \item{shouldplot}{Logical, should a plot be made?}
 
@@ -62,6 +75,10 @@ and blanks (named with one of empty|blank|buffer, not case sensitive) must be st
 \item{width, height}{Width and height for pdf, see \code{\link[grDevices:pdf]{pdf()}}.}
 
 \item{useDingbats}{Logical. Default is \code{FALSE}, compared to in default \code{\link[grDevices:pdf]{pdf()}}.}
+
+\item{cex_axis_samp}{Text size on x-axis in sample-based plots.}
+
+\item{cex_axis_ag}{Text size on x-axis in bead-based plots.}
 
 \item{...}{Other arguments passed to ap_textplot.}
 }
@@ -92,6 +109,8 @@ The BEADS element needs at least the columns:
 The SAMPLES element needs at least the columns:
 
     "AssayWell" with Well IDs in the assay plate, e.g A01, B01 etc.,
+
+    "Filtered" if \code{presampfilter=TRUE}
 
 Note: The function plots to a layout containing up to four areas.
 }

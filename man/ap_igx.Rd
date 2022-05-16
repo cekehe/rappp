@@ -8,6 +8,7 @@ ap_igx(
   x,
   IgX_bead,
   IgType = "G",
+  species = "h",
   IgX_cutoff = 5000,
   cosfac = c(3, -3),
   internal_sampID = "sample_name",
@@ -24,9 +25,11 @@ ap_igx(
 \arguments{
 \item{x}{List with at least three elements, see Deatils for naming and content.}
 
-\item{IgX_bead}{Column index for empty bead.}
+\item{IgX_bead}{Column index for anti-IgX bead.}
 
 \item{IgType}{Which Imunoglobulin is measured, default is G.}
+
+\item{species}{letter for which species is measured, affects text in output.}
 
 \item{IgX_cutoff}{MFI cutoff value for filtering.}
 

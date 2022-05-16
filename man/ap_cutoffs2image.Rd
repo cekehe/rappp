@@ -7,6 +7,8 @@
 ap_cutoffs2image(
   cutoffkey = NULL,
   MADlimits = NULL,
+  padding = c(4, 6, 4, 1),
+  signsyntax = "Unicode",
   shouldpng = TRUE,
   filename = "CutoffColorKey.png"
 )
@@ -17,6 +19,12 @@ recommended input if \code{\link[rappp:ap_norm2]{ap_norm2()}} has been used.}
 
 \item{MADlimits}{vector of MADs values used as boundaries for binning (≥MADs), eg. seq(0,70,5).
 Not used if cutoffkey is provided.}
+
+\item{padding}{numerical vector of the form \code{c(bottom, left, top, right)},
+passed to graphical parameter \code{\link[par]{mar}}.}
+
+\item{signsyntax}{string value of either \code{"Unicode"} or \code{"Expression"},
+determines mode of printing "greater or equal" to sign.}
 
 \item{filename}{string with filename and desired path, end with .png}
 
