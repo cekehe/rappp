@@ -3,7 +3,7 @@ Type: Package
 Title: QC, data transformation and visualization for PAPP
 Version: 0.1.0.9008.0014
 Date: 2022-05-16
-Author: August Jernbom Falk, Cecilia Hellström, Sofia Bergström.
+Author: Cecilia Hellström, August Jernbom Falk, Sofia Bergström.
     Affinity Proteomics, KTH Royal Institute of Technology, SciLifeLab, Stockholm, Sweden
 Maintainer: The package maintainer <cecilia.hellstrom@scilifelab.se>
 Description: This package is meant to facilitate the data analysis of
