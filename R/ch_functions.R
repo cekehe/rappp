@@ -97,7 +97,7 @@ ap_ct <- function(x, empty_bead, empty_co_multiple=3, types="PrEST",
 
     # Annotate filtering in BEADS
     if(length(which(colnames(x$BEADS) == "Flagged")) == 0){
-      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F)
+      x$BEADS <- data.frame(Flagged="", x$BEADS, stringsAsFactors=F, check.names = F)
     }
 
     x$BEADS$Flagged <- ifelse(apply(x$CT, 2, mean) < empty_co &
