@@ -1810,7 +1810,7 @@ ap_cutoffs2image <- function(cutoffkey = NULL,
 
   par(mar=padding)
   plot(x=xmad_score$score, y=rep(1,dim(xmad_score)[1]),
-       ylim=c(0.9,1.1), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
+       ylim=c(0.99,1.04), xlim=c(min(xmad_score$score)-0.2, max(xmad_score$score)),
        xlab=NA, ylab=NA, xaxt="n", yaxt="n", frame.plot=F,
        pch=22, bg=paste(xmad_score$color), col="black", cex=4)
   text(x=min(xmad_score$score)-0.2, y=1, xpd=NA,
